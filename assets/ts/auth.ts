@@ -2,7 +2,7 @@ const filter = document.getElementById("filter");
 
 const mainHeaderEl = document.getElementById("main-header");
 const signinLink = mainHeaderEl?.querySelector(".main-header__signin-anchor");
-const signupBtn = mainHeaderEl?.querySelector(".main-header__signup-btn");
+const signupSubmit = mainHeaderEl?.querySelector(".main-header__signup-btn");
 
 const modals = document.querySelectorAll(".modal");
 const signinModal = document.getElementById("signin-modal");
@@ -28,7 +28,7 @@ const openAuthModal = (type: "signin" | "signup") => {
 const auth = () => {
   filter?.addEventListener("click", closeAuthModals);
   signinLink?.addEventListener("click", () => openAuthModal("signin"));
-  signupBtn?.addEventListener("click", () => openAuthModal("signup"));
+  signupSubmit?.addEventListener("click", () => openAuthModal("signup"));
   modals.forEach((modal) => {
     const modalCloseIcon = modal.querySelector(".modal__close-icon");
     modalCloseIcon?.addEventListener("click", closeAuthModals);

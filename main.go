@@ -3,6 +3,7 @@ package main
 import (
 	"home/jonganebski/github/fibersteps-server/config"
 	"home/jonganebski/github/fibersteps-server/database"
+	"home/jonganebski/github/fibersteps-server/middleware"
 	"home/jonganebski/github/fibersteps-server/router"
 	"log"
 
@@ -28,6 +29,8 @@ func main() {
 	app.Use(helmet.New())
 	app.Use(cors.New())
 	app.Use(logger.New())
+
+	app.Use(middleware.SpreadLocals)
 
 	router.SetupRoutes(app)
 

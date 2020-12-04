@@ -26,6 +26,16 @@ button {
   cursor: pointer;
 }
 
+input[type="submit"] {
+  all: unset;
+  outline: none;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
 textarea {
   resize: none;
   outline: none;
