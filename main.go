@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
+	"github.com/gofiber/template/pug"
 )
 
 var port string = config.Config("PORT")
@@ -18,8 +19,9 @@ func main() {
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
 	}
+	engine := pug.New("./views", "pug")
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{Views: engine})
 
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{AllowOrigins: "http://localhost:3000"}))
