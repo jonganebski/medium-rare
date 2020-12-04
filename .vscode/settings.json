@@ -1,0 +1,11 @@
+
+{
+    "[go]": {
+        "editor.insertSpaces": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+            }
+    },
+    "editor.formatOnSave": true,
+}
