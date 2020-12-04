@@ -9,12 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/helmet"
+	"github.com/gofiber/helmet/v2"
 )
 
 var port string = config.Config("PORT")
 
-func main(c *fiber.Ctx) {
+func main() {
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
 	}
