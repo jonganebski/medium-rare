@@ -1,6 +1,5 @@
 body * {
   box-sizing: border-box;
-  font-family: "Quicksand", sans-serif;
 }
 
 #filter {
@@ -34,6 +33,10 @@ input[type="submit"] {
   border-radius: 5px;
   font-size: 0.9rem;
   cursor: pointer;
+}
+
+main {
+  width: 100%;
 }
 
 textarea {

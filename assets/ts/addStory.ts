@@ -1,11 +1,15 @@
-// import Axios from "axios";
-import marked from "marked";
+const textEditor = document.getElementById("editor__container");
+const textEditorTextBoxes = textEditor?.querySelectorAll(".textBox");
 
-// const submitBtn = document.getElementById("test-submit");
-const resultDiv = document.querySelector("._result");
-const html = marked("# Marked in Node.js\n\nRendered by **marked**.");
 const addStory = () => {
-  resultDiv!.innerHTML = html;
+  textEditor?.addEventListener("keydown", (e) => {
+    const { key } = <KeyboardEvent>e;
+    const { innerHTML } = <HTMLParagraphElement>e.currentTarget;
+    console.log(key);
+    const x = innerHTML + key;
+
+    textEditor.innerHTML = x;
+  });
 };
 
 addStory();
