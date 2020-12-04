@@ -1,0 +1,57 @@
+.header-usermenu {
+  position: absolute;
+  top: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid lightgray;
+  border-radius: 0.5rem;
+  background-color: white;
+  .header-usermenu__arrow {
+    position: absolute;
+    top: -0.5rem;
+    left: calc(50% - 0.5rem);
+    transform: translateX(-50%);
+    transform: rotate(45deg);
+    width: 1rem;
+    height: 1rem;
+    border-top: 1px solid lightgray;
+    border-left: 1px solid lightgray;
+    background-color: white;
+  }
+  header {
+    padding: 2rem;
+    border-bottom: 1px solid lightgray;
+    .usermenu__avatar-frame {
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-right: 1rem;
+    }
+    .usermenu__username {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+  }
+  ul {
+    padding: 1.5rem;
+    border-bottom: 1px solid lightgray;
+    li {
+      height: 2rem;
+      font-size: 0.9rem;
+      a {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        color: rgba(0, 0, 0, 0.8);
+      }
+    }
+  }
+  footer {
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.8);
+    .usermenu__signout {
+      cursor: pointer;
+    }
+  }
+}

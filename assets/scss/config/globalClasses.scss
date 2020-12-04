@@ -1,3 +1,19 @@
+._avatar-frame {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  ._avatar-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+  }
+}
+
 ._none {
   display: none;
 }
@@ -51,6 +67,15 @@
   justify-content: space-between;
 }
 
+._hover-color-black {
+  &:hover {
+    color: black;
+  }
+}
 ._max-w-78 {
   max-width: 78rem;
+}
+
+._relative {
+  position: relative;
 }

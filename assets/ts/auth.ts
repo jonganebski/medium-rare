@@ -1,13 +1,10 @@
-const filter = document.getElementById("filter");
+import { signinLink, signupSubmit } from "./elements.header";
 
-const mainHeaderEl = document.getElementById("main-header");
-const signinLink = mainHeaderEl?.querySelector(".main-header__signin-anchor");
-const signupSubmit = mainHeaderEl?.querySelector(".main-header__signup-btn");
+const filter = document.getElementById("filter");
 
 const modals = document.querySelectorAll(".modal");
 const signinModal = document.getElementById("signin-modal");
 const signupModal = document.getElementById("signup-modal");
-
 const closeAuthModals = () => {
   filter && (filter.className = "_none");
   signinModal && (signinModal.className = "modal _none");

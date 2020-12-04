@@ -25,6 +25,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")
+	app.Static("/image", "./image")
 
 	app.Use(helmet.New())
 	app.Use(cors.New())

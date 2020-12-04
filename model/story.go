@@ -9,6 +9,7 @@ type Story struct {
 	UpdatedAt    int64                 `json:"updatedAt"`
 	CreatorID    primitive.ObjectID    `json:"creatorId" bson:"creatorId"`
 	Text         string                `json:"text"`
+	ViewCount    uint32                `json:"viewCount" bson:"viewCount"`
 	LikedUserIDs *[]primitive.ObjectID `json:"likedUserIds" bson:"likedUserIds"`
 	CommentIDs   *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
 }

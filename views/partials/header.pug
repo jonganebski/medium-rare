@@ -3,5 +3,12 @@ header#main-header.main-header._flex-cc
     .main-header__title._flex-c-es
       h1 Medium
       h2 - rare
-    a.main-header__signin-anchor Sign In
-    button.main-header__signup-btn Get Started
+    if .userId
+      i.far.fa-bookmark.main-header__bookmark-icon
+      div._relative
+        .main-header__avatar-frame._avatar-frame
+          img.main-header__avatar-img._avatar-img(src="/image/blank-profile.webp")
+        include views/partials/header.usermenu.pug
+    else
+      a.main-header__signin-anchor Sign In
+      button.main-header__signup-btn Get Started
