@@ -40,3 +40,5 @@ const config = {
   },
   output: { path: OUTPUT_DIR, filename: "[name].js" },
 };
+
+module.exports = config;

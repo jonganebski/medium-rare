@@ -1,0 +1,27 @@
+.main-header {
+  width: 100%;
+  height: 5rem;
+  border-bottom: 1px solid black;
+  .main-header__container {
+    width: 100%;
+    .main-header__title {
+      margin-right: auto;
+      h1 {
+        font-size: 2rem;
+        font-weight: 600;
+      }
+      h2 {
+        margin-left: auto;
+        font-size: 1rem;
+        font-style: italic;
+      }
+    }
+    a {
+      margin-right: 1rem;
+    }
+    .main-header__signup-btn {
+      background-color: black;
+      color: white;
+    }
+  }
+}

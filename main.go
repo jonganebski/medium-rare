@@ -19,12 +19,14 @@ func main() {
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	engine := pug.New("./views", "pug")
+
+	engine := pug.New("./views", ".pug")
 
 	app := fiber.New(fiber.Config{Views: engine})
+	app.Static("/static", "./static")
 
 	app.Use(helmet.New())
-	app.Use(cors.New(cors.Config{AllowOrigins: "http://localhost:3000"}))
+	app.Use(cors.New())
 	app.Use(logger.New())
 
 	router.SetupRoutes(app)
