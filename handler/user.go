@@ -71,5 +71,36 @@ func CreateUser(c *fiber.Ctx) error {
 
 // Signin verify user password and gives jwt token
 func Signin(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(userCollectionName)
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+
+	user := new(model.User)
+	filter := bson.D{{Key: "email", Value: email}}
+	userResult := userCollection.FindOne(c.Context(), filter)
+	if err := userResult.Err(); err != nil {
+		fmt.Println("failed to find email")
+		return c.SendStatus(400)
+	}
+
+	userResult.Decode(user)
+
+	isValid := util.VerifyPassword(password, user.Password)
+	if !isValid {
+		fmt.Println("wrong password")
+		return c.SendStatus(400)
+	}
+
+	exp := time.Hour * 24 * 7 // 7 days
+
+	cookie, err := util.GenerateCookie(user, exp)
+	if err != nil {
+		fmt.Println("error at generating cookie")
+		return c.SendStatus(500)
+	}
+
+	c.Cookie(cookie)
+
 	return c.SendStatus(200)
 }
