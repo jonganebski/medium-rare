@@ -1,7 +1,10 @@
 .main-header {
+  position: fixed;
   width: 100%;
   height: 5rem;
   border-bottom: 1px solid black;
+  background-color: white;
+  z-index: $headerZIndex;
   .main-header__container {
     width: 100%;
     .main-header__title {

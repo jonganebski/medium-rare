@@ -32,11 +32,11 @@ const initEditor = () => {
       blocks: [
         {
           type: "header",
-          data: { level: 2, text: "Almost before we knew it" },
+          data: { level: 2, text: "Title" },
         },
         {
-          type: "header",
-          data: { level: 4, text: "Almost before we knew it" },
+          type: "paragraph",
+          data: { text: "Write your story" },
         },
       ],
     },

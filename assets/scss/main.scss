@@ -8,6 +8,7 @@ body * {
   height: 100vh;
   background-color: white;
   opacity: 0.9;
+  z-index: $filterZIndex;
 }
 
 a {
