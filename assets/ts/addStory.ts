@@ -8,7 +8,7 @@ import { BASE_URL } from "./constants";
 
 const initEditor = () => {
   const editor = new EditorJS({
-    holder: "editor__container",
+    holder: "editor-write",
     placeholder: "Write your story",
     tools: {
       header: {

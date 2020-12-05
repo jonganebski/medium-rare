@@ -1,0 +1,37 @@
+.editor-readOnly__authorArea {
+  width: 100%;
+  max-width: $editorMaxWidth;
+  font-size: 0.9rem;
+  z-index: $authorAreaZIndex;
+  div {
+    white-space: nowrap;
+  }
+  .editor-readOnly__authorArea__name {
+    margin-right: 1rem;
+  }
+  .editor-readOnly__authorArea__avatar {
+    margin-right: 1rem;
+    .editor-readOnly__authorArea__avatar-frame {
+      cursor: default;
+    }
+  }
+  .editor-readOnly__authorArea__postDate {
+    margin-right: 1rem;
+    opacity: 0.7;
+  }
+  .editor-readOnly__authorArea__readTime {
+    margin-right: auto;
+    opacity: 0.7;
+  }
+  .editor-readOnly__authorArea__follow-btn {
+    margin-right: 1rem;
+    padding: 0.4rem 0.6rem;
+    border-color: rgba(75, 132, 243, 1);
+    color: rgba(75, 132, 243, 1);
+    font-size: 0.8rem;
+  }
+  .editor-readOnly__authorArea__bookmark-icon {
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+}

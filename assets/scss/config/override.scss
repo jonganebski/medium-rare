@@ -1,5 +1,5 @@
 // Overides basic setting of editor.js
 .ce-block__content,
 .ce-toolbar__content {
-  max-width: 730px;
+  max-width: $editorMaxWidth;
 }

@@ -1,0 +1,13 @@
+#editor-readOnly__header
+.editor-readOnly__authorArea._flex-cs
+  .editor-readOnly__authorArea__avatar._relative
+    .editor-readOnly__authorArea__avatar-frame._avatar-frame
+      img.editor-readOnly__authorArea__avatar-img._avatar-img(
+        src="/image/blank-profile.webp"
+      )
+  .editor-readOnly__authorArea__name {{  .author.Username  }}
+  .editor-readOnly__authorArea__postDate {{  .story.CreatedAt  }}
+  .editor-readOnly__authorArea__readTime 4min read
+  button.editor-readOnly__authorArea__follow-btn Follow
+  i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon
+#editor-readOnly__body

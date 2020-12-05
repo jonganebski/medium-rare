@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -18,9 +19,72 @@ func Home(c *fiber.Ctx) error {
 	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId")}, "layout/main")
 }
 
-// NewStory renders a pagr where a user writes a new story
+// NewStory renders a page where a user writes a new story
 func NewStory(c *fiber.Ctx) error {
 	return c.Render("newStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId")}, "layout/main")
+}
+
+// ReadStory renders a page where a user reads a story
+func ReadStory(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(storyCollectionName)
+	userCollection := mg.Db.Collection(userCollectionName)
+
+	// --- story ---
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+	filter := bson.D{{Key: "_id", Value: storyOID}}
+	storyResult := storyCollection.FindOne(c.Context(), filter)
+	if storyResult.Err() != nil {
+		fmt.Println("Story does not exist")
+		return c.SendStatus(400)
+	}
+
+	story := new(model.Story)
+	storyResult.Decode(story)
+
+	// --- creator of the story ---
+	filter = bson.D{{Key: "_id", Value: story.CreatorID}}
+	authorResult := userCollection.FindOne(c.Context(), filter)
+	if authorResult.Err() != nil {
+		fmt.Println("author does not exist")
+		return c.SendStatus(400)
+	}
+
+	author := new(model.User)
+	authorResult.Decode(author)
+
+	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "story": story, "author": author}, "layout/main")
+}
+
+// ProvideStoryBlocks returns blocks of the story
+func ProvideStoryBlocks(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(storyCollectionName)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+	filter := bson.D{{Key: "_id", Value: storyOID}}
+	storyResult := storyCollection.FindOne(c.Context(), filter)
+	if storyResult.Err() != nil {
+		fmt.Println("Story does not exist")
+		return c.SendStatus(400)
+	}
+
+	story := new(model.Story)
+	storyResult.Decode(story)
+
+	fmt.Println(story)
+
+	return c.JSON(story.Blocks)
 }
 
 // UploadPhotoByFilename saves photo that user attached on the story 'when attatchment occurs'
