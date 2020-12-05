@@ -14,7 +14,9 @@ const config = {
   plugins: [
     new MiniCSSExtractPlugin({ filename: "styles.css" }),
     new webpack.DefinePlugin({
-      "process.env": {},
+      "process.env": {
+        APP_ENV: JSON.stringify(process.env.APP_ENV),
+      },
     }),
     new Dotenv(),
   ],

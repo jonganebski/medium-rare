@@ -3,6 +3,8 @@ import Header from "@editorjs/header";
 import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
 import { publishBtn } from "./elements.header";
+import Axios from "axios";
+import { BASE_URL } from "./constants";
 
 const initEditor = () => {
   const editor = new EditorJS({
@@ -42,6 +44,8 @@ const initEditor = () => {
   publishBtn?.addEventListener("click", async () => {
     const savedData = await editor.save();
     console.log(savedData);
+    const response = await Axios.post(BASE_URL + "/upload/story", savedData);
+    console.log(response);
   });
 };
 
