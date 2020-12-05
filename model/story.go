@@ -7,7 +7,7 @@ import (
 // Story model
 type Story struct {
 	ID           string                `json:"id,omitempty" bson:"_id,omitempty"`
-	CreatedAt    int64                 `json:"createdAt"`
+	CreatedAt    int64                 `json:"createdAt" bson:"createdAt"`
 	UpdatedAt    int64                 `json:"updatedAt"`
 	CreatorID    primitive.ObjectID    `json:"creatorId" bson:"creatorId"`
 	Blocks       []Block               `json:"blocks"`

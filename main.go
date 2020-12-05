@@ -51,6 +51,12 @@ func main() {
 		}
 		return time.Unix(createdAt, 0).Format("January 2, 2006")
 	})
+	engine.AddFunc("grindBody", func(body string, targetLen int) string {
+		if targetLen < len(body) {
+			return body[:targetLen] + "..."
+		}
+		return body
+	})
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")

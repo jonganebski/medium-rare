@@ -16,12 +16,13 @@ import (
 
 var mg = &database.Mongo
 
-var userCollectionName = config.Config("COLLECTION_USER")
+// UserCollection is users collection name
+var UserCollection = config.Config("COLLECTION_USER")
 
 // CreateUser creates a user
 func CreateUser(c *fiber.Ctx) error {
 
-	userCollection := mg.Db.Collection(userCollectionName)
+	userCollection := mg.Db.Collection(UserCollection)
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
@@ -72,7 +73,7 @@ func CreateUser(c *fiber.Ctx) error {
 // Signin verify user password and gives jwt token
 func Signin(c *fiber.Ctx) error {
 
-	userCollection := mg.Db.Collection(userCollectionName)
+	userCollection := mg.Db.Collection(UserCollection)
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 

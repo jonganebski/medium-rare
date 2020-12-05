@@ -1,4 +1,4 @@
-.home__picks
+section.home__picks
   .home__picks-c-l._flex-c-es
     .home__picks-c-l__cover-frame
       img.home__picks-c-l__cover-img(
@@ -62,35 +62,21 @@
         span Dec 5
         span 1 hour read
 .home__divider
-.home__articles
+section.home__articles
   ul.home__mainList
+   for _,_ in .output
     li.home__mainList-item._flex
       .home__mainList-item__content._flex-c-sb
-        div
+        a(href="/read/{{ .StoryID }}")
           .home__mainList-item__reference NOT BASED ON YOUR READING HISTORY
-          .home__mainList-item__header Why I hate my party so much
-          .home__mainList-item__body Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet urna vel mauris rutrum gravida. Suspendisse tellus ipsum,
+          .home__mainList-item__header {{ .Header }}
+          .home__mainList-item__body #{grindBody .Body 120}
         div
-          .home__mainList-item__author-name Kazuma
+          .home__mainList-item__author-name {{ .AuthorUsername }}
           .home__mainList-item__info 
-            span Dec 5
+            span #{getStoryDate .CreatedAt}
             span 10 min read
-      .home__mainList-item__cover-frame
-        img.home__mainList-item__cover-img(
-          src="http://localhost:4000/image/faisal-1.jpg"
-        )
-    li.home__mainList-item._flex
-      .home__mainList-item__content._flex-c-sb
-        div
-          .home__mainList-item__reference NOT BASED ON YOUR READING HISTORY
-          .home__mainList-item__header Why I hate my party so much
-          .home__mainList-item__body Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet urna vel mauris rutrum gravida. Suspendisse tellus ipsum, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet urna vel mauris rutrum gravida. Suspendisse tellus ipsum, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet urna vel mauris rutrum gravida. Suspendisse tellus ipsum,
-        div
-          .home__mainList-item__author-name Kazuma
-          .home__mainList-item__info 
-            span Dec 5
-            span 10 min read
-      .home__mainList-item__cover-frame
+      a.home__mainList-item__cover-frame(href="/read/{{ .StoryID }}")
         img.home__mainList-item__cover-img(
           src="http://localhost:4000/image/faisal-1.jpg"
         )
