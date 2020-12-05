@@ -43,9 +43,21 @@
   justify-content: center;
 }
 
-._flex-e-s {
+._flex-es {
   display: flex;
   align-items: flex-end;
+}
+
+._flex-se {
+  display: flex;
+  justify-content: flex-end;
+}
+
+._flex-c-cb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
 ._flex-c-cs {
@@ -60,10 +72,10 @@
   align-items: flex-end;
 }
 
-._flex-c-cb {
+._flex-c-sb {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
