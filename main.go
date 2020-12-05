@@ -7,6 +7,7 @@ import (
 	"home/jonganebski/github/fibersteps-server/router"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -28,6 +29,27 @@ func main() {
 			return true
 		}
 		return false
+	})
+	engine.AddFunc("isMyStory", func(authorID, userID string) bool {
+		if authorID == userID {
+			return true
+		}
+		return false
+	})
+	engine.AddFunc("getStoryDate", func(createdAt int64) string {
+		now := time.Now().Unix()
+		lapse := now - createdAt
+		oneDay := int64(24 * 60 * 60)
+		if lapse < oneDay {
+			return "today"
+		}
+		if lapse < 2*oneDay {
+			return "yesterday"
+		}
+		if lapse < 3*oneDay {
+			return "2 days ago"
+		}
+		return time.Unix(createdAt, 0).Format("January 2, 2006")
 	})
 
 	app := fiber.New(fiber.Config{Views: engine})
