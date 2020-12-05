@@ -16,6 +16,16 @@
         font-style: italic;
       }
     }
+    .main-header__publish-btn {
+      padding: 0.4rem 0.5rem;
+      margin-right: 1.5rem;
+      color: white;
+      border: none;
+      background-color: #1a8917;
+      &:hover {
+        background-color: #0f730c;
+      }
+    }
     .main-header__bookmark-icon {
       margin-right: 1.5rem;
       color: black;

@@ -5,6 +5,9 @@ export const signinLink = mainHeaderEl?.querySelector(
 export const signupSubmit = mainHeaderEl?.querySelector(
   ".main-header__signup-btn"
 );
+export const publishBtn = mainHeaderEl?.querySelector(
+  ".main-header__publish-btn"
+);
 const avatarFrame = mainHeaderEl?.querySelector(".main-header__avatar-frame");
 const usermenu = mainHeaderEl?.querySelector(".header-usermenu");
 

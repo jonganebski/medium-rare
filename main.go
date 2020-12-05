@@ -6,6 +6,7 @@ import (
 	"home/jonganebski/github/fibersteps-server/middleware"
 	"home/jonganebski/github/fibersteps-server/router"
 	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -22,6 +23,12 @@ func main() {
 	}
 
 	engine := pug.New("./views", ".pug")
+	engine.AddFunc("publishBtn", func(path string) bool {
+		if strings.Contains(path, "new-story") {
+			return true
+		}
+		return false
+	})
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")
