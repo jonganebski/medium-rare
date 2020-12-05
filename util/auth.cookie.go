@@ -1,8 +1,8 @@
 package util
 
 import (
-	"home/jonganebski/github/fibersteps-server/config"
-	"home/jonganebski/github/fibersteps-server/model"
+	"home/jonganebski/github/medium-rare/config"
+	"home/jonganebski/github/medium-rare/model"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"

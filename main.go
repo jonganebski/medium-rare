@@ -1,13 +1,12 @@
 package main
 
 import (
-	"home/jonganebski/github/fibersteps-server/config"
-	"home/jonganebski/github/fibersteps-server/database"
-	"home/jonganebski/github/fibersteps-server/middleware"
-	"home/jonganebski/github/fibersteps-server/router"
+	"home/jonganebski/github/medium-rare/config"
+	"home/jonganebski/github/medium-rare/database"
+	"home/jonganebski/github/medium-rare/helper"
+	"home/jonganebski/github/medium-rare/middleware"
+	"home/jonganebski/github/medium-rare/router"
 	"log"
-	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -24,39 +23,10 @@ func main() {
 	}
 
 	engine := pug.New("./views", ".pug")
-	engine.AddFunc("publishBtn", func(path string) bool {
-		if strings.Contains(path, "new-story") {
-			return true
-		}
-		return false
-	})
-	engine.AddFunc("isMyStory", func(authorID, userID string) bool {
-		if authorID == userID {
-			return true
-		}
-		return false
-	})
-	engine.AddFunc("getStoryDate", func(createdAt int64) string {
-		now := time.Now().Unix()
-		lapse := now - createdAt
-		oneDay := int64(24 * 60 * 60)
-		if lapse < oneDay {
-			return "today"
-		}
-		if lapse < 2*oneDay {
-			return "yesterday"
-		}
-		if lapse < 3*oneDay {
-			return "2 days ago"
-		}
-		return time.Unix(createdAt, 0).Format("January 2, 2006")
-	})
-	engine.AddFunc("grindBody", func(body string, targetLen int) string {
-		if targetLen < len(body) {
-			return body[:targetLen] + "..."
-		}
-		return body
-	})
+	engine.AddFunc("publishBtn", helper.IsPublishButton)
+	engine.AddFunc("isMyStory", helper.IsMyStory)
+	engine.AddFunc("getStoryDate", helper.GetStoryPostDate)
+	engine.AddFunc("grindBody", helper.GrindBody)
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")

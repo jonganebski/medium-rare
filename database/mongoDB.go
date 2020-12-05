@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"home/jonganebski/github/fibersteps-server/config"
+	"home/jonganebski/github/medium-rare/config"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"home/jonganebski/github/fibersteps-server/config"
-	"home/jonganebski/github/fibersteps-server/model"
+	"home/jonganebski/github/medium-rare/config"
+	"home/jonganebski/github/medium-rare/model"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

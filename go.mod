@@ -1,4 +1,4 @@
-module home/jonganebski/github/fibersteps-server
+module home/jonganebski/github/medium-rare
 
 go 1.15
 

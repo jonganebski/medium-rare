@@ -1,8 +1,8 @@
 package router
 
 import (
-	"home/jonganebski/github/fibersteps-server/handler"
-	"home/jonganebski/github/fibersteps-server/middleware"
+	"home/jonganebski/github/medium-rare/handler"
+	"home/jonganebski/github/medium-rare/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )

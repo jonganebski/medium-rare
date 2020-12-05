@@ -2,10 +2,10 @@ package handler
 
 import (
 	"fmt"
-	"home/jonganebski/github/fibersteps-server/config"
-	"home/jonganebski/github/fibersteps-server/database"
-	"home/jonganebski/github/fibersteps-server/model"
-	"home/jonganebski/github/fibersteps-server/util"
+	"home/jonganebski/github/medium-rare/config"
+	"home/jonganebski/github/medium-rare/database"
+	"home/jonganebski/github/medium-rare/model"
+	"home/jonganebski/github/medium-rare/util"
 	"strings"
 	"time"
 

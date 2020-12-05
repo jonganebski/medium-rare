@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"home/jonganebski/github/fibersteps-server/config"
+	"home/jonganebski/github/medium-rare/config"
 
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
