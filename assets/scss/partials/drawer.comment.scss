@@ -1,7 +1,7 @@
 .drawer-comment {
   position: fixed;
   top: 0px;
-  right: 0px;
+  right: -26rem;
   width: 26rem;
   height: 100vh;
   padding: 1rem;
@@ -9,6 +9,7 @@
   background-color: white;
   box-shadow: 10px 0px 20px 10px lightgray;
   overflow-y: scroll;
+  transition: 0.5s ease-in-out;
   .drawer-comment__close-icon {
     position: absolute;
     top: 1.2rem;

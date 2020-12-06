@@ -9,6 +9,19 @@ body * {
   background-color: white;
   opacity: 0.9;
   z-index: $filterZIndex;
+  cursor: pointer;
+}
+
+#filter-black {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.2;
+  background-color: transparent;
+  z-index: $filterZIndex;
+  cursor: pointer;
+  pointer-events: none;
+  transition: 0.5s background-color ease-in-out;
 }
 
 a {

@@ -42,3 +42,62 @@
     cursor: pointer;
   }
 }
+.fixed-authorInfo {
+  position: fixed;
+  top: 10rem;
+  left: 5rem;
+  width: 10rem;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background-color: lightgray;
+  z-index: $headerZIndex;
+  header {
+    background-color: white;
+    .fixed-authorInfo__writtenBy {
+      margin-bottom: 0.6rem;
+      color: $fontBlack6;
+      font-size: 0.8rem;
+    }
+    .fixed-authorInfo__authour {
+      margin-bottom: 0.8rem;
+      color: $fontBlack9;
+      font-weight: 700;
+    }
+    .fixed-authorInfo__bio {
+      margin-bottom: 0.8rem;
+      color: $fontBlack7;
+      font-size: 0.8rem;
+    }
+    button {
+      margin-bottom: 1.5rem;
+      padding: 0.4rem 0.5rem;
+      border-color: $green;
+      color: $green;
+    }
+  }
+  footer {
+    background-color: white;
+    color: $fontBlack7;
+    i {
+      margin-right: 0.6rem;
+      font-size: 1.1rem;
+    }
+    span {
+      font-size: 0.9rem;
+    }
+    .fixed-authorInfo__heart-container {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+    .fixed-authorInfo__comment-container {
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+    .fixed-authorInfo__bookmark-container {
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+  }
+}

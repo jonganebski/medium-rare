@@ -45,6 +45,7 @@ func Home(c *fiber.Ctx) error {
 
 	if err := cursor.All(c.Context(), &stories); err != nil {
 		fmt.Println("error at cursor iteration")
+		fmt.Println(err)
 		return c.SendStatus(500)
 	}
 
@@ -234,8 +235,6 @@ func AddStory(c *fiber.Ctx) error {
 	story.CommentIDs = &[]primitive.ObjectID{}
 	story.ViewCount = 0
 
-	fmt.Println(story)
-
 	insertiionResult, err := storyCollection.InsertOne(c.Context(), story)
 	if err != nil {
 		return c.SendStatus(500)
@@ -250,7 +249,9 @@ func AddStory(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
-	return c.SendStatus(201)
+	stringInsertedID := insertiionResult.InsertedID.(primitive.ObjectID).Hex()
+
+	return c.Status(201).SendString(stringInsertedID)
 }
 
 // UpdateStory updates story

@@ -8,11 +8,12 @@ import { BASE_URL } from "./constants";
 
 const handlePublishBtnClick = async (editor: EditorJS) => {
   const savedData = await editor.save();
-  const split = document.location.pathname.split("/");
-  const storyId = split[split.length - 1];
   if (document.location.pathname.includes("new-story")) {
     try {
-      const { status } = await Axios.post(BASE_URL + "/api/story", savedData);
+      const { status, data: storyId } = await Axios.post(
+        BASE_URL + "/api/story",
+        savedData
+      );
       if (status === 201) {
         document.location.href = `/read/${storyId}`;
       }
@@ -20,6 +21,8 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
     return;
   }
   if (document.location.pathname.includes("edit-story")) {
+    const splitedPath = document.location.pathname.split("edit-story");
+    const storyId = splitedPath[1].replace(/[/]/g, "");
     try {
       const { status } = await Axios.patch(
         BASE_URL + `/api/story/${storyId}`,
