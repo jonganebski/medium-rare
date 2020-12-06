@@ -29,8 +29,7 @@ func CreateUser(c *fiber.Ctx) error {
 	filter := bson.D{{Key: "email", Value: email}}
 	userResult := userCollection.FindOne(c.Context(), filter)
 	if err := userResult.Err(); err == nil {
-		fmt.Println("this email already exists")
-		return c.SendStatus(400)
+		return c.Status(400).SendString("This email already exists")
 	}
 
 	user := new(model.User)
@@ -48,8 +47,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	insertionResult, err := userCollection.InsertOne(c.Context(), user)
 	if err != nil {
-		fmt.Println("Failed to add to database")
-		c.SendStatus(500)
+		return c.Status(500).SendString("Sorry.. server has a problem")
 	}
 	filter = bson.D{{Key: "_id", Value: insertionResult.InsertedID}}
 	createRecord := userCollection.FindOne(c.Context(), filter)
@@ -61,8 +59,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	cookie, err := util.GenerateCookie(createdUser, exp)
 	if err != nil {
-		fmt.Println("error at generating cookie")
-		return c.SendStatus(500)
+		return c.Status(500).SendString("Sorry.. server has a problem")
 	}
 
 	c.Cookie(cookie)
@@ -72,7 +69,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 // Signin verify user password and gives jwt token
 func Signin(c *fiber.Ctx) error {
-
+	fmt.Println(c.Path())
 	userCollection := mg.Db.Collection(UserCollection)
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -81,7 +78,6 @@ func Signin(c *fiber.Ctx) error {
 	filter := bson.D{{Key: "email", Value: email}}
 	userResult := userCollection.FindOne(c.Context(), filter)
 	if err := userResult.Err(); err != nil {
-		fmt.Println("failed to find email")
 		return c.SendStatus(400)
 	}
 
@@ -89,7 +85,6 @@ func Signin(c *fiber.Ctx) error {
 
 	isValid := util.VerifyPassword(password, user.Password)
 	if !isValid {
-		fmt.Println("wrong password")
 		return c.SendStatus(400)
 	}
 
@@ -97,7 +92,6 @@ func Signin(c *fiber.Ctx) error {
 
 	cookie, err := util.GenerateCookie(user, exp)
 	if err != nil {
-		fmt.Println("error at generating cookie")
 		return c.SendStatus(500)
 	}
 

@@ -8,9 +8,10 @@
   .editor-readOnly__authorArea__name {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
   .editor-readOnly__authorArea__readTime 2 min read
-  if isMyStory .author.ID .userId
-    a(href="/edit-story/{{ .story.ID }}")
-      button.editor-readOnly__authorArea__edit Edit
+  if .userId
+    if isMyStory .author.ID .userId
+      a(href="/edit-story/{{ .story.ID }}")
+        button.editor-readOnly__authorArea__edit Edit
   else
     button.editor-readOnly__authorArea__follow-btn Follow
     i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon

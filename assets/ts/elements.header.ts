@@ -1,8 +1,8 @@
 export const mainHeaderEl = document.getElementById("main-header");
-export const signinLink = mainHeaderEl?.querySelector(
+export const openSigninModalEl = mainHeaderEl?.querySelector(
   ".main-header__signin-anchor"
 );
-export const signupSubmit = mainHeaderEl?.querySelector(
+export const openSignupModalEl = mainHeaderEl?.querySelector(
   ".main-header__signup-btn"
 );
 export const publishBtn = mainHeaderEl?.querySelector(

@@ -18,10 +18,12 @@ func SetupRoutes(app *fiber.App) {
 	app.Post("/signin", handler.Signin)
 	app.Get("/signout", middleware.Protected, handler.Signout)
 
-	api := app.Group("/api", middleware.Protected)
-	api.Get("/blocks/:storyId", handler.ProvideStoryBlocks)
-	api.Post("/photo/byfile", handler.UploadPhotoByFilename)
-	api.Delete("/photo", handler.DeletePhoto)
-	api.Post("/story", handler.AddStory)
-	api.Patch("/story/:storyId", handler.UpdateStory)
+	publicAPI := app.Group("/api")
+	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)
+
+	privateAPI := app.Group("/api", middleware.Protected)
+	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)
+	privateAPI.Delete("/photo", handler.DeletePhoto)
+	privateAPI.Post("/story", handler.AddStory)
+	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
 }
