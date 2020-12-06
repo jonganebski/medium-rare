@@ -24,6 +24,7 @@ func Home(c *fiber.Ctx) error {
 		CreatedAt      int64  `json:"createdAt"`
 		Header         string `json:"header"`
 		Body           string `json:"body"`
+		CoverImgURL    string `json:"coverImgUrl"`
 	}
 
 	storyCollection := mg.Db.Collection(StoryCollection)
@@ -50,12 +51,18 @@ func Home(c *fiber.Ctx) error {
 	author := new(model.User)
 	for _, story := range stories {
 
-		// --- find body ---
+		// --- find body & coverImgUrl---
 
 		body := ""
+		coverImgURL := ""
 		for _, block := range story.Blocks {
-			if block.Type == "paragraph" {
+			if block.Type == "paragraph" && body == "" {
 				body = block.Data.Text
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if body != "" && coverImgURL != "" {
 				break
 			}
 		}
@@ -77,6 +84,7 @@ func Home(c *fiber.Ctx) error {
 		outputItem.Header = story.Blocks[0].Data.Text
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
 		output = append(output, *outputItem)
 	}
 
@@ -125,6 +133,41 @@ func ReadStory(c *fiber.Ctx) error {
 	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "story": story, "author": author}, "layout/main")
 }
 
+// EditStory renders a page where a user edits his/her story
+func EditStory(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+	filter := bson.D{{Key: "_id", Value: storyOID}}
+	storyResult := storyCollection.FindOne(c.Context(), filter)
+	if storyResult.Err() != nil {
+		fmt.Println("Story does not exist")
+		return c.SendStatus(400)
+	}
+
+	story := new(model.Story)
+	storyResult.Decode(story)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+
+	if userOID != story.CreatorID {
+		fmt.Println("You are not authorized")
+		c.Redirect("/")
+	}
+
+	return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "story": story}, "layout/main")
+}
+
 // ProvideStoryBlocks returns blocks of the story
 func ProvideStoryBlocks(c *fiber.Ctx) error {
 
@@ -153,7 +196,7 @@ func ProvideStoryBlocks(c *fiber.Ctx) error {
 
 // AddStory creates a new story
 func AddStory(c *fiber.Ctx) error {
-
+	// 유저의 storyIDs에 넣는거 빼먹었음.
 	storyCollection := mg.Db.Collection(StoryCollection)
 	story := new(model.Story)
 
@@ -185,4 +228,54 @@ func AddStory(c *fiber.Ctx) error {
 	}
 
 	return c.Status(201).JSON(story)
+}
+
+// UpdateStory updates story
+func UpdateStory(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(StoryCollection)
+	uploadedStory := new(model.Story)
+
+	if err := c.BodyParser(uploadedStory); err != nil {
+		fmt.Println("error at body parser")
+		return c.SendStatus(400)
+	}
+
+	storyID := c.Params("storyId")
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		fmt.Println("error at conversion")
+		return c.SendStatus(500)
+	}
+
+	filter := bson.D{{Key: "_id", Value: storyOID}}
+	findResult := storyCollection.FindOne(c.Context(), filter)
+	if findResult.Err() != nil {
+		fmt.Println("Story not found")
+		return c.SendStatus(400)
+	}
+	foundStory := new(model.Story)
+	findResult.Decode(foundStory)
+
+	if userOID != foundStory.CreatorID {
+		fmt.Println("You are not authorized")
+		return c.SendStatus(400)
+	}
+
+	filter = bson.D{{Key: "_id", Value: storyOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "blocks", Value: uploadedStory.Blocks}, {Key: "updatedAt", Value: time.Now().Unix()}}}}
+	updateResult := storyCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		fmt.Println("Error at update")
+		fmt.Println(updateResult.Err())
+		return c.SendStatus(500)
+	}
+
+	return c.SendStatus(200)
 }

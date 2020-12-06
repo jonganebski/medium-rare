@@ -24,6 +24,7 @@ func main() {
 
 	engine := pug.New("./views", ".pug")
 	engine.AddFunc("publishBtn", helper.IsPublishButton)
+	engine.AddFunc("publishBtnText", helper.GetPublishBtnText)
 	engine.AddFunc("isMyStory", helper.IsMyStory)
 	engine.AddFunc("getStoryDate", helper.GetStoryPostDate)
 	engine.AddFunc("grindBody", helper.GrindBody)

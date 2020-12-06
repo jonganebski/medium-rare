@@ -8,7 +8,7 @@ import Axios from "axios";
 const editorReadOnlyHeader = document.getElementById("editor-readOnly__header");
 
 const initEditorReadOnly = async (storyId: string) => {
-  const { data: blocks } = await Axios.get(BASE_URL + `/blocks/${storyId}`);
+  const { data: blocks } = await Axios.get(BASE_URL + `/api/blocks/${storyId}`);
   const header = blocks.shift();
   const headerEditor = new EditorJS({
     //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400

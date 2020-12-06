@@ -10,7 +10,21 @@ func IsPublishButton(path string) bool {
 	if strings.Contains(path, "new-story") {
 		return true
 	}
+	if strings.Contains(path, "edit-story") {
+		return true
+	}
 	return false
+}
+
+// GetPublishBtnText determines publish button's text
+func GetPublishBtnText(path string) string {
+	if strings.Contains(path, "new-story") {
+		return "Publish"
+	}
+	if strings.Contains(path, "edit-story") {
+		return "Save and publish"
+	}
+	return ""
 }
 
 // IsMyStory tells target story's author is th user or not
