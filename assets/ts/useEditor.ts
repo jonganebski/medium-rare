@@ -6,6 +6,33 @@ import { publishBtn } from "./elements.header";
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 
+const handlePublishBtnClick = async (editor: EditorJS) => {
+  const savedData = await editor.save();
+  const split = document.location.pathname.split("/");
+  const storyId = split[split.length - 1];
+  if (document.location.pathname.includes("new-story")) {
+    try {
+      const { status } = await Axios.post(BASE_URL + "/api/story", savedData);
+      if (status === 201) {
+        document.location.href = `/read/${storyId}`;
+      }
+    } catch {}
+    return;
+  }
+  if (document.location.pathname.includes("edit-story")) {
+    try {
+      const { status } = await Axios.patch(
+        BASE_URL + `/api/story/${storyId}`,
+        savedData
+      );
+      if (status === 200) {
+        document.location.href = `/read/${storyId}`;
+      }
+    } catch {}
+    return;
+  }
+};
+
 export const useEditor = (
   holder: string,
   placeholder: string,
@@ -36,23 +63,5 @@ export const useEditor = (
       blocks,
     },
   });
-  publishBtn?.addEventListener("click", async () => {
-    const savedData = await editor.save();
-    console.log(savedData);
-    if (document.location.pathname.includes("read")) {
-      const response = await Axios.post(BASE_URL + "/api/story", savedData);
-      console.log(response);
-      return;
-    }
-    if (document.location.pathname.includes("edit-story")) {
-      const split = document.location.pathname.split("/");
-      const storyId = split[split.length - 1];
-      const response = await Axios.patch(
-        BASE_URL + `/api/story/${storyId}`,
-        savedData
-      );
-      console.log(response);
-      return;
-    }
-  });
+  publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
 };

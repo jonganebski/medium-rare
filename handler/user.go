@@ -44,6 +44,7 @@ func CreateUser(c *fiber.Ctx) error {
 	user.FollowingIDs = &[]primitive.ObjectID{}
 	user.StoryIDs = &[]primitive.ObjectID{}
 	user.LikedStoryIDs = &[]primitive.ObjectID{}
+	user.SavedStoryIDs = &[]primitive.ObjectID{}
 
 	insertionResult, err := userCollection.InsertOne(c.Context(), user)
 	if err != nil {

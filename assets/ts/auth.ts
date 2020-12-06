@@ -58,6 +58,37 @@ const signinUser = async (e: Event) => {
   }
 };
 
+const signupUser = async (e: Event) => {
+  e.preventDefault();
+  if (signupModal) {
+    const data = new FormData(signupModal);
+    const { pathname } = document.location;
+    const passwordLen = data.get("password")?.toString().length;
+    if (!passwordLen) {
+      return;
+    }
+    if (passwordLen < 6) {
+      signupPasswordError &&
+        (signupPasswordError.innerText =
+          "Password must be at least 6 characters");
+      return;
+    } else {
+      signupPasswordError && (signupPasswordError.innerText = "");
+    }
+    try {
+      const { status } = await Axios.post("/signup", data);
+      if (status === 201) {
+        document.location.href = pathname;
+      }
+    } catch (err) {
+      const { status, data: errMessage } = err.response;
+      if (status === 400 || status === 500) {
+        signupEmailError && (signupEmailError.innerText = errMessage);
+      }
+    }
+  }
+};
+
 const auth = () => {
   filter?.addEventListener("click", closeAuthModals);
   openSigninModalEl?.addEventListener("click", () => openAuthModal("signin"));
@@ -67,42 +98,7 @@ const auth = () => {
     modalCloseIcon?.addEventListener("click", closeAuthModals);
   });
   signinModal?.addEventListener("submit", signinUser);
-  signupModal?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (signupModal) {
-      const data = new FormData(signupModal);
-      const { pathname } = document.location;
-      const passwordLen = data.get("password")?.toString().length;
-      console.log(data.get("password"));
-      if (!passwordLen) {
-        return;
-      }
-      if (passwordLen < 6) {
-        if (signupPasswordError) {
-          signupPasswordError.innerText =
-            "Password must be at least 6 characters";
-        }
-        return;
-      } else {
-        if (signupPasswordError) {
-          signupPasswordError.innerText = "";
-        }
-      }
-      try {
-        const { status } = await Axios.post("/signup", data);
-        if (status === 201) {
-          document.location.href = pathname;
-        }
-      } catch (err) {
-        const { status, data: errMessage } = err.response;
-        if (status === 400 && signupEmailError) {
-          signupEmailError.innerText = errMessage;
-        } else if (status === 500 && signupEmailError) {
-          signupEmailError.innerText = errMessage;
-        }
-      }
-    }
-  });
+  signupModal?.addEventListener("submit", signupUser);
 };
 
 auth();

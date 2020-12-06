@@ -196,18 +196,19 @@ func ProvideStoryBlocks(c *fiber.Ctx) error {
 
 // AddStory creates a new story
 func AddStory(c *fiber.Ctx) error {
-	// 유저의 storyIDs에 넣는거 빼먹었음.
+
 	storyCollection := mg.Db.Collection(StoryCollection)
+	userCollection := mg.Db.Collection(UserCollection)
+
+	// --- story ---
 	story := new(model.Story)
 
 	if err := c.BodyParser(story); err != nil {
-		fmt.Println("error at body parser")
 		return c.SendStatus(400)
 	}
 
 	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 	if err != nil {
-		fmt.Println("error at conversion")
 		return c.SendStatus(500)
 	}
 
@@ -221,13 +222,21 @@ func AddStory(c *fiber.Ctx) error {
 
 	fmt.Println(story)
 
-	_, err = storyCollection.InsertOne(c.Context(), story)
+	insertiionResult, err := storyCollection.InsertOne(c.Context(), story)
 	if err != nil {
-		fmt.Println("error at insertion")
 		return c.SendStatus(500)
 	}
 
-	return c.Status(201).JSON(story)
+	// --- user ---
+
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$push", Value: bson.D{{Key: "storyIds", Value: insertiionResult.InsertedID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(500)
+	}
+
+	return c.SendStatus(201)
 }
 
 // UpdateStory updates story

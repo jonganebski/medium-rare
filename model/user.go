@@ -16,6 +16,6 @@ type User struct {
 	FollowingIDs  *[]primitive.ObjectID `json:"followingIds" bson:"followingIds"`
 	CommentIDs    *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
 	StoryIDs      *[]primitive.ObjectID `json:"storyIds" bson:"storyIds"`
-	LikedStoryIDs *[]primitive.ObjectID `json:"likedStoryIds"`
-	SavedStoryIDs *[]primitive.ObjectID `json:"savedStoryIds"`
+	LikedStoryIDs *[]primitive.ObjectID `json:"likedStoryIds bson:"likedStoryIds"`
+	SavedStoryIDs *[]primitive.ObjectID `json:"savedStoryIds bson:"savedStoryIds"`
 }
