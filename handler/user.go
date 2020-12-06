@@ -105,3 +105,9 @@ func Signin(c *fiber.Ctx) error {
 
 	return c.SendStatus(200)
 }
+
+// Signout destories cookie
+func Signout(c *fiber.Ctx) error {
+	c.ClearCookie()
+	return c.Redirect("/")
+}
