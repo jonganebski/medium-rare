@@ -1,0 +1,31 @@
+#drawer-comment.drawer-comment._flex-c-cs
+  i.fas.fa-times.drawer-comment__close-icon
+  header.drawer-comment__header._flex-cs Responses (8)
+  .drawer-comment__add-comment
+    .add-comment__header._flex-cs
+      ._avatar-frame
+        img._avatar-img(src="http://localhost:4000/image/blank-profile.webp")
+      .add-comment__username {{  .username  }}
+    p.add-comment__text(contenteditable="true")
+    .add-comment__btns._flex-ce
+      button.add-comment__cancel-btn Cancel
+      button.add-comment__add-btn Respond
+  ul.drawer-comment__comments-container
+    li.drawer-comment__comment-container
+      header.comment__header._flex-cs
+        i.far.fa-trash-alt.comment__delete-icon
+        ._avatar-frame
+          img._avatar-img(src="http://localhost:4000/image/blank-profile.webp")
+        .comment__info._flex-c-sb
+          .comment__creator-name Comment creator
+          .comment__timestamp 1day ago
+      p.comment__text It's alright.
+    li.drawer-comment__comment-container
+      header.comment__header._flex-cs
+        i.far.fa-trash-alt.comment__delete-icon
+        ._avatar-frame
+          img._avatar-img(src="http://localhost:4000/image/blank-profile.webp")
+        .comment__info._flex-c-sb
+          .comment__creator-name Comment creator
+          .comment__timestamp 1day ago
+      p.comment__text It's alright.

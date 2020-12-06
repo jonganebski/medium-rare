@@ -98,7 +98,7 @@ func NewStory(c *fiber.Ctx) error {
 
 // ReadStory renders a page where a user reads a story
 func ReadStory(c *fiber.Ctx) error {
-
+	// status 400 404 구분할 것
 	storyCollection := mg.Db.Collection(StoryCollection)
 	userCollection := mg.Db.Collection(UserCollection)
 
@@ -130,7 +130,21 @@ func ReadStory(c *fiber.Ctx) error {
 	author := new(model.User)
 	authorResult.Decode(author)
 
-	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "story": story, "author": author}, "layout/main")
+	// --- currnet user ---
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(400)
+	}
+	filter = bson.D{{Key: "_id", Value: userOID}}
+	userResult := userCollection.FindOne(c.Context(), filter)
+	if userResult.Err() != nil {
+		return c.SendStatus(400)
+	}
+
+	user := new(model.User)
+	userResult.Decode(user)
+
+	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author}, "layout/main")
 }
 
 // EditStory renders a page where a user edits his/her story

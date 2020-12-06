@@ -43,6 +43,12 @@
   justify-content: center;
 }
 
+._flex-ce {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 ._flex-es {
   display: flex;
   align-items: flex-end;

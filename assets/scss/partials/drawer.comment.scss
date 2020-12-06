@@ -1,0 +1,108 @@
+.drawer-comment {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  width: 26rem;
+  height: 100vh;
+  padding: 1rem;
+  z-index: $commentDrawerZIndex;
+  background-color: white;
+  box-shadow: 10px 0px 20px 10px lightgray;
+  overflow-y: scroll;
+  .drawer-comment__close-icon {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    font-size: 1.1rem;
+    color: $fontBlack6;
+    cursor: pointer;
+  }
+  .drawer-comment__header {
+    width: 100%;
+    height: 3rem;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $fontBlack9;
+  }
+  .drawer-comment__add-comment {
+    width: 100%;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    box-shadow: 0px 0px 20px 1px rgba(0, 0, 0, 0.1);
+    .add-comment__header {
+      width: 100%;
+      margin-bottom: 1rem;
+      .add-comment__username {
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+    }
+    .add-comment__text {
+      width: 100%;
+      min-height: 4rem;
+      outline: none;
+      line-height: 1.4rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .add-comment__btns {
+      width: 100%;
+      button {
+        border: none;
+      }
+      .add-comment__cancel-btn {
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .add-comment__add-btn {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: white;
+        background-color: teal;
+      }
+    }
+  }
+  .drawer-comment__comments-container {
+    width: 100%;
+    display: grid;
+    grid-template-rows: auto;
+    gap: 1px;
+    background-color: lightgray;
+    .drawer-comment__comment-container {
+      width: 100%;
+      padding: 1.2rem 0px;
+      background-color: white;
+      header.comment__header {
+        position: relative;
+        width: 100%;
+        height: 2.2rem;
+        margin-bottom: 1rem;
+        .comment__delete-icon {
+          position: absolute;
+          top: 50%;
+          right: 1.2rem;
+          transform: translateY(-50%);
+          color: $fontBlack6;
+          cursor: pointer;
+        }
+        .comment__info {
+          height: 100%;
+          margin-left: 1rem;
+          .comment__creator-name {
+            font-size: 0.9rem;
+            color: $fontBlack9;
+          }
+          .comment__timestamp {
+            font-size: 0.9rem;
+            color: $fontBlack6;
+          }
+        }
+      }
+      .comment__text {
+        font-size: 0.9rem;
+        color: $fontBlack9;
+      }
+    }
+  }
+}

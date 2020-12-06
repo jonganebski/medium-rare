@@ -26,4 +26,5 @@ func SetupRoutes(app *fiber.App) {
 	privateAPI.Delete("/photo", handler.DeletePhoto)
 	privateAPI.Post("/story", handler.AddStory)
 	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
+	privateAPI.Post("/comment/:storyId", handler.AddComment)
 }
