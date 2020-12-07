@@ -175,8 +175,6 @@ func ReadStory(c *fiber.Ctx) error {
 		}
 	}
 
-	fmt.Println(isFollowing)
-
 	return c.Render("readStory",
 		fiber.Map{"path": c.Path(),
 			"userId":      c.Locals("userId"),
@@ -244,8 +242,6 @@ func ProvideStoryBlocks(c *fiber.Ctx) error {
 
 	story := new(model.Story)
 	storyResult.Decode(story)
-
-	fmt.Println(story)
 
 	return c.JSON(story.Blocks)
 }
@@ -548,4 +544,59 @@ func MyBookmarks(c *fiber.Ctx) error {
 	}
 
 	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
+}
+
+// MyStories renders a page where shows current user's stories
+func MyStories(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	outputItem := new(storyCardOutput)
+	output := make([]storyCardOutput, 0)
+
+	// --- find user's stories ---
+
+	stories := make([]model.Story, 0)
+	filter := bson.D{{Key: "creatorId", Value: userOID}}
+	cursor, err := storyCollection.Find(c.Context(), filter)
+	if err := cursor.All(c.Context(), &stories); err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	for _, story := range stories {
+
+		// --- find body & coverImgUrl---
+
+		body := ""
+		coverImgURL := ""
+		for _, block := range story.Blocks {
+			if block.Type == "paragraph" && body == "" {
+				body = block.Data.Text
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if body != "" && coverImgURL != "" {
+				break
+			}
+		}
+
+		// --- build outputItem and append to output ---
+
+		outputItem.AuthorUsername = "me"
+		outputItem.StoryID = story.ID
+		outputItem.Header = story.Blocks[0].Data.Text
+		outputItem.Body = body
+		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
+		output = append(output, *outputItem)
+	}
+
+	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
 }

@@ -1,7 +1,8 @@
 li.storyCard._flex
     .storyCard__content._flex-c-sb
         a(href="/read/{{ .StoryID }}")
-          .storyCard__reference NOT BASED ON YOUR READING HISTORY
+          if (eq $.path "/")
+            .storyCard__reference NOT BASED ON YOUR READING HISTORY
           .storyCard__header {{ .Header }}
           .storyCard__body #{grindBody .Body 120}
         div

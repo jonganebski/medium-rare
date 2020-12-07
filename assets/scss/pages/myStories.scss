@@ -1,4 +1,4 @@
-.myBookmarks__title {
+.myStories__title {
   width: 100%;
   margin-top: 3rem;
   margin-bottom: 2rem;
@@ -6,9 +6,9 @@
   font-weight: 700;
   color: $fontBlack9;
 }
-.mybookmarks__storyCards-wrapper {
+.myStories__storyCards-wrapper {
   width: 100%;
-  .myBookmarks__storyCards-container {
+  .myStories__storyCards-container {
     width: 50%;
     display: grid;
     grid-template-columns: 1fr;
