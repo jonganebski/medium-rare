@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"home/jonganebski/github/medium-rare/config"
+	"home/jonganebski/github/medium-rare/helper"
 	"home/jonganebski/github/medium-rare/model"
 	"strconv"
 	"time"
@@ -23,6 +24,7 @@ type storyCardOutput struct {
 	Header         string `json:"header"`
 	Body           string `json:"body"`
 	CoverImgURL    string `json:"coverImgUrl"`
+	ReadTime       string `json:"readTime"`
 }
 
 // Home renders homepage
@@ -66,21 +68,26 @@ func Home(c *fiber.Ctx) error {
 	author := new(model.User)
 	for _, story := range stories {
 
-		// --- find body & coverImgUrl---
+		// --- find body & coverImgUrl & compute readTime---
 
 		body := ""
 		coverImgURL := ""
+		totalText := ""
 		for _, block := range story.Blocks {
-			if block.Type == "paragraph" && body == "" {
-				body = block.Data.Text
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
 			}
 			if block.Type == "image" && coverImgURL == "" {
 				coverImgURL = block.Data.File.URL
 			}
-			if body != "" && coverImgURL != "" {
-				break
+			if block.Type == "code" {
+				totalText += block.Data.Code
 			}
 		}
+		readTimeText := helper.ComputeReadTime(totalText)
 
 		// --- find author ---
 
@@ -100,6 +107,7 @@ func Home(c *fiber.Ctx) error {
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt
 		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
 		output = append(output, *outputItem)
 	}
 	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
@@ -545,21 +553,26 @@ func MyBookmarks(c *fiber.Ctx) error {
 	author := new(model.User)
 	for _, story := range stories {
 
-		// --- find body & coverImgUrl---
+		// --- find body & coverImgUrl & compute readTime---
 
 		body := ""
 		coverImgURL := ""
+		totalText := ""
 		for _, block := range story.Blocks {
-			if block.Type == "paragraph" && body == "" {
-				body = block.Data.Text
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
 			}
 			if block.Type == "image" && coverImgURL == "" {
 				coverImgURL = block.Data.File.URL
 			}
-			if body != "" && coverImgURL != "" {
-				break
+			if block.Type == "code" {
+				totalText += block.Data.Code
 			}
 		}
+		readTimeText := helper.ComputeReadTime(totalText)
 
 		// --- find author ---
 
@@ -579,6 +592,7 @@ func MyBookmarks(c *fiber.Ctx) error {
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt
 		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
 		output = append(output, *outputItem)
 	}
 
@@ -621,21 +635,26 @@ func MyStories(c *fiber.Ctx) error {
 
 	for _, story := range stories {
 
-		// --- find body & coverImgUrl---
+		// --- find body & coverImgUrl & compute readTime---
 
 		body := ""
 		coverImgURL := ""
+		totalText := ""
 		for _, block := range story.Blocks {
-			if block.Type == "paragraph" && body == "" {
-				body = block.Data.Text
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
 			}
 			if block.Type == "image" && coverImgURL == "" {
 				coverImgURL = block.Data.File.URL
 			}
-			if body != "" && coverImgURL != "" {
-				break
+			if block.Type == "code" {
+				totalText += block.Data.Code
 			}
 		}
+		readTimeText := helper.ComputeReadTime(totalText)
 
 		// --- build outputItem and append to output ---
 
@@ -645,6 +664,7 @@ func MyStories(c *fiber.Ctx) error {
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt
 		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
 		output = append(output, *outputItem)
 	}
 

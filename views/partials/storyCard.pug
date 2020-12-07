@@ -9,7 +9,7 @@ li.storyCard._flex
           .storyCard__author-name {{ .AuthorUsername }}
           .storyCard__info 
             span #{getStoryDate .CreatedAt}
-            span 10 min read
+            span #{.ReadTime}
     a.storyCard__cover-frame(href="/read/{{ .StoryID }}")
         img.storyCard__cover-img(
           src="{{ .CoverImgURL }}"

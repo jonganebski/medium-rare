@@ -1,5 +1,5 @@
 #editor-readOnly__header
-.editor-readOnly__authorArea._flex-cs
+#editor-readOnly__authorArea.editor-readOnly__authorArea._flex-cs
   .editor-readOnly__authorArea__avatar._relative
     .editor-readOnly__authorArea__avatar-frame._avatar-frame
       img.editor-readOnly__authorArea__avatar-img._avatar-img(
@@ -7,7 +7,7 @@
       )
   .editor-readOnly__authorArea__name {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
-  .editor-readOnly__authorArea__readTime 2 min read
+  .editor-readOnly__authorArea__readTime
   if .userId
     if isMyStory .author.ID .userId
       a(href="/edit-story/{{ .story.ID }}")

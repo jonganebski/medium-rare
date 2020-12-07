@@ -1,4 +1,4 @@
-import EditorJS from "@editorjs/editorjs";
+import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
@@ -16,6 +16,7 @@ import {
   commentDrawerCloseIcon,
   followBtn,
   followingBtn,
+  readTimeSpan,
 } from "./elements.readStory";
 import { onFollowBtnClick, onFollowingBtnClick } from "./follow";
 import { deleteComment } from "./deleteComment";
@@ -79,6 +80,45 @@ const clearComments = () => {
   commentsUlEl && (commentsUlEl.innerHTML = "");
 };
 
+const computeAndPasteReadTime = (blocks: OutputBlockData[]) => {
+  if (!readTimeSpan) {
+    return;
+  }
+  let wordCount = 0;
+  blocks.forEach((block) => {
+    if (block.type === "paragraph") {
+      const words: string[] = block.data.text.split(" ");
+      wordCount += words.length;
+    }
+    if (block.type === "code") {
+      let words: string[] = block.data.code.split(" ");
+      words = words.filter(
+        (word) =>
+          word !== "" &&
+          !word.includes("=") &&
+          word != "()" &&
+          word != "(" &&
+          word != ")" &&
+          word != "{" &&
+          word != "}" &&
+          word != "<" &&
+          word != ">"
+      );
+      wordCount += words.length;
+    }
+  });
+  const readTimeMinute = Math.ceil(wordCount / 200);
+  readTimeSpan.innerText = `${readTimeMinute} min read`;
+};
+
+const overrideEditorJsStyle = () => {
+  const x = editorReadOnlyHeader?.querySelector(".codex-editor__redactor") as
+    | HTMLElement
+    | null
+    | undefined;
+  x!.style.paddingBottom = "1rem";
+};
+
 const initEditorReadOnly = async (storyId: string) => {
   const { data: blocks } = await Axios.get(BASE_URL + `/api/blocks/${storyId}`);
   const header = blocks.shift();
@@ -118,17 +158,11 @@ const initEditorReadOnly = async (storyId: string) => {
   });
   headerEditor.isReady.then(async () => {
     await headerEditor.readOnly.toggle(true);
-    const x = editorReadOnlyHeader?.querySelector(".codex-editor__redactor") as
-      | HTMLElement
-      | null
-      | undefined;
-    console.log(x);
-    x!.style.paddingBottom = "1rem";
+    overrideEditorJsStyle();
   });
   bodyEditor.isReady.then(async () => {
     await bodyEditor.readOnly.toggle(true);
-    // 소요 시간을 여기서 계산해서 붙인다.
-    console.log(blocks);
+    computeAndPasteReadTime(blocks);
   });
 };
 

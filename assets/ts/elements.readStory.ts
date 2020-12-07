@@ -4,6 +4,13 @@ export const editorReadOnlyHeader = document.getElementById(
   "editor-readOnly__header"
 );
 
+const editorReadOnlyAuthorArea = document.getElementById(
+  "editor-readOnly__authorArea"
+);
+export const readTimeSpan = editorReadOnlyAuthorArea?.querySelector(
+  ".editor-readOnly__authorArea__readTime"
+) as HTMLSpanElement | null;
+
 export const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 export const likedContainer = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__liked-container"
