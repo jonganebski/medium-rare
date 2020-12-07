@@ -156,7 +156,17 @@ func ReadStory(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked}, "layout/main")
+	// --- did current user bookmarked this story?
+
+	bookmarked := false
+	for _, savedStoryID := range *user.SavedStoryIDs {
+		if savedStoryID == storyOID {
+			bookmarked = true
+			break
+		}
+	}
+
+	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked, "bookmarked": bookmarked}, "layout/main")
 }
 
 // EditStory renders a page where a user edits his/her story
@@ -392,6 +402,50 @@ func HandleLikeCount(c *fiber.Ctx) error {
 	updateResult = storyCollection.FindOneAndUpdate(c.Context(), filter, update)
 	if updateResult.Err() != nil {
 		return c.SendStatus(500)
+	}
+
+	return c.SendStatus(200)
+}
+
+// BookmarkStory saves storyID into user's SavedStoryIDs
+func BookmarkStory(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$push", Value: bson.D{{Key: "savedStoryIds", Value: storyOID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(200)
+}
+
+// DisBookmarkStory removes storyID into user's SavedStoryIDs
+func DisBookmarkStory(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "savedStoryIds", Value: storyOID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
 	}
 
 	return c.SendStatus(200)

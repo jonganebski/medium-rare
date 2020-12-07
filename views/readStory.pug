@@ -36,6 +36,10 @@
       i.far.fa-comment.fixed-authorInfo__comment-icon
       span #{ getSliceLen .story.CommentIDs }
     .fixed-authorInfo__bookmark-container._flex-cs
-      i.far.fa-bookmark.fixed-authorInfo__bookmark-icon
+      if .bookmarked
+        i.fas.fa-bookmark.fixed-authorInfo__bookmark-icon-true
+      else
+        i.far.fa-bookmark.fixed-authorInfo__bookmark-icon-false
+
 include views/partials/drawer.comment.pug
 //- <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>

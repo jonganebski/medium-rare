@@ -8,11 +8,14 @@ import Axios from "axios";
 const filterBlack = document.getElementById("filter-black");
 const editorReadOnlyHeader = document.getElementById("editor-readOnly__header");
 const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
+const likedContainer = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__liked-container"
+);
 const seeCommentDiv = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__comment-container"
 );
-const likedContainer = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__liked-container"
+const bookmarkContainer = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__bookmark-container"
 );
 
 export const commentCountDisplay = seeCommentDiv?.querySelector("span");
@@ -180,37 +183,26 @@ const getComments = async () => {
   }
 };
 
-const initReadStory = async () => {
-  if (BASE_URL) {
-    const params = document.location.pathname.split(BASE_URL)[0].split("/");
-    if (params[1] === "read") {
-      const storyId = params[2];
-      await initEditorReadOnly(storyId);
+const likeOrUnlike = async () => {
+  const splitedPath = document.location.pathname.split("read");
+  const storyId = splitedPath[1].replace(/[/]/g, "");
+  const childIcon = likedContainer?.querySelector("i");
+  const childSpan = likedContainer?.querySelector("span");
+  if (childIcon && childSpan) {
+    const likedCount = parseInt(childSpan.innerText.replace(/\,/, ""));
+    if (isNaN(likedCount)) {
+      console.error("wrong like count format");
+      return;
     }
-  }
-  filterBlack?.addEventListener("click", closeCommentDrawer);
-  seeCommentDiv?.addEventListener("click", openCommentDrawer);
-  seeCommentDiv?.addEventListener("click", getComments);
-  commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
-  likedContainer?.addEventListener("click", async () => {
-    const splitedPath = document.location.pathname.split("read");
-    const storyId = splitedPath[1].replace(/[/]/g, "");
-    const childIcon = likedContainer.querySelector("i");
-    const childSpan = likedContainer.querySelector("span");
-    if (childIcon && childSpan) {
-      const likedCount = parseInt(childSpan.innerText.replace(/\,/, ""));
-      if (isNaN(likedCount)) {
-        console.error("wrong like count format");
-        return;
-      }
-      let plusMinus;
-      if (childIcon.className.includes("false")) {
-        plusMinus = 1;
-      } else if (childIcon.className.includes("true")) {
-        plusMinus = -1;
-      } else {
-        return;
-      }
+    let plusMinus;
+    if (childIcon.className.includes("false")) {
+      plusMinus = 1;
+    } else if (childIcon.className.includes("true")) {
+      plusMinus = -1;
+    } else {
+      return;
+    }
+    try {
       const { status } = await Axios.post(
         BASE_URL + `/api/like/${storyId}/${plusMinus}`
       );
@@ -227,6 +219,48 @@ const initReadStory = async () => {
             .replace("fas", "far");
         } else {
           return;
+        }
+      }
+    } catch {}
+  }
+};
+
+const initReadStory = async () => {
+  if (BASE_URL) {
+    const params = document.location.pathname.split(BASE_URL)[0].split("/");
+    if (params[1] === "read") {
+      const storyId = params[2];
+      await initEditorReadOnly(storyId);
+    }
+  }
+  filterBlack?.addEventListener("click", closeCommentDrawer);
+  seeCommentDiv?.addEventListener("click", openCommentDrawer);
+  seeCommentDiv?.addEventListener("click", getComments);
+  commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
+  likedContainer?.addEventListener("click", likeOrUnlike);
+  bookmarkContainer?.addEventListener("click", async () => {
+    const splitedPath = document.location.pathname.split("read");
+    const storyId = splitedPath[1].replace(/[/]/g, "");
+    const childIcon = bookmarkContainer?.querySelector("i");
+    console.log(childIcon?.className.includes("true"));
+    if (childIcon) {
+      if (childIcon.className.includes("false")) {
+        const { status } = await Axios.post(
+          BASE_URL + `/api/bookmark/${storyId}`
+        );
+        if (status === 200) {
+          childIcon.className = childIcon.className
+            .replace("false", "true")
+            .replace("far", "fas");
+        }
+      } else if (childIcon.className.includes("true")) {
+        const { status } = await Axios.delete(
+          BASE_URL + `/api/bookmark/${storyId}`
+        );
+        if (status === 200) {
+          childIcon.className = childIcon.className
+            .replace("true", "false")
+            .replace("fas", "far");
         }
       }
     }

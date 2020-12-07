@@ -8,5 +8,5 @@ type Comment struct {
 	CreatedAt int64              `json:"createdAt" bson:"createdAt"`
 	StoryID   primitive.ObjectID `json:"storyId" bson:"storyId"`
 	CreatorID primitive.ObjectID `json:"creatorId" bson:"creatorId"`
-	Text      string             `json:text`
+	Text      string             `json:"text"`
 }

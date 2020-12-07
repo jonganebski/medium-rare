@@ -23,11 +23,13 @@ func SetupRoutes(app *fiber.App) {
 	publicAPI.Get("/comment/:storyId", handler.ProvideComments)
 
 	privateAPI := app.Group("/api", middleware.Protected)
-	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)
-	privateAPI.Post("/story", handler.AddStory)
+	privateAPI.Post("/bookmark/:storyId", handler.BookmarkStory)
 	privateAPI.Post("/comment/:storyId", handler.AddComment)
 	privateAPI.Post("/like/:storyId/:plusMinus", handler.HandleLikeCount)
+	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)
+	privateAPI.Post("/story", handler.AddStory)
 	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
+	privateAPI.Delete("/bookmark/:storyId", handler.DisBookmarkStory)
 	privateAPI.Delete("/comment/:commentId", handler.DeleteComment)
 	privateAPI.Delete("/photo", handler.DeletePhoto)
 }
