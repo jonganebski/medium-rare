@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/model"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -298,6 +299,82 @@ func UpdateStory(c *fiber.Ctx) error {
 	if updateResult.Err() != nil {
 		fmt.Println("Error at update")
 		fmt.Println(updateResult.Err())
+		return c.SendStatus(500)
+	}
+
+	return c.SendStatus(200)
+}
+
+// HandleLikeCount deals with increment/decreament of like count of the story
+func HandleLikeCount(c *fiber.Ctx) error {
+
+	storyCollection := mg.Db.Collection(StoryCollection)
+	userCollection := mg.Db.Collection(UserCollection)
+
+	storyID := c.Params("storyId")
+	p := c.Params("plusMinus") // bigger than zero -> increase like / smaller than zero -> decrease like
+
+	plusMinus, err := strconv.Atoi(p)
+	if err != nil || plusMinus == 0 {
+		return c.SendStatus(400)
+	}
+
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	// --- find user ---
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	for i, likedStoryID := range *user.LikedStoryIDs {
+		// in case of increment, user cannot like the story twice
+		if plusMinus > 0 {
+			if likedStoryID == storyOID {
+				return c.SendStatus(400)
+			}
+		}
+		// in case of decreament, user cannot cancel like that he/she didn't like
+		if plusMinus < 0 {
+			if i == len(*user.LikedStoryIDs)-1 {
+				return c.SendStatus(400)
+			}
+		}
+	}
+
+	var key string
+	if plusMinus > 0 {
+		key = "$push"
+	}
+	if plusMinus < 0 {
+		key = "$pull"
+	}
+
+	// -- update user's likedStoryIDs ---
+
+	filter = bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: key, Value: bson.D{{Key: "likedStoryIds", Value: storyOID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(500)
+	}
+
+	// --- update story's likedUserIDs ---
+
+	filter = bson.D{{Key: "_id", Value: storyOID}}
+	update = bson.D{{Key: key, Value: bson.D{{Key: "likedUserIds", Value: userOID}}}}
+	updateResult = storyCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
 		return c.SendStatus(500)
 	}
 

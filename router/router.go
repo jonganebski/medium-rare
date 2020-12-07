@@ -26,6 +26,8 @@ func SetupRoutes(app *fiber.App) {
 	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)
 	privateAPI.Post("/story", handler.AddStory)
 	privateAPI.Post("/comment/:storyId", handler.AddComment)
+	privateAPI.Post("/like/:storyId/:plusMinus", handler.HandleLikeCount)
 	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
+	privateAPI.Delete("/comment/:commentId", handler.DeleteComment)
 	privateAPI.Delete("/photo", handler.DeletePhoto)
 }

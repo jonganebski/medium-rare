@@ -8,7 +8,7 @@ import (
 type Story struct {
 	ID           string                `json:"id,omitempty" bson:"_id,omitempty"`
 	CreatedAt    int64                 `json:"createdAt" bson:"createdAt"`
-	UpdatedAt    int64                 `json:"updatedAt" bson:"updatedAt`
+	UpdatedAt    int64                 `json:"updatedAt" bson:"updatedAt"`
 	CreatorID    primitive.ObjectID    `json:"creatorId" bson:"creatorId"`
 	Blocks       []Block               `json:"blocks"`
 	EditorjsVer  string                `json:"version"`

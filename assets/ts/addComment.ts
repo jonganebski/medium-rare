@@ -5,6 +5,7 @@ import {
   commentDrawer,
   drawNewComment,
   preparedCommentBox,
+  commentCountDisplay,
 } from "./readStory";
 
 const cancelCommentBtn = commentDrawer?.querySelector(
@@ -14,8 +15,15 @@ const addCommentBtn = commentDrawer?.querySelector(".add-comment__add-btn");
 
 const initAddComment = () => {
   addCommentBtn?.addEventListener("click", async () => {
-    if (preparedCommentBox) {
+    if (preparedCommentBox && commentCountDisplay) {
       const commentText = preparedCommentBox.innerText;
+      const commentCount = parseInt(
+        commentCountDisplay.innerText.replace(/\,/g, "")
+      );
+      if (isNaN(commentCount)) {
+        console.error("wrong comment count format");
+        return;
+      }
       if (commentText.length === 0) {
         return;
       }
@@ -29,6 +37,7 @@ const initAddComment = () => {
           }
         );
         if (status === 201) {
+          commentCountDisplay.innerText = (commentCount + 1).toLocaleString();
           drawNewComment(comment);
         }
       } catch {}

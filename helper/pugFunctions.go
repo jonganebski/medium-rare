@@ -3,6 +3,10 @@ package helper
 import (
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // IsPublishButton determines publish button's existance
@@ -58,4 +62,12 @@ func GrindBody(body string, targetLen int) string {
 		return body[:targetLen] + "..."
 	}
 	return body
+}
+
+// GetSliceLen returns formatted count in string
+func GetSliceLen(slice []primitive.ObjectID) string {
+	len := len(slice)
+	p := message.NewPrinter(language.English)
+	formatted := p.Sprintf("%v", len)
+	return formatted
 }

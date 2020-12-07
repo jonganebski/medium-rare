@@ -28,10 +28,10 @@
   footer
     .fixed-authorInfo__heart-container._flex-cs
       i.far.fa-heart.fixed-authorInfo__heart-icon
-      span 1.3k
+      span #{ getSliceLen .story.LikedUserIDs }
     .fixed-authorInfo__comment-container._flex-cs
       i.far.fa-comment.fixed-authorInfo__comment-icon
-      span 9
+      span #{ getSliceLen .story.CommentIDs }
     .fixed-authorInfo__bookmark-container._flex-cs
       i.far.fa-bookmark.fixed-authorInfo__bookmark-icon
 include views/partials/drawer.comment.pug

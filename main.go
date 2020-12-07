@@ -28,6 +28,7 @@ func main() {
 	engine.AddFunc("isMyStory", helper.IsMyStory)
 	engine.AddFunc("getStoryDate", helper.GetStoryPostDate)
 	engine.AddFunc("grindBody", helper.GrindBody)
+	engine.AddFunc("getSliceLen", helper.GetSliceLen)
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")
