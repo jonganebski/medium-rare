@@ -3,7 +3,7 @@
   .editor-readOnly__authorArea__avatar._relative
     .editor-readOnly__authorArea__avatar-frame._avatar-frame
       img.editor-readOnly__authorArea__avatar-img._avatar-img(
-        src="/image/blank-profile.webp"
+        src="{{ .author.AvatarURL }}"
       )
   .editor-readOnly__authorArea__name {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
@@ -17,13 +17,13 @@
     i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon
 #editor-readOnly__body
 #fixed-authorInfo.fixed-authorInfo
-  header(id="{{ .author.ID }}")
+  header(id="{{ .author.ID }}")._flex-c-se
     .fixed-authorInfo__writtenBy 
       span WRITTEN BY
     .fixed-authorInfo__authour 
-      span Author
+      span #{.author.Username}
     .fixed-authorInfo__bio 
-      span I'm Lorem ipsum
+      span #{.author.Bio}
     if isMyStory .author.ID .userId  
     else
       if .isFollowing

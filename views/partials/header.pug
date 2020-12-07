@@ -12,7 +12,7 @@ header#main-header.main-header._flex-cc
         i.far.fa-bookmark.main-header__bookmark-icon
       div._relative
         .main-header__avatar-frame._avatar-frame
-          img.main-header__avatar-img._avatar-img(src="/image/blank-profile.webp")
+          img.main-header__avatar-img._avatar-img(src="{{ .userAvatarUrl }}")
         include views/partials/header.usermenu.pug
     else
       a.main-header__signin-anchor Sign In

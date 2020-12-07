@@ -37,6 +37,7 @@ func CreateUser(c *fiber.Ctx) error {
 	user.Email = email
 	user.Password = util.HashPassword(password)
 	user.Username = strings.Split(email, "@")[0]
+	user.AvatarURL = "http://localhost:4000/image/blank-profile.webp"
 	user.CreatedAt = time.Now().Unix()
 	user.UpdatedAt = time.Now().Unix()
 	user.CommentIDs = &[]primitive.ObjectID{}

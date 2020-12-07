@@ -26,6 +26,7 @@ type Block struct {
 type data struct {
 	Level          int8   `json:"level,omitempty"`
 	Text           string `json:"text,omitempty"`
+	Code           string `json:"code,omitempty"`
 	Caption        string `json:"caption,omitempty"`
 	File           file   `json:"file,omitempty"`
 	Stretched      bool   `json:"stretched,omitempty"`

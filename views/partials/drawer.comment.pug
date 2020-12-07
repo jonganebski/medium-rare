@@ -4,7 +4,7 @@
   .drawer-comment__add-comment
     .add-comment__header._flex-cs
       ._avatar-frame
-        img._avatar-img(src="http://localhost:4000/image/blank-profile.webp")
+        img._avatar-img(src="{{ .userAvatarUrl }}")
       .add-comment__username {{  .username  }}
     p.add-comment__text(contenteditable="true")
     .add-comment__btns._flex-ce

@@ -34,6 +34,19 @@ func Home(c *fiber.Ctx) error {
 	outputItem := new(storyCardOutput)
 	output := make([]storyCardOutput, 0)
 
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	userFilter := bson.D{{Key: "_id", Value: userOID}}
+	userResult := userCollection.FindOne(c.Context(), userFilter)
+	if userResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	userResult.Decode(user)
+
 	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(20)
 	storyFilter := bson.D{{}}
 	cursor, err := storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
@@ -89,12 +102,28 @@ func Home(c *fiber.Ctx) error {
 		outputItem.CoverImgURL = coverImgURL
 		output = append(output, *outputItem)
 	}
-	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
+	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
 }
 
 // NewStory renders a page where a user writes a new story
 func NewStory(c *fiber.Ctx) error {
-	return c.Render("newStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId")}, "layout/main")
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	userFilter := bson.D{{Key: "_id", Value: userOID}}
+	userResult := userCollection.FindOne(c.Context(), userFilter)
+	if userResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	userResult.Decode(user)
+
+	return c.Render("newStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL}, "layout/main")
 }
 
 // ReadStory renders a page where a user reads a story
@@ -177,13 +206,14 @@ func ReadStory(c *fiber.Ctx) error {
 
 	return c.Render("readStory",
 		fiber.Map{"path": c.Path(),
-			"userId":      c.Locals("userId"),
-			"username":    user.Username,
-			"story":       story,
-			"author":      author,
-			"didLiked":    didLiked,
-			"bookmarked":  bookmarked,
-			"isFollowing": isFollowing},
+			"userId":        c.Locals("userId"),
+			"username":      user.Username,
+			"userAvatarUrl": user.AvatarURL,
+			"story":         story,
+			"author":        author,
+			"didLiked":      didLiked,
+			"bookmarked":    bookmarked,
+			"isFollowing":   isFollowing},
 		"layout/main")
 }
 
@@ -191,6 +221,7 @@ func ReadStory(c *fiber.Ctx) error {
 func EditStory(c *fiber.Ctx) error {
 
 	storyCollection := mg.Db.Collection(StoryCollection)
+	userCollection := mg.Db.Collection(UserCollection)
 
 	storyID := c.Params("storyId")
 	storyOID, err := primitive.ObjectIDFromHex(storyID)
@@ -219,7 +250,15 @@ func EditStory(c *fiber.Ctx) error {
 		c.Redirect("/")
 	}
 
-	return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "story": story}, "layout/main")
+	user := new(model.User)
+	userFilter := bson.D{{Key: "_id", Value: userOID}}
+	userResult := userCollection.FindOne(c.Context(), userFilter)
+	if userResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	userResult.Decode(user)
+
+	return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "story": story}, "layout/main")
 }
 
 // ProvideStoryBlocks returns blocks of the story
@@ -543,13 +582,14 @@ func MyBookmarks(c *fiber.Ctx) error {
 		output = append(output, *outputItem)
 	}
 
-	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
+	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
 }
 
 // MyStories renders a page where shows current user's stories
 func MyStories(c *fiber.Ctx) error {
 
 	storyCollection := mg.Db.Collection(StoryCollection)
+	userCollection := mg.Db.Collection(UserCollection)
 
 	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 	if err != nil {
@@ -559,10 +599,20 @@ func MyStories(c *fiber.Ctx) error {
 	outputItem := new(storyCardOutput)
 	output := make([]storyCardOutput, 0)
 
+	// --- find current user ---
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
 	// --- find user's stories ---
 
 	stories := make([]model.Story, 0)
-	filter := bson.D{{Key: "creatorId", Value: userOID}}
+	filter = bson.D{{Key: "creatorId", Value: userOID}}
 	cursor, err := storyCollection.Find(c.Context(), filter)
 	if err := cursor.All(c.Context(), &stories); err != nil {
 		fmt.Println(err)
@@ -598,5 +648,5 @@ func MyStories(c *fiber.Ctx) error {
 		output = append(output, *outputItem)
 	}
 
-	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
+	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
 }

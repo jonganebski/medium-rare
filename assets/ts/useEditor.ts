@@ -52,7 +52,6 @@ export const useEditor = (
           levels: [2, 4, 6],
         },
       },
-      code: CodeTool,
       image: {
         class: ImageTool,
         config: {
@@ -61,6 +60,7 @@ export const useEditor = (
           },
         },
       },
+      code: CodeTool,
     },
     data: {
       blocks,

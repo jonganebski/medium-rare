@@ -127,6 +127,8 @@ const initEditorReadOnly = async (storyId: string) => {
   });
   bodyEditor.isReady.then(async () => {
     await bodyEditor.readOnly.toggle(true);
+    // 소요 시간을 여기서 계산해서 붙인다.
+    console.log(blocks);
   });
 };
 
