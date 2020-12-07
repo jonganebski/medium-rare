@@ -17,6 +17,12 @@ const seeCommentDiv = fixedAuthorInfo?.querySelector(
 const bookmarkContainer = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__bookmark-container"
 );
+const followBtn = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__follow-btn"
+) as HTMLButtonElement | null;
+const followingBtn = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__following-btn"
+) as HTMLButtonElement | null;
 
 export const commentCountDisplay = seeCommentDiv?.querySelector("span");
 export const commentDrawer = document.getElementById("drawer-comment");
@@ -225,6 +231,68 @@ const likeOrUnlike = async () => {
   }
 };
 
+const handleBookmark = async () => {
+  const splitedPath = document.location.pathname.split("read");
+  const storyId = splitedPath[1].replace(/[/]/g, "");
+  const childIcon = bookmarkContainer?.querySelector("i");
+  if (childIcon) {
+    if (childIcon.className.includes("false")) {
+      const { status } = await Axios.post(
+        BASE_URL + `/api/bookmark/${storyId}`
+      );
+      if (status === 200) {
+        childIcon.className = childIcon.className
+          .replace("false", "true")
+          .replace("far", "fas");
+      }
+    } else if (childIcon.className.includes("true")) {
+      const { status } = await Axios.delete(
+        BASE_URL + `/api/bookmark/${storyId}`
+      );
+      if (status === 200) {
+        childIcon.className = childIcon.className
+          .replace("true", "false")
+          .replace("fas", "far");
+      }
+    }
+  }
+};
+
+const onFollowBtnClick = async (e: Event) => {
+  const followBtn = e.currentTarget as HTMLButtonElement;
+  const authorId = followBtn.closest("header")?.id;
+  if (authorId) {
+    const { status } = await Axios.post(BASE_URL + `/api/follow/${authorId}`);
+    if (status === 200) {
+      followBtn.className = followBtn.className.replace("follow", "following");
+      followBtn.innerText = "Following";
+      followBtn.removeEventListener("click", onFollowBtnClick);
+      followBtn.addEventListener("click", onFollowingBtnClick);
+    }
+  }
+};
+
+const onFollowingBtnClick = async (e: Event) => {
+  const followingBtn = e.currentTarget as HTMLButtonElement;
+  const authorId = followingBtn.closest("header")?.id;
+  if (authorId) {
+    const isConfirmed = confirm("Unfollow this author?");
+    if (!isConfirmed) {
+      return;
+    }
+    const { status } = await Axios.post(BASE_URL + `/api/unfollow/${authorId}`);
+    if (status === 200) {
+      followingBtn.className = followingBtn.className.replace(
+        "following",
+        "follow"
+      );
+      followingBtn.innerText = "Follow";
+      followingBtn.removeEventListener("click", onFollowingBtnClick);
+      followingBtn.addEventListener("click", onFollowBtnClick);
+    }
+  }
+};
+
 const initReadStory = async () => {
   if (BASE_URL) {
     const params = document.location.pathname.split(BASE_URL)[0].split("/");
@@ -238,33 +306,9 @@ const initReadStory = async () => {
   seeCommentDiv?.addEventListener("click", getComments);
   commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
   likedContainer?.addEventListener("click", likeOrUnlike);
-  bookmarkContainer?.addEventListener("click", async () => {
-    const splitedPath = document.location.pathname.split("read");
-    const storyId = splitedPath[1].replace(/[/]/g, "");
-    const childIcon = bookmarkContainer?.querySelector("i");
-    console.log(childIcon?.className.includes("true"));
-    if (childIcon) {
-      if (childIcon.className.includes("false")) {
-        const { status } = await Axios.post(
-          BASE_URL + `/api/bookmark/${storyId}`
-        );
-        if (status === 200) {
-          childIcon.className = childIcon.className
-            .replace("false", "true")
-            .replace("far", "fas");
-        }
-      } else if (childIcon.className.includes("true")) {
-        const { status } = await Axios.delete(
-          BASE_URL + `/api/bookmark/${storyId}`
-        );
-        if (status === 200) {
-          childIcon.className = childIcon.className
-            .replace("true", "false")
-            .replace("fas", "far");
-        }
-      }
-    }
-  });
+  bookmarkContainer?.addEventListener("click", handleBookmark);
+  followBtn?.addEventListener("click", onFollowBtnClick);
+  followingBtn?.addEventListener("click", onFollowingBtnClick);
 };
 
 initReadStory();

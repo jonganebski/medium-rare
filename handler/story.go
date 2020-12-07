@@ -166,7 +166,19 @@ func ReadStory(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked, "bookmarked": bookmarked}, "layout/main")
+	// --- is current user following author of the story
+
+	isFollowing := false
+	for _, followerID := range *author.FollowerIDs {
+		if followerID == userOID {
+			isFollowing = true
+			break
+		}
+	}
+
+	fmt.Println(isFollowing)
+
+	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked, "bookmarked": bookmarked, "isFollowing": isFollowing}, "layout/main")
 }
 
 // EditStory renders a page where a user edits his/her story

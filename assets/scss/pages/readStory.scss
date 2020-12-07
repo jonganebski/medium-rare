@@ -72,8 +72,15 @@
     button {
       margin-bottom: 1.5rem;
       padding: 0.4rem 0.5rem;
+    }
+    .fixed-authorInfo__follow-btn {
       border-color: $green;
       color: $green;
+    }
+    .fixed-authorInfo__following-btn {
+      border: none;
+      background-color: $green;
+      color: white;
     }
   }
   footer {

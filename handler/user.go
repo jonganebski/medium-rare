@@ -106,3 +106,75 @@ func Signout(c *fiber.Ctx) error {
 	c.ClearCookie()
 	return c.Redirect("/")
 }
+
+// Follow adds author's userID into current user's FollowingIDs and adds currnet userID into author's FollowerIDs
+func Follow(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	authorID := c.Params("authorId")
+	authorOID, err := primitive.ObjectIDFromHex(authorID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	// --- add author's userID into current user's FollowingIDs ---
+
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$push", Value: bson.D{{Key: "followingIds", Value: authorOID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	// --- add current user's userID into author's FollowingIDs ---
+
+	filter = bson.D{{Key: "_id", Value: authorOID}}
+	update = bson.D{{Key: "$push", Value: bson.D{{Key: "followerIds", Value: userOID}}}}
+	updateResult = userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(200)
+}
+
+// Unfollow unfollow
+func Unfollow(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	authorID := c.Params("authorId")
+	authorOID, err := primitive.ObjectIDFromHex(authorID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	// --- add author's userID into current user's FollowingIDs ---
+
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followingIds", Value: authorOID}}}}
+	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	// --- add current user's userID into author's FollowingIDs ---
+
+	filter = bson.D{{Key: "_id", Value: authorOID}}
+	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "followerIds", Value: userOID}}}}
+	updateResult = userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if updateResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(200)
+}

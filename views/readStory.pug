@@ -17,14 +17,19 @@
     i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon
 #editor-readOnly__body
 #fixed-authorInfo.fixed-authorInfo
-  header
+  header(id="{{ .author.ID }}")
     .fixed-authorInfo__writtenBy 
       span WRITTEN BY
     .fixed-authorInfo__authour 
       span Author
     .fixed-authorInfo__bio 
       span I'm Lorem ipsum
-    button Follow
+    if isMyStory .author.ID .userId  
+    else
+      if .isFollowing
+        button.fixed-authorInfo__following-btn Following
+      else
+        button.fixed-authorInfo__follow-btn Follow
   footer
     .fixed-authorInfo__liked-container._flex-cs
       if .didLiked
