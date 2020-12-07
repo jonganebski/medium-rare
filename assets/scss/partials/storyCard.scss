@@ -1,0 +1,46 @@
+.storyCard {
+  width: 100%;
+  margin-bottom: 3rem;
+  .storyCard__content {
+    width: 80%;
+    padding-right: 2rem;
+    font-size: 0.9rem;
+    color: $fontBlack6;
+    .storyCard__reference {
+      margin-bottom: 0.4rem;
+      color: $fontBlack6;
+    }
+    .storyCard__header {
+      margin-bottom: 0.6rem;
+      color: black;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .storyCard__body {
+      line-height: 1.2rem;
+      color: $fontBlack6;
+    }
+    .storyCard__author-name {
+      margin-top: 0.8rem;
+      margin-bottom: 0.4rem;
+      color: black;
+    }
+  }
+  .storyCard__cover-frame {
+    position: relative;
+    width: 20%;
+    overflow: hidden;
+    .storyCard__cover-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+    }
+  }
+  .storyCard__cover-frame::after {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+  }
+}

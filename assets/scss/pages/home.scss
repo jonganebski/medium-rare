@@ -148,52 +148,6 @@
   gap: 5rem;
   .home__mainList {
     width: 100%;
-    .home__mainList-item {
-      width: 100%;
-      margin-bottom: 3rem;
-      .home__mainList-item__content {
-        width: 80%;
-        padding-right: 2rem;
-        font-size: 0.9rem;
-        color: $fontBlack6;
-        .home__mainList-item__reference {
-          margin-bottom: 0.4rem;
-          color: $fontBlack6;
-        }
-        .home__mainList-item__header {
-          margin-bottom: 0.6rem;
-          color: black;
-          font-size: 1.3rem;
-          font-weight: 700;
-        }
-        .home__mainList-item__body {
-          line-height: 1.2rem;
-          color: $fontBlack6;
-        }
-        .home__mainList-item__author-name {
-          margin-top: 0.8rem;
-          margin-bottom: 0.4rem;
-          color: black;
-        }
-      }
-      .home__mainList-item__cover-frame {
-        position: relative;
-        width: 20%;
-        overflow: hidden;
-        .home__mainList-item__cover-img {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          height: 100%;
-          transform: translate(-50%, -50%);
-        }
-      }
-      .home__mainList-item__cover-frame::after {
-        content: "";
-        display: block;
-        padding-bottom: 100%;
-      }
-    }
   }
   .home__popularList {
     width: 100%;

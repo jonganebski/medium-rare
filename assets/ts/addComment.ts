@@ -1,16 +1,12 @@
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 import {
-  commentDrawer,
-  preparedCommentBox,
+  addCommentBtn,
+  cancelCommentBtn,
   commentCountDisplay,
+  preparedCommentBox,
 } from "./elements.readStory";
-import { drawNewComment, clearCommentBox } from "./page.ReadStory";
-
-const cancelCommentBtn = commentDrawer?.querySelector(
-  ".add-comment__cancel-btn"
-);
-const addCommentBtn = commentDrawer?.querySelector(".add-comment__add-btn");
+import { clearCommentBox, drawNewComment } from "./page.ReadStory";
 
 const initAddComment = () => {
   addCommentBtn?.addEventListener("click", async () => {

@@ -65,20 +65,6 @@ section.home__picks
 section.home__articles
   ul.home__mainList
    for _,_ in .output
-    li.home__mainList-item._flex
-      .home__mainList-item__content._flex-c-sb
-        a(href="/read/{{ .StoryID }}")
-          .home__mainList-item__reference NOT BASED ON YOUR READING HISTORY
-          .home__mainList-item__header {{ .Header }}
-          .home__mainList-item__body #{grindBody .Body 120}
-        div
-          .home__mainList-item__author-name {{ .AuthorUsername }}
-          .home__mainList-item__info 
-            span #{getStoryDate .CreatedAt}
-            span 10 min read
-      a.home__mainList-item__cover-frame(href="/read/{{ .StoryID }}")
-        img.home__mainList-item__cover-img(
-          src="{{ .CoverImgURL }}"
-        )
+     include views/partials/storyCard.pug
   ul.home__popularList
     li.home__popularList-item

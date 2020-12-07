@@ -1,0 +1,15 @@
+li.storyCard._flex
+    .storyCard__content._flex-c-sb
+        a(href="/read/{{ .StoryID }}")
+          .storyCard__reference NOT BASED ON YOUR READING HISTORY
+          .storyCard__header {{ .Header }}
+          .storyCard__body #{grindBody .Body 120}
+        div
+          .storyCard__author-name {{ .AuthorUsername }}
+          .storyCard__info 
+            span #{getStoryDate .CreatedAt}
+            span 10 min read
+    a.storyCard__cover-frame(href="/read/{{ .StoryID }}")
+        img.storyCard__cover-img(
+          src="{{ .CoverImgURL }}"
+        )

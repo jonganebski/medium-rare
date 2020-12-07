@@ -14,9 +14,12 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/read/:storyId", handler.ReadStory)
 	app.Get("/edit-story/:storyId", handler.EditStory)
 
+	app.Get("/signout", middleware.Protected, handler.Signout)
 	app.Post("/signup", handler.CreateUser)
 	app.Post("/signin", handler.Signin)
-	app.Get("/signout", middleware.Protected, handler.Signout)
+
+	me := app.Group("/me", middleware.Protected)
+	me.Get("/bookmarks", handler.MyBookmarks)
 
 	publicAPI := app.Group("/api")
 	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)

@@ -16,23 +16,23 @@ import (
 // StoryCollection is stories collection name
 var StoryCollection = config.Config("COLLECTION_STORY")
 
+type storyCardOutput struct {
+	StoryID        string `json:"storyId"`
+	AuthorUsername string `json:"authorUsername"`
+	CreatedAt      int64  `json:"createdAt"`
+	Header         string `json:"header"`
+	Body           string `json:"body"`
+	CoverImgURL    string `json:"coverImgUrl"`
+}
+
 // Home renders homepage
 func Home(c *fiber.Ctx) error {
-
-	type homeOutput struct {
-		StoryID        string `json:"storyId"`
-		AuthorUsername string `json:"authorUsername"`
-		CreatedAt      int64  `json:"createdAt"`
-		Header         string `json:"header"`
-		Body           string `json:"body"`
-		CoverImgURL    string `json:"coverImgUrl"`
-	}
 
 	storyCollection := mg.Db.Collection(StoryCollection)
 	userCollection := mg.Db.Collection(UserCollection)
 
-	outputItem := new(homeOutput)
-	output := make([]homeOutput, 0)
+	outputItem := new(storyCardOutput)
+	output := make([]storyCardOutput, 0)
 
 	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(20)
 	storyFilter := bson.D{{}}
@@ -89,7 +89,6 @@ func Home(c *fiber.Ctx) error {
 		outputItem.CoverImgURL = coverImgURL
 		output = append(output, *outputItem)
 	}
-
 	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
 }
 
@@ -470,4 +469,83 @@ func DisBookmarkStory(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(200)
+}
+
+// MyBookmarks renders user's bookmark page
+func MyBookmarks(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	outputItem := new(storyCardOutput)
+	output := make([]storyCardOutput, 0)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	// --- find current user ---
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	// --- find bookmarked stories ---
+
+	stories := make([]model.Story, 0)
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: user.SavedStoryIDs}}}}
+	cursor, err := storyCollection.Find(c.Context(), filter)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if err = cursor.All(c.Context(), &stories); err != nil {
+		return c.SendStatus(500)
+	}
+
+	author := new(model.User)
+	for _, story := range stories {
+
+		// --- find body & coverImgUrl---
+
+		body := ""
+		coverImgURL := ""
+		for _, block := range story.Blocks {
+			if block.Type == "paragraph" && body == "" {
+				body = block.Data.Text
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if body != "" && coverImgURL != "" {
+				break
+			}
+		}
+
+		// --- find author ---
+
+		authorFilter := bson.D{{Key: "_id", Value: story.CreatorID}}
+		authorResult := userCollection.FindOne(c.Context(), authorFilter)
+		if authorResult.Err() != nil {
+			fmt.Println("user does not exist")
+			return c.SendStatus(500)
+		}
+		authorResult.Decode(author)
+
+		// --- build outputItem and append to output ---
+
+		outputItem.AuthorUsername = author.Username
+		outputItem.StoryID = story.ID
+		outputItem.Header = story.Blocks[0].Data.Text
+		outputItem.Body = body
+		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
+		output = append(output, *outputItem)
+	}
+
+	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "output": output}, "layout/main")
 }
