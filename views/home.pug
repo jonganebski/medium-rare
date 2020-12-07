@@ -1,66 +1,43 @@
 section.home__picks
   .home__picks-c-l._flex-c-es
-    .home__picks-c-l__cover-frame
+    a(href="/read/{{ .editorsPickR.StoryID }}").home__picks-c-l__cover-frame
       img.home__picks-c-l__cover-img(
-        src="http://localhost:4000/image/faisal-1.jpg"
+        src="{{ .editorsPickR.CoverImgURL }}"
       )
-    .home__picks-c-l__content
-      .home__picks-c-l__header It's all right.
-      .home__picks-c-l__body Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet urna vel mauris rutrum gravida. Suspendisse tellus ipsum, aliquet ac sodales auctor, posuere vel libero.
+    a(href="/read/{{ .editorsPickR.StoryID }}").home__picks-c-l__content
+      .home__picks-c-l__header #{ .editorsPickR.Header }
+      .home__picks-c-l__body #{ grindBody (.editorsPickR.Body) 200 }
     .home__picks-c-l__info
-      .home__picks-c-l__author-name All might
+      .home__picks-c-l__author-name #{ .editorsPickR.AuthorUsername }
       .home__picks-c-l__detail
-        span Dec 4
-        span 4min read
+        span #{ getStoryDate .editorsPickR.CreatedAt }
+        span #{ .editorsPickR.ReadTime }
   .home__picks-c-c._flex-c-sb
-    .home__picks-c-c__stack._flex-cs
-      .home__picks-c-c__cover-frame
-        img.home__picks-c-c__cover-img(
-          src="http://localhost:4000/image/faisal-1.jpg"
+    for _,_ in .editorsPickC
+       .home__picks-c-c__stack._flex-cs
+        a(href="/read/{{ .StoryID }}").home__picks-c-c__cover-frame
+          img.home__picks-c-c__cover-img(
+          src="{{ .CoverImgURL }}"
         )
-      .home__picks-c-c__content._flex-c-sb
-        .home__picks-c-c__header I love you Yuki I love you Yuki
-        .home__picks-c-c__body Lorem ipsum dolor sit amet
-        .home__picks-c-c__author-name Yuno
-        .home__picks-c-c__detail
-          span Dec 5
-          span 24hours read
-    .home__picks-c-c__stack._flex-cs
-      .home__picks-c-c__cover-frame
-        img.home__picks-c-c__cover-img(
-          src="http://localhost:4000/image/faisal-1.jpg"
-        )
-      .home__picks-c-c__content._flex-c-sb
-        .home__picks-c-c__header I love you Yuki I love you Yuki
-        .home__picks-c-c__body Lorem ipsum dolor sit amet
-        .home__picks-c-c__author-name Yuno
-        .home__picks-c-c__detail
-          span Dec 5
-          span 24hours read
-    .home__picks-c-c__stack._flex-cs
-      .home__picks-c-c__cover-frame
-        img.home__picks-c-c__cover-img(
-          src="http://localhost:4000/image/faisal-1.jpg"
-        )
-      .home__picks-c-c__content._flex-c-sb
-        .home__picks-c-c__header I love you Yuki I love you Yuki
-        .home__picks-c-c__body Lorem ipsum dolor sit amet
-        .home__picks-c-c__author-name Yuno
-        .home__picks-c-c__detail
-          span Dec 5
-          span 24hours read
+        .home__picks-c-c__content._flex-c-sb
+          a(href="/read/{{ .StoryID }}").home__picks-c-c__header #{ .Header }
+          a(href="/read/{{ .StoryID }}").home__picks-c-c__body #{ grindBody .Body 40 }
+          .home__picks-c-c__author-name #{ .AuthorUsername }
+          .home__picks-c-c__detail
+            span #{ getStoryDate .CreatedAt }
+            span #{ .ReadTime }
   .home__picks-c-r
-    .home__picks-c-r__cover-frame
+    a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__cover-frame
       img.home__picks-c-r__cover-img(
-        src="http://localhost:4000/image/faisal-1.jpg"
+        src="{{ .editorsPickL.CoverImgURL }}"
       )
     .home__picks-c-r__content
-      .home__picks-c-r__header Water breathing, from 1st to 10th form
-      .home__picks-c-r__body It's very easy
-      .home__picks-c-r__author-name Tanjiro
+      a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__header #{ .editorsPickL.Header }
+      a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__body #{ grindBody .editorsPickL.Body 100 }
+      .home__picks-c-r__author-name #{ .editorsPickL.AuthorUsername }
       .home__picks-c-r__detail 
-        span Dec 5
-        span 1 hour read
+        span #{ getStoryDate .editorsPickL.CreatedAt }
+        span #{ .editorsPickL.ReadTime }
 .home__divider
 section.home__articles
   ul.home__mainList

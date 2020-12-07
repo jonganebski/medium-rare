@@ -35,22 +35,33 @@ func Home(c *fiber.Ctx) error {
 
 	outputItem := new(storyCardOutput)
 	output := make([]storyCardOutput, 0)
+	editorsPickOutput := make([]storyCardOutput, 0)
+	popularOutput := make([]storyCardOutput, 0)
 
-	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
-	if err != nil {
-		return c.SendStatus(500)
+	userAvatarURL := ""
+	if c.Locals("userId") != nil {
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(500)
+		}
+
+		// -- find user --
+
+		user := new(model.User)
+		userFilter := bson.D{{Key: "_id", Value: userOID}}
+		userResult := userCollection.FindOne(c.Context(), userFilter)
+		if userResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		userResult.Decode(user)
+		userAvatarURL = user.AvatarURL
 	}
 
-	user := new(model.User)
-	userFilter := bson.D{{Key: "_id", Value: userOID}}
-	userResult := userCollection.FindOne(c.Context(), userFilter)
-	if userResult.Err() != nil {
-		return c.SendStatus(404)
-	}
-	userResult.Decode(user)
+	// --- find stories for the list --
 
-	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(20)
-	storyFilter := bson.D{{}}
+	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(30)
+	storyFilter := bson.D{{Key: "editorsPick", Value: false}}
 	cursor, err := storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
 	if err != nil {
 		fmt.Println("Error at finding stories")
@@ -65,10 +76,12 @@ func Home(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
+	// --- compose output for the list ---
+
 	author := new(model.User)
 	for _, story := range stories {
 
-		// --- find body & coverImgUrl & compute readTime---
+		// find body & coverImgUrl & compute readTime
 
 		body := ""
 		coverImgURL := ""
@@ -89,7 +102,7 @@ func Home(c *fiber.Ctx) error {
 		}
 		readTimeText := helper.ComputeReadTime(totalText)
 
-		// --- find author ---
+		// find author
 
 		authorFilter := bson.D{{Key: "_id", Value: story.CreatorID}}
 		authorResult := userCollection.FindOne(c.Context(), authorFilter)
@@ -99,7 +112,7 @@ func Home(c *fiber.Ctx) error {
 		}
 		authorResult.Decode(author)
 
-		// --- build outputItem and append to output ---
+		// build outputItem and append to output
 
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
@@ -110,7 +123,144 @@ func Home(c *fiber.Ctx) error {
 		outputItem.ReadTime = readTimeText
 		output = append(output, *outputItem)
 	}
-	return c.Render("home", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
+
+	// --- find stories for editor's picks --
+
+	// storyFindOptions = options.Find().SetSort(bson.D{{Key: "editorsPick", Value: true}}).SetLimit(5)
+	storyFindOptions = options.Find().SetLimit(5)
+	storyFilter = bson.D{{Key: "editorsPick", Value: true}}
+	cursor, err = storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
+	if err != nil {
+		fmt.Println("Error at finding stories")
+		return c.SendStatus(500)
+	}
+
+	if err := cursor.All(c.Context(), &stories); err != nil {
+		fmt.Println("error at cursor iteration")
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	// --- compose output for editor's picks ---
+
+	for _, story := range stories {
+
+		// find body & coverImgUrl & compute readTime
+
+		body := ""
+		coverImgURL := ""
+		totalText := ""
+		for _, block := range story.Blocks {
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if block.Type == "code" {
+				totalText += block.Data.Code
+			}
+		}
+		readTimeText := helper.ComputeReadTime(totalText)
+
+		// find author
+
+		authorFilter := bson.D{{Key: "_id", Value: story.CreatorID}}
+		authorResult := userCollection.FindOne(c.Context(), authorFilter)
+		if authorResult.Err() != nil {
+			fmt.Println("user does not exist")
+			return c.SendStatus(500)
+		}
+		authorResult.Decode(author)
+
+		// build outputItem and append to output
+
+		outputItem.AuthorUsername = author.Username
+		outputItem.StoryID = story.ID
+		outputItem.Header = story.Blocks[0].Data.Text
+		outputItem.Body = body
+		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
+		editorsPickOutput = append(editorsPickOutput, *outputItem)
+	}
+
+	// --- find stories for popular --
+
+	storyFindOptions = options.Find().SetSort(bson.D{{Key: "viewCount", Value: -1}}).SetLimit(5)
+	storyFilter = bson.D{{}}
+	cursor, err = storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
+	if err != nil {
+		fmt.Println("Error at finding stories")
+		return c.SendStatus(500)
+	}
+
+	if err := cursor.All(c.Context(), &stories); err != nil {
+		fmt.Println("error at cursor iteration")
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	// --- compose output for editor's picks ---
+
+	for _, story := range stories {
+
+		// find body & coverImgUrl & compute readTime
+
+		body := ""
+		coverImgURL := ""
+		totalText := ""
+		for _, block := range story.Blocks {
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if block.Type == "code" {
+				totalText += block.Data.Code
+			}
+		}
+		readTimeText := helper.ComputeReadTime(totalText)
+
+		// find author
+
+		authorFilter := bson.D{{Key: "_id", Value: story.CreatorID}}
+		authorResult := userCollection.FindOne(c.Context(), authorFilter)
+		if authorResult.Err() != nil {
+			fmt.Println("user does not exist")
+			return c.SendStatus(500)
+		}
+		authorResult.Decode(author)
+
+		// build outputItem and append to output
+
+		outputItem.AuthorUsername = author.Username
+		outputItem.StoryID = story.ID
+		outputItem.Header = story.Blocks[0].Data.Text
+		outputItem.Body = body
+		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
+		popularOutput = append(popularOutput, *outputItem)
+	}
+
+	return c.Render("home", fiber.Map{
+		"path":          c.Path(),
+		"userId":        c.Locals("userId"),
+		"userAvatarUrl": userAvatarURL,
+		"output":        output,
+		"editorsPickR":  editorsPickOutput[0],
+		"editorsPickC":  editorsPickOutput[1:4],
+		"editorsPickL":  editorsPickOutput[4],
+		"popular":       popularOutput,
+	}, "layout/main")
 }
 
 // NewStory renders a page where a user writes a new story
@@ -136,7 +286,6 @@ func NewStory(c *fiber.Ctx) error {
 
 // ReadStory renders a page where a user reads a story
 func ReadStory(c *fiber.Ctx) error {
-	// status 400 404 구분할 것
 	storyCollection := mg.Db.Collection(StoryCollection)
 	userCollection := mg.Db.Collection(UserCollection)
 
@@ -148,10 +297,10 @@ func ReadStory(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 	filter := bson.D{{Key: "_id", Value: storyOID}}
-	storyResult := storyCollection.FindOne(c.Context(), filter)
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "viewCount", Value: 1}}}}
+	storyResult := storyCollection.FindOneAndUpdate(c.Context(), filter, update)
 	if storyResult.Err() != nil {
-		fmt.Println("Story does not exist")
-		return c.SendStatus(400)
+		return c.SendStatus(404)
 	}
 
 	story := new(model.Story)
@@ -161,8 +310,7 @@ func ReadStory(c *fiber.Ctx) error {
 	filter = bson.D{{Key: "_id", Value: story.CreatorID}}
 	authorResult := userCollection.FindOne(c.Context(), filter)
 	if authorResult.Err() != nil {
-		fmt.Println("author does not exist")
-		return c.SendStatus(400)
+		return c.SendStatus(404)
 	}
 
 	author := new(model.User)
@@ -171,12 +319,12 @@ func ReadStory(c *fiber.Ctx) error {
 	// --- currnet user ---
 	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 	if err != nil {
-		return c.SendStatus(400)
+		return c.SendStatus(500)
 	}
 	filter = bson.D{{Key: "_id", Value: userOID}}
 	userResult := userCollection.FindOne(c.Context(), filter)
 	if userResult.Err() != nil {
-		return c.SendStatus(400)
+		return c.SendStatus(404)
 	}
 
 	user := new(model.User)
@@ -318,6 +466,7 @@ func AddStory(c *fiber.Ctx) error {
 	story.LikedUserIDs = &[]primitive.ObjectID{}
 	story.CommentIDs = &[]primitive.ObjectID{}
 	story.ViewCount = 0
+	story.EditorsPick = false
 
 	insertiionResult, err := storyCollection.InsertOne(c.Context(), story)
 	if err != nil {

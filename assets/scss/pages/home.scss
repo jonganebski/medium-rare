@@ -99,6 +99,7 @@
     width: 100%;
     .home__picks-c-r__cover-frame {
       position: relative;
+      display: block;
       width: 100%;
       height: 60%;
       margin-bottom: 1rem;
@@ -113,11 +114,13 @@
     }
     .home__picks-c-r__content {
       .home__picks-c-r__header {
+        display: block;
         margin-bottom: 0.6rem;
         font-size: 1.1rem;
         font-weight: 700;
       }
       .home__picks-c-r__body {
+        display: block;
         margin-bottom: 1.1rem;
         line-height: 1.1rem;
         font-size: 0.8rem;

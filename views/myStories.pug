@@ -1,5 +1,5 @@
 .myStories__title My stories
 .myStories__storyCards-wrapper
     ul.myStories__storyCards-container
-        each _, _ in .output
+        for _, _ in .output
             include views/partials/storyCard.pug

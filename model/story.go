@@ -13,6 +13,7 @@ type Story struct {
 	Blocks       []Block               `json:"blocks"`
 	EditorjsVer  string                `json:"version"`
 	ViewCount    uint32                `json:"viewCount" bson:"viewCount"`
+	EditorsPick  bool                  `json:"editorsPick" bson:"editorsPick"`
 	LikedUserIDs *[]primitive.ObjectID `json:"likedUserIds" bson:"likedUserIds"`
 	CommentIDs   *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
 }
