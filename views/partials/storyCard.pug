@@ -3,12 +3,13 @@ li.storyCard._flex
         a(href="/read/{{ .StoryID }}")
           if (eq $.path "/")
             .storyCard__reference NOT BASED ON YOUR READING HISTORY
-          .storyCard__header {{ .Header }}
-          .storyCard__body #{grindBody .Body 120}
+          h3.storyCard__header {{ .Header }}
+          p.storyCard__body #{grindBody .Body 120}
         div
-          .storyCard__author-name {{ .AuthorUsername }}
+          span.storyCard__author-name {{ .AuthorUsername }}
           .storyCard__info 
             span #{getStoryDate .CreatedAt}
+            ._devider-dot
             span #{.ReadTime}
     a.storyCard__cover-frame(href="/read/{{ .StoryID }}")
         img.storyCard__cover-img(

@@ -25,6 +25,7 @@ type storyCardOutput struct {
 	Body           string `json:"body"`
 	CoverImgURL    string `json:"coverImgUrl"`
 	ReadTime       string `json:"readTime"`
+	Ranking        int    `json:"ranking,omitempty"`
 }
 
 // Home renders homepage
@@ -206,19 +207,15 @@ func Home(c *fiber.Ctx) error {
 
 	// --- compose output for editor's picks ---
 
-	for _, story := range stories {
+	for i, story := range stories {
 
 		// find body & coverImgUrl & compute readTime
 
-		body := ""
 		coverImgURL := ""
 		totalText := ""
 		for _, block := range story.Blocks {
 			if block.Type == "paragraph" {
 				totalText += block.Data.Text
-				if body == "" {
-					body = block.Data.Text
-				}
 			}
 			if block.Type == "image" && coverImgURL == "" {
 				coverImgURL = block.Data.File.URL
@@ -244,10 +241,11 @@ func Home(c *fiber.Ctx) error {
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
 		outputItem.Header = story.Blocks[0].Data.Text
-		outputItem.Body = body
+		outputItem.Body = ""
 		outputItem.CreatedAt = story.CreatedAt
 		outputItem.CoverImgURL = coverImgURL
 		outputItem.ReadTime = readTimeText
+		outputItem.Ranking = i + 1
 		popularOutput = append(popularOutput, *outputItem)
 	}
 

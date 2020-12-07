@@ -154,8 +154,41 @@
   }
   .home__popularList {
     width: 100%;
-    background-color: tan;
+    h2 {
+      width: 70%;
+      height: 4rem;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: $fontBlack8;
+      border-bottom: 1px solid lightgray;
+    }
     .home__popularList-item {
+      width: 70%;
+      margin-bottom: 2rem;
+      .home__popularList-item__rank {
+        margin-right: 1rem;
+        font-size: 1.6rem;
+        opacity: 0.15;
+      }
+      .home__popularList-item__content {
+        .home__popularList-item__title {
+          margin-bottom: 0.5rem;
+          display: block;
+          font-weight: 700;
+          color: $fontBlack9;
+        }
+        .home__popularList-item__author-name {
+          margin-bottom: 0.5rem;
+          display: block;
+          color: $fontBlack9;
+          font-size: 0.9rem;
+        }
+        .home__popularList-item__info {
+          font-size: 0.8rem;
+          color: $fontBlack6;
+        }
+      }
     }
   }
 }

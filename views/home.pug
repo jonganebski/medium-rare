@@ -11,6 +11,7 @@ section.home__picks
       .home__picks-c-l__author-name #{ .editorsPickR.AuthorUsername }
       .home__picks-c-l__detail
         span #{ getStoryDate .editorsPickR.CreatedAt }
+        ._devider-dot
         span #{ .editorsPickR.ReadTime }
   .home__picks-c-c._flex-c-sb
     for _,_ in .editorsPickC
@@ -25,6 +26,7 @@ section.home__picks
           .home__picks-c-c__author-name #{ .AuthorUsername }
           .home__picks-c-c__detail
             span #{ getStoryDate .CreatedAt }
+            ._devider-dot
             span #{ .ReadTime }
   .home__picks-c-r
     a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__cover-frame
@@ -37,11 +39,22 @@ section.home__picks
       .home__picks-c-r__author-name #{ .editorsPickL.AuthorUsername }
       .home__picks-c-r__detail 
         span #{ getStoryDate .editorsPickL.CreatedAt }
+        ._devider-dot
         span #{ .editorsPickL.ReadTime }
 .home__divider
 section.home__articles
   ul.home__mainList
    for _,_ in .output
      include views/partials/storyCard.pug
-  ul.home__popularList
-    li.home__popularList-item
+  ul.home__popularList 
+    h2._flex-cs Popular on Medium-rare
+    for _,_ in .popular
+      li.home__popularList-item._flex
+        .home__popularList-item__rank 0#{.Ranking}
+        .home__popularList-item__content
+          a(href="/read/{{ .StoryID }}").home__popularList-item__title #{ .Header }
+          span.home__popularList-item__author-name #{ .AuthorUsername }
+         .home__popularList-item__info
+            span #{ getStoryDate .CreatedAt }
+            ._devider-dot
+            span #{ .ReadTime }
