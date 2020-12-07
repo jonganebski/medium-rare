@@ -1,12 +1,11 @@
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 import {
-  clearCommentBox,
   commentDrawer,
-  drawNewComment,
   preparedCommentBox,
   commentCountDisplay,
-} from "./readStory";
+} from "./elements.readStory";
+import { drawNewComment, clearCommentBox } from "./page.ReadStory";
 
 const cancelCommentBtn = commentDrawer?.querySelector(
   ".add-comment__cancel-btn"

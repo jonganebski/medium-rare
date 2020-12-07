@@ -34,7 +34,7 @@ func Home(c *fiber.Ctx) error {
 	outputItem := new(homeOutput)
 	output := make([]homeOutput, 0)
 
-	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}})
+	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(20)
 	storyFilter := bson.D{{}}
 	cursor, err := storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
 	if err != nil {
@@ -178,7 +178,16 @@ func ReadStory(c *fiber.Ctx) error {
 
 	fmt.Println(isFollowing)
 
-	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked, "bookmarked": bookmarked, "isFollowing": isFollowing}, "layout/main")
+	return c.Render("readStory",
+		fiber.Map{"path": c.Path(),
+			"userId":      c.Locals("userId"),
+			"username":    user.Username,
+			"story":       story,
+			"author":      author,
+			"didLiked":    didLiked,
+			"bookmarked":  bookmarked,
+			"isFollowing": isFollowing},
+		"layout/main")
 }
 
 // EditStory renders a page where a user edits his/her story

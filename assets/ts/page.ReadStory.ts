@@ -4,36 +4,21 @@ import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
 import { BASE_URL } from "./constants";
 import Axios from "axios";
-
-const filterBlack = document.getElementById("filter-black");
-const editorReadOnlyHeader = document.getElementById("editor-readOnly__header");
-const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
-const likedContainer = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__liked-container"
-);
-const seeCommentDiv = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__comment-container"
-);
-const bookmarkContainer = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__bookmark-container"
-);
-const followBtn = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__follow-btn"
-) as HTMLButtonElement | null;
-const followingBtn = fixedAuthorInfo?.querySelector(
-  ".fixed-authorInfo__following-btn"
-) as HTMLButtonElement | null;
-
-export const commentCountDisplay = seeCommentDiv?.querySelector("span");
-export const commentDrawer = document.getElementById("drawer-comment");
-const commentDrawerCloseIcon = commentDrawer?.querySelector(
-  ".drawer-comment__close-icon"
-);
-export const preparedCommentBox = commentDrawer?.querySelector(
-  ".add-comment__text"
-) as HTMLParagraphElement | null;
-
-const commentsUlEl = commentDrawer?.querySelector("ul");
+import {
+  commentsUlEl,
+  preparedCommentBox,
+  editorReadOnlyHeader,
+  commentDrawer,
+  filterBlack,
+  likedContainer,
+  bookmarkContainer,
+  seeCommentDiv,
+  commentDrawerCloseIcon,
+  followBtn,
+  followingBtn,
+} from "./elements.readStory";
+import { onFollowBtnClick, onFollowingBtnClick } from "./follow";
+import { deleteComment } from "./deleteComment";
 
 export const drawNewComment = (comment: any) => {
   if (commentsUlEl) {
@@ -73,26 +58,9 @@ export const drawNewComment = (comment: any) => {
     if (isAuthorized) {
       deleteIcon = document.createElement("i");
       deleteIcon.className = "far fa-trash-alt comment__delete-icon";
-      deleteIcon.addEventListener("click", async () => {
-        const { status } = await Axios.delete(
-          BASE_URL + `/api/comment/${commentId}`
-        );
-        console.log(status);
-        if (status === 200) {
-          liEl.remove();
-          if (commentCountDisplay) {
-            const commentCount = parseInt(
-              commentCountDisplay.innerText.replace(/\,/g, "")
-            );
-            if (isNaN(commentCount)) {
-              console.error("wrong comment count format");
-              return;
-            }
-            commentCountDisplay.innerText = (commentCount - 1).toLocaleString();
-          }
-        }
-        return;
-      });
+      deleteIcon.addEventListener("click", () =>
+        deleteComment(liEl, commentId)
+      );
       headerEl.append(deleteIcon);
     }
     headerEl.append(avatarFrameEl);
@@ -254,41 +222,6 @@ const handleBookmark = async () => {
           .replace("true", "false")
           .replace("fas", "far");
       }
-    }
-  }
-};
-
-const onFollowBtnClick = async (e: Event) => {
-  const followBtn = e.currentTarget as HTMLButtonElement;
-  const authorId = followBtn.closest("header")?.id;
-  if (authorId) {
-    const { status } = await Axios.post(BASE_URL + `/api/follow/${authorId}`);
-    if (status === 200) {
-      followBtn.className = followBtn.className.replace("follow", "following");
-      followBtn.innerText = "Following";
-      followBtn.removeEventListener("click", onFollowBtnClick);
-      followBtn.addEventListener("click", onFollowingBtnClick);
-    }
-  }
-};
-
-const onFollowingBtnClick = async (e: Event) => {
-  const followingBtn = e.currentTarget as HTMLButtonElement;
-  const authorId = followingBtn.closest("header")?.id;
-  if (authorId) {
-    const isConfirmed = confirm("Unfollow this author?");
-    if (!isConfirmed) {
-      return;
-    }
-    const { status } = await Axios.post(BASE_URL + `/api/unfollow/${authorId}`);
-    if (status === 200) {
-      followingBtn.className = followingBtn.className.replace(
-        "following",
-        "follow"
-      );
-      followingBtn.innerText = "Follow";
-      followingBtn.removeEventListener("click", onFollowingBtnClick);
-      followingBtn.addEventListener("click", onFollowBtnClick);
     }
   }
 };
