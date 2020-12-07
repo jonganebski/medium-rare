@@ -26,8 +26,11 @@
       span I'm Lorem ipsum
     button Follow
   footer
-    .fixed-authorInfo__heart-container._flex-cs
-      i.far.fa-heart.fixed-authorInfo__heart-icon
+    .fixed-authorInfo__liked-container._flex-cs
+      if .didLiked
+        i.fas.fa-heart.fixed-authorInfo__liked-icon-true
+      else
+        i.far.fa-heart.fixed-authorInfo__liked-icon-false
       span #{ getSliceLen .story.LikedUserIDs }
     .fixed-authorInfo__comment-container._flex-cs
       i.far.fa-comment.fixed-authorInfo__comment-icon

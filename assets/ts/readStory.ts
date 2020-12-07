@@ -11,6 +11,10 @@ const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 const seeCommentDiv = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__comment-container"
 );
+const likedContainer = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__liked-container"
+);
+
 export const commentCountDisplay = seeCommentDiv?.querySelector("span");
 export const commentDrawer = document.getElementById("drawer-comment");
 const commentDrawerCloseIcon = commentDrawer?.querySelector(
@@ -188,6 +192,45 @@ const initReadStory = async () => {
   seeCommentDiv?.addEventListener("click", openCommentDrawer);
   seeCommentDiv?.addEventListener("click", getComments);
   commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
+  likedContainer?.addEventListener("click", async () => {
+    const splitedPath = document.location.pathname.split("read");
+    const storyId = splitedPath[1].replace(/[/]/g, "");
+    const childIcon = likedContainer.querySelector("i");
+    const childSpan = likedContainer.querySelector("span");
+    if (childIcon && childSpan) {
+      const likedCount = parseInt(childSpan.innerText.replace(/\,/, ""));
+      if (isNaN(likedCount)) {
+        console.error("wrong like count format");
+        return;
+      }
+      let plusMinus;
+      if (childIcon.className.includes("false")) {
+        plusMinus = 1;
+      } else if (childIcon.className.includes("true")) {
+        plusMinus = -1;
+      } else {
+        return;
+      }
+      const { status } = await Axios.post(
+        BASE_URL + `/api/like/${storyId}/${plusMinus}`
+      );
+      if (status === 200) {
+        if (childIcon.className.includes("false")) {
+          childSpan.innerText = (likedCount + 1).toLocaleString();
+          childIcon.className = childIcon.className
+            .replace("false", "true")
+            .replace("far", "fas");
+        } else if (childIcon.className.includes("true")) {
+          childSpan.innerText = (likedCount - 1).toLocaleString();
+          childIcon.className = childIcon.className
+            .replace("true", "false")
+            .replace("fas", "far");
+        } else {
+          return;
+        }
+      }
+    }
+  });
 };
 
 initReadStory();

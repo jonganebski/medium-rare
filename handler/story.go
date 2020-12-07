@@ -146,7 +146,17 @@ func ReadStory(c *fiber.Ctx) error {
 	user := new(model.User)
 	userResult.Decode(user)
 
-	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author}, "layout/main")
+	// --- did currnet user liked this story? ---
+
+	didLiked := false
+	for _, likedStoryID := range *user.LikedStoryIDs {
+		if likedStoryID == storyOID {
+			didLiked = true
+			break
+		}
+	}
+
+	return c.Render("readStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "story": story, "author": author, "didLiked": didLiked}, "layout/main")
 }
 
 // EditStory renders a page where a user edits his/her story
@@ -313,7 +323,6 @@ func HandleLikeCount(c *fiber.Ctx) error {
 
 	storyID := c.Params("storyId")
 	p := c.Params("plusMinus") // bigger than zero -> increase like / smaller than zero -> decrease like
-
 	plusMinus, err := strconv.Atoi(p)
 	if err != nil || plusMinus == 0 {
 		return c.SendStatus(400)
@@ -337,19 +346,26 @@ func HandleLikeCount(c *fiber.Ctx) error {
 	}
 	singleResult.Decode(user)
 
-	for i, likedStoryID := range *user.LikedStoryIDs {
-		// in case of increment, user cannot like the story twice
-		if plusMinus > 0 {
+	// --- check the user is allowed to like or unlike the story ---
+	var isAllowed bool
+	if plusMinus > 0 {
+		isAllowed = true
+		for _, likedStoryID := range *user.LikedStoryIDs {
 			if likedStoryID == storyOID {
-				return c.SendStatus(400)
+				isAllowed = false
 			}
 		}
-		// in case of decreament, user cannot cancel like that he/she didn't like
-		if plusMinus < 0 {
-			if i == len(*user.LikedStoryIDs)-1 {
-				return c.SendStatus(400)
+	}
+	if plusMinus < 0 {
+		isAllowed = false
+		for _, likedStoryID := range *user.LikedStoryIDs {
+			if likedStoryID == storyOID {
+				isAllowed = true
 			}
 		}
+	}
+	if !isAllowed {
+		return c.SendStatus(400)
 	}
 
 	var key string
