@@ -201,3 +201,114 @@ func SettingsPage(c *fiber.Ctx) error {
 
 	return c.Render("settings", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "bio": user.Bio}, "layout/main")
 }
+
+// EditUsername updates user's username
+func EditUsername(c *fiber.Ctx) error {
+
+	type editUsernameInput struct {
+		Username string `json:"username"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	input := new(editUsernameInput)
+	if err := c.BodyParser(input); err != nil {
+		return c.SendStatus(400)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "username", Value: input.Username}}}}
+	_, err = userCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	singleResult.Decode(user)
+
+	return c.Status(200).SendString(user.Username)
+}
+
+// EditBio updates user's username
+func EditBio(c *fiber.Ctx) error {
+
+	type editBioInput struct {
+		Bio string `json:"bio"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	input := new(editBioInput)
+	if err := c.BodyParser(input); err != nil {
+		return c.SendStatus(400)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bio", Value: input.Bio}}}}
+	_, err = userCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	singleResult.Decode(user)
+
+	return c.Status(200).SendString(user.Bio)
+}
+
+// EditUserAvatar updates user's username
+func EditUserAvatar(c *fiber.Ctx) error {
+
+	type editUserAvatarInput struct {
+		AvatarURL string `json:"avatarUrl"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	input := new(editUserAvatarInput)
+	if err := c.BodyParser(input); err != nil {
+		return c.SendStatus(400)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "avatarUrl", Value: input.AvatarURL}}}}
+	_, err = userCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+
+	singleResult.Decode(user)
+
+	return c.Status(200).SendString(user.AvatarURL)
+}

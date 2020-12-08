@@ -7,7 +7,7 @@ type User struct {
 	ID            string                `json:"id,omitempty" bson:"_id,omitempty"`
 	CreatedAt     int64                 `json:"createdAt"`
 	UpdatedAt     int64                 `json:"updatedAt"`
-	AvatarURL     string                `json:"avatarUrl,omitempty"`
+	AvatarURL     string                `json:"avatarUrl,omitempty" bson:"avatarUrl,omitempty"`
 	Username      string                `json:"username" bson:"username"`
 	Email         string                `json:"email" json:"email"`
 	Password      string                `json:"password"`

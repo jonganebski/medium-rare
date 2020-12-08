@@ -15,7 +15,7 @@
 .settings__stack {
   margin-bottom: 5rem;
   .settings__stack-content {
-    width: 100%;
+    width: 70%;
     .settings__stack-label {
       margin-bottom: 1rem;
       display: block;
@@ -24,7 +24,7 @@
       color: $fontBlack8;
     }
     .settings__stack-input {
-      width: 80%;
+      width: 100%;
       height: 2rem;
       margin-bottom: 1rem;
       color: $fontBlack8;
@@ -37,7 +37,7 @@
       display: none;
     }
     .settings__stack-description {
-      width: 90%;
+      width: 100%;
       font-size: 0.9rem;
       line-height: 1.2rem;
       color: $fontBlack8;
@@ -50,15 +50,18 @@
   }
   .settings__stack-control {
     white-space: nowrap;
-    .settings__stack-green-btn {
+    button {
+      margin: 0px 0.5rem;
+    }
+    .settings__green-btn {
       border-color: $green;
       color: $green;
     }
-    .settings__stack-gray-btn {
+    .settings__gray-btn {
       border-color: rgba(0, 0, 0, 0.2);
       color: rgba(0, 0, 0, 0.6);
     }
-    .settings__stack-red-btn {
+    .settings__red-btn {
       border: none;
       background-color: $red;
       color: white;
