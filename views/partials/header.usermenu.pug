@@ -4,14 +4,14 @@
     .usermenu__avatar-frame._avatar-frame
       img.usermenu__avatar-img._avatar-img(src="{{ .userAvatarUrl }}")
     div
-      span.usermenu__username._block Jin seok
-      span.usermenu__email._block admin@admin.com
+      span.usermenu__username._block #{ .username }
+      span.usermenu__email._block #{ .userEmail }
   ul
     li
       a._hover-color-black(href="/new-story") Write a story
     li
       a._hover-color-black(href="/me/stories") Stories
     li
-      a._hover-color-black(href="/") Settings
+      a._hover-color-black(href="/me/settings") Settings
   footer
     a.usermenu__signout._hover-color-black(href="/signout") Signout

@@ -1,0 +1,67 @@
+section.settings__profile
+  h2.settings__heading Profile
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label Name
+      input.settings__stack-input(type="text", value="{{ .username }}", disabled)
+      p.settings__stack-description Your name appears on your Profile page, on your stories as an author name and in your responses. It is a required field.
+    .settings__stack-control
+      button.settings__stack-green-btn Save
+      button.settings__stack-gray-btn Cancel
+      button.settings__stack-gray-btn Edit
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label Bio
+      input.settings__stack-input(type="text", value="{{ .bio }}", maxlength="160", disabled)
+      p.settings__stack-description Your bio appears on your stories and your profile page. Max 160 characters.
+    .settings__stack-control
+      button.settings__stack-green-btn Save
+      button.settings__stack-gray-btn Cancel
+      button.settings__stack-gray-btn Edit
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label Photo
+      input.settings__stack-file-input(type="file")
+      ._avatar-frame
+        img._avatar-img(src="{{ .userAvatarUrl }}")
+      p.settings__stack-description Your name appears on your Profile page, on your stories as an author name and in your responses. It is a required field.
+    .settings__stack-control
+      button.settings__stack-green-btn Save
+      button.settings__stack-gray-btn Cancel
+      button.settings__stack-gray-btn Edit
+section.settings__followers
+  h2.settings__heading Followers
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label My followers
+      p.settings__stack-description 1M
+    .settings__stack-control
+      button.settings__stack-green-btn See my followers
+section.settings__following
+  h2.settings__heading Following
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label I'm following
+      p.settings__stack-description 1
+    .settings__stack-control
+      button.settings__stack-green-btn See medium-rares I'm following
+section.settings__security
+  h2.settings__heading Security
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label Change password
+      input.settings__stack-input(type="password", disabled)
+      p.settings__stack-description Change your password. 
+    .settings__stack-control
+      button.settings__stack-green-btn Save
+      button.settings__stack-gray-btn Cancel
+      button.settings__stack-gray-btn Change
+  .settings__stack._flex-sb
+    .settings__stack-content
+      label.settings__stack-label Delete account
+      input.settings__stack-input(type="password")
+      p.settings__stack-description Your account and all related information will be removed.
+    .settings__stack-control
+      button.settings__stack-red-btn Delete
+      button.settings__stack-gray-btn Cancel
+      button.settings__stack-gray-btn Delete

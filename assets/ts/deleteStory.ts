@@ -3,7 +3,8 @@ import { BASE_URL } from "./constants";
 
 export const deleteStory = async () => {
   const isConfirmed = confirm(
-    "You are removing this story permanently. Are you sure?"
+    `You are removing this story permanently. 
+    Are you sure?`
   );
   if (isConfirmed) {
     const splitedPath = document.location.pathname.split("read");

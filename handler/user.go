@@ -179,3 +179,25 @@ func Unfollow(c *fiber.Ctx) error {
 
 	return c.SendStatus(200)
 }
+
+// SettingsPage renders settings page
+func SettingsPage(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	return c.Render("settings", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "bio": user.Bio}, "layout/main")
+}

@@ -40,6 +40,8 @@ func Home(c *fiber.Ctx) error {
 	popularOutput := make([]storyCardOutput, 0)
 
 	userAvatarURL := ""
+	username := ""
+	userEmail := ""
 	if c.Locals("userId") != nil {
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
@@ -57,6 +59,8 @@ func Home(c *fiber.Ctx) error {
 		}
 		userResult.Decode(user)
 		userAvatarURL = user.AvatarURL
+		username = user.Username
+		userEmail = user.Email
 	}
 
 	// --- find stories for the list --
@@ -260,6 +264,8 @@ func Home(c *fiber.Ctx) error {
 	return c.Render("home", fiber.Map{
 		"path":          c.Path(),
 		"userId":        c.Locals("userId"),
+		"username":      username,
+		"userEmail":     userEmail,
 		"userAvatarUrl": userAvatarURL,
 		"output":        output,
 		"editorsPickR":  editorsPickR,
@@ -287,7 +293,7 @@ func NewStory(c *fiber.Ctx) error {
 	}
 	userResult.Decode(user)
 
-	return c.Render("newStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL}, "layout/main")
+	return c.Render("newStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email}, "layout/main")
 }
 
 // ReadStory renders a page where a user reads a story
@@ -370,6 +376,7 @@ func ReadStory(c *fiber.Ctx) error {
 		fiber.Map{"path": c.Path(),
 			"userId":        c.Locals("userId"),
 			"username":      user.Username,
+			"userEmail":     user.Email,
 			"userAvatarUrl": user.AvatarURL,
 			"story":         story,
 			"author":        author,
@@ -420,7 +427,7 @@ func EditStory(c *fiber.Ctx) error {
 	}
 	userResult.Decode(user)
 
-	return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "story": story}, "layout/main")
+	return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "story": story}, "layout/main")
 }
 
 // ProvideStoryBlocks returns blocks of the story
@@ -752,7 +759,7 @@ func MyBookmarks(c *fiber.Ctx) error {
 		output = append(output, *outputItem)
 	}
 
-	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
+	return c.Render("bookmarks", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "output": output}, "layout/main")
 }
 
 // MyStories renders a page where shows current user's stories
@@ -824,7 +831,7 @@ func MyStories(c *fiber.Ctx) error {
 		output = append(output, *outputItem)
 	}
 
-	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
+	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "output": output}, "layout/main")
 }
 
 // DeleteStory removes a story and its all related documents and fields

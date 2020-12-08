@@ -21,6 +21,7 @@ func SetupRoutes(app *fiber.App) {
 	me := app.Group("/me", middleware.Protected)
 	me.Get("/bookmarks", handler.MyBookmarks)
 	me.Get("/stories", handler.MyStories)
+	me.Get("/settings", handler.SettingsPage)
 
 	publicAPI := app.Group("/api")
 	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)
