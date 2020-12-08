@@ -5,6 +5,7 @@ import "../scss/styles.scss";
 import "./page.ReadStory";
 import "./useHeader";
 import "./editUsername";
+import "./editBio";
 import "./auth";
 import "./addStory";
 import "./editStory";
