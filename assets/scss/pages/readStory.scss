@@ -30,12 +30,17 @@
     opacity: 0.7;
   }
   .editor-readOnly__authorArea__edit {
-    border-color: rgba(75, 132, 243, 1);
-    color: rgba(75, 132, 243, 1);
+    border-color: $blue;
+    color: $blue;
+  }
+  .editor-readOnly__authorArea__delete {
+    border: none;
+    background-color: $red;
+    color: white;
   }
   .editor-readOnly__authorArea__follow-btn {
-    border-color: rgba(75, 132, 243, 1);
-    color: rgba(75, 132, 243, 1);
+    border-color: $blue;
+    color: $blue;
   }
   .editor-readOnly__authorArea__bookmark-icon {
     font-size: 1.1rem;

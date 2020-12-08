@@ -17,9 +17,11 @@ import {
   followBtn,
   followingBtn,
   readTimeSpan,
+  deleteStoryBtn,
 } from "./elements.readStory";
 import { onFollowBtnClick, onFollowingBtnClick } from "./follow";
 import { deleteComment } from "./deleteComment";
+import { deleteStory } from "./deleteStory";
 
 export const drawNewComment = (comment: any) => {
   if (commentsUlEl) {
@@ -278,6 +280,7 @@ const initReadStory = async () => {
   bookmarkContainer?.addEventListener("click", handleBookmark);
   followBtn?.addEventListener("click", onFollowBtnClick);
   followingBtn?.addEventListener("click", onFollowingBtnClick);
+  deleteStoryBtn?.addEventListener("click", deleteStory);
 };
 
 initReadStory();

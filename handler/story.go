@@ -62,7 +62,7 @@ func Home(c *fiber.Ctx) error {
 	// --- find stories for the list --
 
 	storyFindOptions := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(30)
-	storyFilter := bson.D{{Key: "editorsPick", Value: false}}
+	storyFilter := bson.D{{Key: "isPublished", Value: true}, {Key: "editorsPick", Value: false}}
 	cursor, err := storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
 	if err != nil {
 		fmt.Println("Error at finding stories")
@@ -127,9 +127,8 @@ func Home(c *fiber.Ctx) error {
 
 	// --- find stories for editor's picks --
 
-	// storyFindOptions = options.Find().SetSort(bson.D{{Key: "editorsPick", Value: true}}).SetLimit(5)
 	storyFindOptions = options.Find().SetLimit(5)
-	storyFilter = bson.D{{Key: "editorsPick", Value: true}}
+	storyFilter = bson.D{{Key: "isPublished", Value: true}, {Key: "editorsPick", Value: true}}
 	cursor, err = storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
 	if err != nil {
 		fmt.Println("Error at finding stories")
@@ -192,7 +191,7 @@ func Home(c *fiber.Ctx) error {
 	// --- find stories for popular --
 
 	storyFindOptions = options.Find().SetSort(bson.D{{Key: "viewCount", Value: -1}}).SetLimit(5)
-	storyFilter = bson.D{{}}
+	storyFilter = bson.D{{Key: "isPublished", Value: true}}
 	cursor, err = storyCollection.Find(c.Context(), storyFilter, storyFindOptions)
 	if err != nil {
 		fmt.Println("Error at finding stories")
@@ -249,14 +248,23 @@ func Home(c *fiber.Ctx) error {
 		popularOutput = append(popularOutput, *outputItem)
 	}
 
+	editorsPickR := new(storyCardOutput)
+	editorsPickC := make([]storyCardOutput, 0)
+	editorsPickL := new(storyCardOutput)
+	if len(editorsPickOutput) != 0 {
+		editorsPickR = &editorsPickOutput[0]
+		editorsPickC = editorsPickOutput[1:4]
+		editorsPickL = &editorsPickOutput[4]
+	}
+
 	return c.Render("home", fiber.Map{
 		"path":          c.Path(),
 		"userId":        c.Locals("userId"),
 		"userAvatarUrl": userAvatarURL,
 		"output":        output,
-		"editorsPickR":  editorsPickOutput[0],
-		"editorsPickC":  editorsPickOutput[1:4],
-		"editorsPickL":  editorsPickOutput[4],
+		"editorsPickR":  editorsPickR,
+		"editorsPickC":  editorsPickC,
+		"editorsPickL":  editorsPickL,
 		"popular":       popularOutput,
 	}, "layout/main")
 }
@@ -465,6 +473,7 @@ func AddStory(c *fiber.Ctx) error {
 	story.CommentIDs = &[]primitive.ObjectID{}
 	story.ViewCount = 0
 	story.EditorsPick = false
+	story.IsPublished = true
 
 	insertiionResult, err := storyCollection.InsertOne(c.Context(), story)
 	if err != nil {
@@ -816,4 +825,110 @@ func MyStories(c *fiber.Ctx) error {
 	}
 
 	return c.Render("myStories", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "output": output}, "layout/main")
+}
+
+// DeleteStory removes a story and its all related documents and fields
+func DeleteStory(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+	storyCollection := mg.Db.Collection(StoryCollection)
+	commentCollection := mg.Db.Collection(CommentCollection)
+
+	storyOID, err := primitive.ObjectIDFromHex(c.Params("storyId"))
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	// --- find story ---
+
+	story := new(model.Story)
+	filter := bson.D{{Key: "_id", Value: storyOID}}
+	singleResult := storyCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		fmt.Println(singleResult.Err())
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(story)
+
+	// --- is current user authorized? ---
+
+	if story.CreatorID != userOID {
+		return c.SendStatus(400)
+	}
+
+	// --- remove from author's storyIDs ---
+
+	filter = bson.D{{Key: "_id", Value: userOID}}
+	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "storyIds", Value: storyOID}}}}
+	singleResult = userCollection.FindOneAndUpdate(c.Context(), filter, update)
+	if singleResult.Err() != nil {
+		fmt.Println(singleResult.Err())
+		return c.SendStatus(404)
+	}
+
+	// --- remove storyId from all likedStoryIDs and saveStoryIDs ---
+
+	filter = bson.D{{Key: "likedStoryIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: storyOID}}}}}}
+	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "likedStoryIds", Value: storyOID}}}}
+	_, err = userCollection.UpdateMany(c.Context(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+	filter = bson.D{{Key: "savedStoryIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: storyOID}}}}}}
+	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "savedStoryIds", Value: storyOID}}}}
+	_, err = userCollection.UpdateMany(c.Context(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	// --- remove all comments ---
+
+	for _, commentID := range *story.CommentIDs {
+		filter = bson.D{{Key: "_id", Value: commentID}}
+		deleteResult, err := commentCollection.DeleteOne(c.Context(), filter)
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(500)
+		}
+		if deleteResult.DeletedCount == 0 {
+			return c.SendStatus(404)
+		}
+	}
+
+	// --- remove all commentIDs in users's commentIDs ---
+
+	for _, commentID := range *story.CommentIDs {
+		filter = bson.D{{Key: "commentIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: commentID}}}}}}
+		update = bson.D{{Key: "$pull", Value: bson.D{{Key: "commentIds", Value: commentID}}}}
+		updateResult, err := userCollection.UpdateOne(c.Context(), filter, update)
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(500)
+		}
+		if updateResult.ModifiedCount == 0 {
+			return c.SendStatus(404)
+		}
+	}
+
+	// remove the story
+
+	filter = bson.D{{Key: "_id", Value: storyOID}}
+	deleteResult, err := storyCollection.DeleteOne(c.Context(), filter)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+	if deleteResult.DeletedCount == 0 {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(204)
 }

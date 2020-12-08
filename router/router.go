@@ -38,4 +38,5 @@ func SetupRoutes(app *fiber.App) {
 	privateAPI.Delete("/bookmark/:storyId", handler.DisBookmarkStory)
 	privateAPI.Delete("/comment/:commentId", handler.DeleteComment)
 	privateAPI.Delete("/photo", handler.DeletePhoto)
+	privateAPI.Delete("/story/:storyId", handler.DeleteStory)
 }

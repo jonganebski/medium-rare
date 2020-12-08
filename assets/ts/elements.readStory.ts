@@ -10,6 +10,9 @@ const editorReadOnlyAuthorArea = document.getElementById(
 export const readTimeSpan = editorReadOnlyAuthorArea?.querySelector(
   ".editor-readOnly__authorArea__readTime"
 ) as HTMLSpanElement | null;
+export const deleteStoryBtn = editorReadOnlyAuthorArea?.querySelector(
+  ".editor-readOnly__authorArea__delete"
+);
 
 export const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 export const likedContainer = fixedAuthorInfo?.querySelector(

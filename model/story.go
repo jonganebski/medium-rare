@@ -14,6 +14,7 @@ type Story struct {
 	EditorjsVer  string                `json:"version"`
 	ViewCount    uint32                `json:"viewCount" bson:"viewCount"`
 	EditorsPick  bool                  `json:"editorsPick" bson:"editorsPick"`
+	IsPublished  bool                  `json:"isPublished" bson:"isPublished"`
 	LikedUserIDs *[]primitive.ObjectID `json:"likedUserIds" bson:"likedUserIds"`
 	CommentIDs   *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
 }
