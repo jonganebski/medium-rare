@@ -2,8 +2,10 @@ package handler
 
 import (
 	"fmt"
+	"image"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -25,14 +27,22 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 
+	f, err := file.Open()
+	imageSrc, _, err := image.Decode(f)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+	resizedImg := imaging.Resize(imageSrc, 800, 0, imaging.Lanczos)
+
 	uuidWithHypen := uuid.New()
 	uuid := strings.Replace(uuidWithHypen.String(), "-", "", -1)
 
 	localURL := fmt.Sprintf("/image/%v", uuid+file.Filename)
 
-	if err = c.SaveFile(file, "."+localURL); err != nil {
+	if err = imaging.Save(resizedImg, "."+localURL); err != nil {
 		fmt.Println(err)
-		return c.SendStatus(500)
+		c.SendStatus(500)
 	}
 
 	output := new(uploadPhotoByFileOutput)
