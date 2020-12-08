@@ -46,6 +46,14 @@ func CreateUser(c *fiber.Ctx) error {
 	user.StoryIDs = &[]primitive.ObjectID{}
 	user.LikedStoryIDs = &[]primitive.ObjectID{}
 	user.SavedStoryIDs = &[]primitive.ObjectID{}
+	user.IsEditor = false
+
+	editorEmails := strings.Fields(config.Config("EDITORS"))
+	for _, editorEmail := range editorEmails {
+		if editorEmail == email {
+			user.IsEditor = true
+		}
+	}
 
 	insertionResult, err := userCollection.InsertOne(c.Context(), user)
 	if err != nil {
@@ -311,4 +319,22 @@ func EditUserAvatar(c *fiber.Ctx) error {
 	singleResult.Decode(user)
 
 	return c.Status(200).SendString(user.AvatarURL)
+}
+
+// DeleteUser removes current user and all related documents from the database and related fields
+func DeleteUser(c *fiber.Ctx) error {
+
+	// --- check password ---
+
+	// --- delete user's stories ---
+
+	// --- delete user's comments ---
+
+	// --- delte from other users's followingIDs ---
+
+	// --- delete avatar photo ---
+
+	// --- delete user ---
+
+	return c.Redirect("/")
 }

@@ -846,6 +846,7 @@ func DeleteStory(c *fiber.Ctx) error {
 		fmt.Println(err)
 		return c.SendStatus(500)
 	}
+
 	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 	if err != nil {
 		fmt.Println(err)

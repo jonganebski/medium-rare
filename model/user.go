@@ -5,13 +5,14 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 // User model
 type User struct {
 	ID            string                `json:"id,omitempty" bson:"_id,omitempty"`
-	CreatedAt     int64                 `json:"createdAt"`
-	UpdatedAt     int64                 `json:"updatedAt"`
-	AvatarURL     string                `json:"avatarUrl,omitempty" bson:"avatarUrl,omitempty"`
+	CreatedAt     int64                 `json:"createdAt" bson:"createdAt"`
+	UpdatedAt     int64                 `json:"updatedAt" bson:"updatedAt"`
+	AvatarURL     string                `json:"avatarUrl" bson:"avatarUrl"`
 	Username      string                `json:"username" bson:"username"`
-	Email         string                `json:"email" json:"email"`
+	Email         string                `json:"email"`
 	Password      string                `json:"password"`
 	Bio           string                `json:"bio,omitempty"`
+	IsEditor      bool                  `json:"isEditor" bson:"isEditor"`
 	FollowerIDs   *[]primitive.ObjectID `json:"followerIds" bson:"followerIds"`
 	FollowingIDs  *[]primitive.ObjectID `json:"followingIds" bson:"followingIds"`
 	CommentIDs    *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
