@@ -3,6 +3,7 @@ module home/jonganebski/github/medium-rare
 go 1.15
 
 require (
+	github.com/aws/aws-sdk-go v1.36.4
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible

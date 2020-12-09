@@ -1,10 +1,16 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
+	"home/jonganebski/github/medium-rare/config"
 	"image"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -38,16 +44,48 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 	uuidWithHypen := uuid.New()
 	uuid := strings.Replace(uuidWithHypen.String(), "-", "", -1)
 
-	localURL := fmt.Sprintf("/image/%v", uuid+file.Filename)
+	// ------
+	// AWS S3
+	// ------
 
-	if err = imaging.Save(resizedImg, "."+localURL); err != nil {
-		fmt.Println(err)
-		c.SendStatus(500)
+	bucketName := config.Config("BUCKET_NAME")
+
+	sess := connectAws()
+	uploader := s3manager.NewUploader(sess)
+
+	filename := uuid + file.Filename
+
+	buf := new(bytes.Buffer)
+	imaging.Encode(buf, resizedImg, imaging.JPEG)
+	reader := bytes.NewReader(buf.Bytes())
+
+	up, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucketName),
+		ACL:    aws.String("public-read"),
+		Key:    aws.String(filename),
+		Body:   reader,
+	})
+
+	if err != nil {
+		fmt.Println("Failed to upload file")
+		return c.SendStatus(500)
 	}
+
+	// ------
+	// Local
+	// ------
+
+	// localURL := fmt.Sprintf("/image/%v", uuid+file.Filename)
+
+	// if err = imaging.Save(resizedImg, "."+localURL); err != nil {
+	// 	fmt.Println(err)
+	// 	c.SendStatus(500)
+	// }
 
 	output := new(uploadPhotoByFileOutput)
 	output.Success = 1
-	output.File.URL = "http://localhost:4000" + localURL
+	// output.File.URL = "http://localhost:4000" + localURL
+	output.File.URL = up.Location
 
 	return c.Status(200).JSON(output)
 }
@@ -59,4 +97,20 @@ func DeletePhoto(c *fiber.Ctx) error {
 	// It's also on github issue https://github.com/editor-js/image/issues/54
 	// Wait for editorjs update.
 	return c.SendStatus(200)
+}
+
+func connectAws() *session.Session {
+	AccessKeyID := config.Config("AWS_ACCESS_KEY_ID")
+	SecretAccessKey := config.Config("AWS_SECRET_ACCESS_KEY")
+	MyRegion := config.Config("AWS_REGION")
+
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(MyRegion),
+		Credentials: credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, ""),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return sess
 }
