@@ -13,6 +13,12 @@ export const readTimeSpan = editorReadOnlyAuthorArea?.querySelector(
 export const deleteStoryBtn = editorReadOnlyAuthorArea?.querySelector(
   ".editor-readOnly__authorArea__delete"
 );
+export const pickStoryBtn = editorReadOnlyAuthorArea?.querySelector(
+  ".editor-readOnly__pick"
+);
+export const unpickStoryBtn = editorReadOnlyAuthorArea?.querySelector(
+  ".editor-readOnly__unpick"
+);
 
 export const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 export const likedContainer = fixedAuthorInfo?.querySelector(

@@ -259,10 +259,17 @@ func Home(c *fiber.Ctx) error {
 	editorsPickR := new(storyCardOutput)
 	editorsPickC := make([]storyCardOutput, 0)
 	editorsPickL := new(storyCardOutput)
-	if len(editorsPickOutput) != 0 {
-		editorsPickR = &editorsPickOutput[0]
-		editorsPickC = editorsPickOutput[1:4]
-		editorsPickL = &editorsPickOutput[4]
+
+	for i, output := range editorsPickOutput {
+		if i == 0 {
+			editorsPickR = &output
+		}
+		if 0 < i && i < 4 {
+			editorsPickC = append(editorsPickC, output)
+		}
+		if i == 4 {
+			editorsPickL = &output
+		}
 	}
 
 	return c.Render("home", fiber.Map{
@@ -382,6 +389,7 @@ func ReadStory(c *fiber.Ctx) error {
 			"username":      user.Username,
 			"userEmail":     user.Email,
 			"userAvatarUrl": user.AvatarURL,
+			"isEditor":      user.IsEditor,
 			"story":         story,
 			"author":        author,
 			"didLiked":      didLiked,
@@ -962,4 +970,86 @@ func DeleteStory(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(204)
+}
+
+// PickStory is admin only. It picks a story so it can be presented on the top of the homepage
+func PickStory(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	if !user.IsEditor {
+		return c.SendStatus(403)
+	}
+
+	filter = bson.D{{Key: "_id", Value: storyOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "editorsPick", Value: true}}}}
+	updateResult, err := storyCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if updateResult.ModifiedCount == 0 {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(200)
+}
+
+// UnpickStory make a story unpicked so it no longer show up on the top of the homepage
+func UnpickStory(c *fiber.Ctx) error {
+
+	userCollection := mg.Db.Collection(UserCollection)
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	storyID := c.Params("storyId")
+	storyOID, err := primitive.ObjectIDFromHex(storyID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	if !user.IsEditor {
+		return c.SendStatus(403)
+	}
+
+	filter = bson.D{{Key: "_id", Value: storyOID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "editorsPick", Value: false}}}}
+	updateResult, err := storyCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if updateResult.ModifiedCount == 0 {
+		return c.SendStatus(404)
+	}
+
+	return c.SendStatus(200)
 }

@@ -36,7 +36,6 @@ const handlePassEditCancelBtn = (e: Event) => {
 };
 
 const handlePassEditBtn = (e: Event) => {
-  console.log("foo");
   if (!editPasswordEl.input) {
     return;
   }

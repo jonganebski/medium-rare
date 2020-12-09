@@ -48,4 +48,8 @@ func SetupRoutes(app *fiber.App) {
 	privateAPI.Delete("/photo", handler.DeletePhoto)
 	privateAPI.Delete("/story/:storyId", handler.DeleteStory)
 	privateAPI.Delete("/user", handler.DeleteUser)
+
+	admin := app.Group("/admin")
+	admin.Post("/pick/:storyId", handler.PickStory)
+	admin.Post("/unpick/:storyId", handler.UnpickStory)
 }

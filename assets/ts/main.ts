@@ -12,6 +12,7 @@ import "./auth";
 import "./addStory";
 import "./editStory";
 import "./addComment";
+import "./pickUnpickStory";
 
 const main = () => {
   console.log("Hello World");

@@ -8,6 +8,11 @@
   .editor-readOnly__authorArea__name {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
   .editor-readOnly__authorArea__readTime
+  if .isEditor 
+    if .story.EditorsPick
+      button.editor-readOnly__unpick Unpick 
+    else
+      button.editor-readOnly__pick Pick
   if .userId
     if isMyStory .author.ID .userId
       a(href="/edit-story/{{ .story.ID }}")
