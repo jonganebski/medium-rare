@@ -1,4 +1,5 @@
 export const settingsProfile = document.getElementById("settings__profile");
+export const settingsSecurity = document.getElementById("settings__security");
 
 export const editUsernameEl = {
   input: settingsProfile?.querySelector(
@@ -23,4 +24,14 @@ export const editAvatarEl = {
     ".settings__avatar-img"
   ) as HTMLImageElement | null,
   editBtn: settingsProfile?.querySelector(".settings__editAvatar-btn"),
+};
+
+export const editPasswordEl = {
+  input: settingsSecurity?.querySelector(
+    ".settings__passInput"
+  ) as HTMLInputElement | null,
+  editBtn: settingsSecurity?.querySelector(".settings__editPass-btn"),
+  desc: settingsSecurity?.querySelector(
+    ".settings__passDesc"
+  ) as HTMLElement | null,
 };

@@ -45,12 +45,12 @@ section#settings__security.settings__security
   .settings__stack._flex-sb
     .settings__stack-content
       label.settings__stack-label Change password
-      input.settings__stack-input(type="password", disabled)
-      p.settings__stack-description Change your password. 
+      input.settings__stack-input.settings__passInput(type="password", disabled)
+      p.settings__stack-description.settings__passDesc Change your password. 
     .settings__stack-control
-      button.settings__stack-green-btn Save
-      button.settings__stack-gray-btn Cancel
-      button.settings__stack-gray-btn Change
+      //- button.settings__stack-green-btn Save
+      //- button.settings__stack-gray-btn Cancel
+      button.settings__gray-btn.settings__editPass-btn Change
   .settings__stack._flex-sb
     .settings__stack-content
       label.settings__stack-label Delete account
@@ -59,4 +59,4 @@ section#settings__security.settings__security
     .settings__stack-control
       button.settings__stack-red-btn Delete
       button.settings__stack-gray-btn Cancel
-      button.settings__stack-gray-btn Delete
+      button.settings__gray-btn Delete

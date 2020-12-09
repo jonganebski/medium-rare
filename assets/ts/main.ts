@@ -7,6 +7,7 @@ import "./useHeader";
 import "./editUsername";
 import "./editBio";
 import "./editAvatar";
+import "./editPassword";
 import "./auth";
 import "./addStory";
 import "./editStory";

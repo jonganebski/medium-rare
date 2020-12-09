@@ -376,6 +376,54 @@ func EditUserAvatar(c *fiber.Ctx) error {
 // EditPassword changes current user's password
 func EditPassword(c *fiber.Ctx) error {
 
+	type editPasswordInput struct {
+		OriginalPass string `json:"originalPass"`
+		FirstPass    string `json:"firstPass"`
+		SecondPass   string `json:"secondPass"`
+	}
+	userCollection := mg.Db.Collection(UserCollection)
+
+	input := new(editPasswordInput)
+
+	if err := c.BodyParser(input); err != nil {
+		return c.SendStatus(400)
+	}
+
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	user := new(model.User)
+	filter := bson.D{{Key: "_id", Value: userOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(user)
+
+	isValid := util.VerifyPassword(input.OriginalPass, user.Password)
+	if !isValid {
+		return c.SendStatus(400)
+	}
+	if input.FirstPass != input.SecondPass {
+		return c.SendStatus(400)
+	}
+	if len(input.FirstPass) < 6 {
+		return c.SendStatus(400)
+	}
+
+	newPass := util.HashPassword(input.FirstPass)
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "password", Value: newPass}}}}
+	updateResult, err := userCollection.UpdateOne(c.Context(), filter, update)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if updateResult.ModifiedCount == 0 {
+		return c.SendStatus(404)
+	}
+
 	return c.SendStatus(200)
 }
 
