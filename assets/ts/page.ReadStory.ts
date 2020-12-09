@@ -218,6 +218,7 @@ const likeOrUnlike = async () => {
       const { status } = await Axios.post(
         BASE_URL + `/api/like/${storyId}/${plusMinus}`
       );
+      console.log(status);
       if (status === 200) {
         if (childIcon.className.includes("false")) {
           childSpan.innerText = (likedCount + 1).toLocaleString();

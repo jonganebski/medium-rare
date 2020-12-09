@@ -341,47 +341,50 @@ func ReadStory(c *fiber.Ctx) error {
 	author := new(model.User)
 	authorResult.Decode(author)
 
-	// --- currnet user ---
-	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
-	if err != nil {
-		return c.SendStatus(500)
-	}
-	filter = bson.D{{Key: "_id", Value: userOID}}
-	userResult := userCollection.FindOne(c.Context(), filter)
-	if userResult.Err() != nil {
-		return c.SendStatus(404)
-	}
-
-	user := new(model.User)
-	userResult.Decode(user)
-
-	// --- did currnet user liked this story? ---
-
 	didLiked := false
-	for _, likedStoryID := range *user.LikedStoryIDs {
-		if likedStoryID == storyOID {
-			didLiked = true
-			break
-		}
-	}
-
-	// --- did current user bookmarked this story?
-
 	bookmarked := false
-	for _, savedStoryID := range *user.SavedStoryIDs {
-		if savedStoryID == storyOID {
-			bookmarked = true
-			break
-		}
-	}
-
-	// --- is current user following author of the story
-
 	isFollowing := false
-	for _, followerID := range *author.FollowerIDs {
-		if followerID == userOID {
-			isFollowing = true
-			break
+
+	// --- currnet user ---
+	user := new(model.User)
+	if c.Locals("userId") != nil {
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			return c.SendStatus(500)
+		}
+		filter = bson.D{{Key: "_id", Value: userOID}}
+		userResult := userCollection.FindOne(c.Context(), filter)
+		if userResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+
+		userResult.Decode(user)
+
+		// --- did currnet user liked this story? ---
+
+		for _, likedStoryID := range *user.LikedStoryIDs {
+			if likedStoryID == storyOID {
+				didLiked = true
+				break
+			}
+		}
+
+		// --- did current user bookmarked this story?
+
+		for _, savedStoryID := range *user.SavedStoryIDs {
+			if savedStoryID == storyOID {
+				bookmarked = true
+				break
+			}
+		}
+
+		// --- is current user following author of the story
+
+		for _, followerID := range *author.FollowerIDs {
+			if followerID == userOID {
+				isFollowing = true
+				break
+			}
 		}
 	}
 

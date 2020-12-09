@@ -455,11 +455,14 @@ func SeeFollowers(c *fiber.Ctx) error {
 	singleResult.Decode(targetUser)
 
 	user := new(model.User)
-	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
-	if err != nil {
-		return c.SendStatus(500)
-	}
-	if c.Locals("userId") != "" {
+	follower := new(followerOutput)
+	followers := make([]followerOutput, 0)
+
+	if c.Locals("userId") != nil {
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			return c.SendStatus(500)
+		}
 
 		filter = bson.D{{Key: "_id", Value: userOID}}
 		singleResult = userCollection.FindOne(c.Context(), filter)
@@ -467,11 +470,25 @@ func SeeFollowers(c *fiber.Ctx) error {
 			return c.SendStatus(404)
 		}
 		singleResult.Decode(user)
+		for _, followerID := range *targetUser.FollowerIDs {
+			filter := bson.D{{Key: "_id", Value: followerID}}
+			singleResult := userCollection.FindOne(c.Context(), filter)
+			if singleResult.Err() != nil {
+				return c.SendStatus(404)
+			}
+			singleResult.Decode(follower)
+			follower.ID = followerID.Hex()
+			follower.IsMe = (userOID == followerID)
+			follower.AmIFollowing = false
+			for _, followingID := range *user.FollowingIDs {
+				if followingID == followerID {
+					follower.AmIFollowing = true
+					break
+				}
+			}
+			followers = append(followers, *follower)
+		}
 	}
-
-	follower := new(followerOutput)
-	followers := make([]followerOutput, 0)
-
 	for _, followerID := range *targetUser.FollowerIDs {
 		filter := bson.D{{Key: "_id", Value: followerID}}
 		singleResult := userCollection.FindOne(c.Context(), filter)
@@ -480,18 +497,22 @@ func SeeFollowers(c *fiber.Ctx) error {
 		}
 		singleResult.Decode(follower)
 		follower.ID = followerID.Hex()
-		follower.IsMe = (userOID == followerID)
+		follower.IsMe = false
 		follower.AmIFollowing = false
-		for _, followingID := range *user.FollowingIDs {
-			if followingID == followerID {
-				follower.AmIFollowing = true
-				break
-			}
-		}
 		followers = append(followers, *follower)
 	}
 
-	return c.Render("followers", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "targetUser": targetUser, "followers": followers}, "layout/main")
+	return c.Render("followers",
+		fiber.Map{
+			"path":          c.Path(),
+			"userId":        c.Locals("userId"),
+			"userAvatarUrl": user.AvatarURL,
+			"username":      user.Username,
+			"userEmail":     user.Email,
+			"targetUser":    targetUser,
+			"followers":     followers,
+		},
+		"layout/main")
 }
 
 // SeeFollowings renders a page where shows users target user is following

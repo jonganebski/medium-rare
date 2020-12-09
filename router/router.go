@@ -12,7 +12,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/", handler.Home)
 	app.Get("/new-story", middleware.Protected, handler.NewStory)
 	app.Get("/read/:storyId", handler.ReadStory)
-	app.Get("/edit-story/:storyId", handler.EditStory)
+	app.Get("/edit-story/:storyId", middleware.Protected, handler.EditStory)
 	app.Get("/followers/:userId", handler.SeeFollowers)
 
 	app.Get("/signout", middleware.Protected, handler.Signout)
@@ -29,7 +29,7 @@ func SetupRoutes(app *fiber.App) {
 	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)
 	publicAPI.Get("/comment/:storyId", handler.ProvideComments)
 
-	privateAPI := app.Group("/api", middleware.Protected)
+	privateAPI := app.Group("/api", middleware.APIGuard)
 
 	privateAPI.Post("/bookmark/:storyId", handler.BookmarkStory)
 	privateAPI.Post("/comment/:storyId", handler.AddComment)

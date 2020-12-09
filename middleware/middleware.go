@@ -31,15 +31,15 @@ func Protected(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-// OnlyPublic only accepts loged-out users
-// func OnlyPublic(c *fiber.Ctx) error {
-// 	userID := c.Locals("userId")
-// 	username := c.Locals("username")
-// 	if userID != nil && username != nil {
-// 		return c.Redirect(fmt.Sprintf("/%v", username))
-// 	}
-// 	return c.Next()
-// }
+// APIGuard only accepts logged-in users
+func APIGuard(c *fiber.Ctx) error {
+	userID := c.Locals("userId")
+	username := c.Locals("username")
+	if userID == nil || username == nil {
+		return c.SendStatus(400)
+	}
+	return c.Next()
+}
 
 // SpreadLocals gives local variables to context
 func SpreadLocals(c *fiber.Ctx) error {

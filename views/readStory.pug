@@ -18,7 +18,6 @@
       a(href="/edit-story/{{ .story.ID }}")
         button.editor-readOnly__authorArea__edit Edit
       button.editor-readOnly__authorArea__delete Delete
-  else
     button.editor-readOnly__authorArea__follow-btn Follow
     i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon
 #editor-readOnly__body
@@ -32,18 +31,22 @@
       span #{.author.Bio}
     .fixed-authorInfo__followerCount
       a(href="/followers/{{ .author.ID }}") #{ getSliceLen .author.FollowerIDs } Followers
-    if isMyStory .author.ID .userId  
-    else
-      if .isFollowing
-        button.fixed-authorInfo__following-btn Following
+    if .userId  
+      if isMyStory .author.ID .userId  
       else
-        button.fixed-authorInfo__follow-btn Follow
+        if .isFollowing
+          button.fixed-authorInfo__following-btn Following
+        else
+          button.fixed-authorInfo__follow-btn Follow
   footer
     .fixed-authorInfo__liked-container._flex-cs
-      if .didLiked
-        i.fas.fa-heart.fixed-authorInfo__liked-icon-true
+      if .userId
+        if .didLiked
+          i.fas.fa-heart.fixed-authorInfo__liked-icon-true
+        else
+          i.far.fa-heart.fixed-authorInfo__liked-icon-false
       else
-        i.far.fa-heart.fixed-authorInfo__liked-icon-false
+        i.far.fa-heart.fixed-authorInfo__liked-icon-deactivated
       span #{ getSliceLen .story.LikedUserIDs }
     .fixed-authorInfo__comment-container._flex-cs
       i.far.fa-comment.fixed-authorInfo__comment-icon
