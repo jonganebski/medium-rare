@@ -30,6 +30,8 @@
       span #{.author.Username}
     .fixed-authorInfo__bio 
       span #{.author.Bio}
+    .fixed-authorInfo__followerCount
+      a(href="/followers/{{ .author.ID }}") #{ getSliceLen .author.FollowerIDs } Followers
     if isMyStory .author.ID .userId  
     else
       if .isFollowing

@@ -1,0 +1,13 @@
+li.userCard__container._flex-cb
+    a._flex-cs(href="{{ .ID }}")
+        ._avatar-frame
+            img._avatar-img(src="{{ .AvatarURL }}")
+        span.userCard__username #{ .Username }
+    if $.followings
+        button.userCard__unfollow-btn Unfollow
+    if $.followers
+        if .IsMe
+        else if .AmIFollowing
+            button.userCard__following-btn Following
+        else
+            button.userCard__follow-btn Follow

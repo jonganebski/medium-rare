@@ -1,0 +1,28 @@
+.userCard__container {
+  width: 100%;
+  padding: 2rem 1rem 2rem 1rem;
+  background-color: white;
+  ._avatar-frame {
+    width: 3rem;
+    height: 3rem;
+    margin-right: 1rem;
+  }
+  .userCard__username {
+    font-size: 1.3rem;
+    color: $fontBlack9;
+  }
+  .userCard__follow-btn {
+    color: $green;
+    border-color: $green;
+  }
+  .userCard__unfollow-btn {
+    color: white;
+    border: none;
+    background-color: $red;
+  }
+  .userCard__following-btn {
+    color: white;
+    border: none;
+    background-color: $green;
+  }
+}

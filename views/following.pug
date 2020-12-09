@@ -1,0 +1,5 @@
+header.following-list-page__header
+    h3 You are following #{getSliceLen .followingIDs} medium-rares.
+ul.following-list-page__followings-list
+    for _,_ in .followings
+        include views/partials/userCard.pug

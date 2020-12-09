@@ -23,6 +23,7 @@ var StoryCollection = config.Config("COLLECTION_STORY")
 
 type storyCardOutput struct {
 	StoryID        string `json:"storyId"`
+	AuthorID       string `json:"authorId"`
 	AuthorUsername string `json:"authorUsername"`
 	CreatedAt      int64  `json:"createdAt"`
 	Header         string `json:"header"`
@@ -125,6 +126,7 @@ func Home(c *fiber.Ctx) error {
 
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
+		outputItem.AuthorID = author.ID
 		outputItem.Header = story.Blocks[0].Data.Text
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt

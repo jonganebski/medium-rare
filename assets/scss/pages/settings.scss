@@ -40,6 +40,10 @@
       width: 0px;
       display: none;
     }
+    input::placeholder {
+      font-size: 0.8rem;
+      color: $fontBlack6;
+    }
     .settings__stack-description {
       width: 100%;
       margin-bottom: 1rem;

@@ -29,17 +29,19 @@ section#settings__followers.settings__followers
   .settings__stack._flex-sb
     .settings__stack-content
       label.settings__stack-label My followers
-      p.settings__stack-description 1M
+      p.settings__stack-description #{ .followerCount }
     .settings__stack-control
-      button.settings__stack-green-btn See my followers
+      a(href="/followers/{{ .userId }}")
+        button.settings__green-btn See my followers
 section#settings__following.settings__following
   h2.settings__heading Following
   .settings__stack._flex-sb
     .settings__stack-content
       label.settings__stack-label I'm following
-      p.settings__stack-description 1
+      p.settings__stack-description #{ .followingCount }
     .settings__stack-control
-      button.settings__stack-green-btn See medium-rares I'm following
+      a(href="/me/following/")
+        button.settings__green-btn See medium-rares I'm following
 section#settings__security.settings__security
   h2.settings__heading Security
   .settings__stack._flex-sb

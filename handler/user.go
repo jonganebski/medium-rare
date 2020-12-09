@@ -215,7 +215,7 @@ func SettingsPage(c *fiber.Ctx) error {
 	}
 	singleResult.Decode(user)
 
-	return c.Render("settings", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "bio": user.Bio}, "layout/main")
+	return c.Render("settings", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "bio": user.Bio, "followerCount": len(*user.FollowerIDs), "followingCount": len(*user.FollowingIDs)}, "layout/main")
 }
 
 // EditUsername updates user's username
@@ -425,6 +425,116 @@ func EditPassword(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(200)
+}
+
+// SeeFollowers renders a page where shows target user's followers
+func SeeFollowers(c *fiber.Ctx) error {
+
+	type followerOutput struct {
+		ID           string `json:"id"`
+		Username     string `json:"username"`
+		AvatarURL    string `json:"avatarUrl"`
+		AmIFollowing bool   `json:"amIFollowing"`
+		IsMe         bool   `json:"isMe"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	targetUserID := c.Params("userId")
+	targetUserOID, err := primitive.ObjectIDFromHex(targetUserID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+
+	targetUser := new(model.User)
+	filter := bson.D{{Key: "_id", Value: targetUserOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(targetUser)
+
+	user := new(model.User)
+	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if c.Locals("userId") != "" {
+
+		filter = bson.D{{Key: "_id", Value: userOID}}
+		singleResult = userCollection.FindOne(c.Context(), filter)
+		if singleResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		singleResult.Decode(user)
+	}
+
+	follower := new(followerOutput)
+	followers := make([]followerOutput, 0)
+
+	for _, followerID := range *targetUser.FollowerIDs {
+		filter := bson.D{{Key: "_id", Value: followerID}}
+		singleResult := userCollection.FindOne(c.Context(), filter)
+		if singleResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		singleResult.Decode(follower)
+		follower.ID = followerID.Hex()
+		follower.IsMe = (userOID == followerID)
+		follower.AmIFollowing = false
+		for _, followingID := range *user.FollowingIDs {
+			if followingID == followerID {
+				follower.AmIFollowing = true
+				break
+			}
+		}
+		followers = append(followers, *follower)
+	}
+
+	return c.Render("followers", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "userAvatarUrl": user.AvatarURL, "username": user.Username, "userEmail": user.Email, "targetUser": targetUser, "followers": followers}, "layout/main")
+}
+
+// SeeFollowings renders a page where shows users target user is following
+func SeeFollowings(c *fiber.Ctx) error {
+
+	type followingOutput struct {
+		ID        string `json:"id"`
+		Username  string `json:"username"`
+		AvatarURL string `json:"avatarUrl"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+
+	user := new(model.User)
+	if c.Locals("userId") != "" {
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		filter := bson.D{{Key: "_id", Value: userOID}}
+		singleResult := userCollection.FindOne(c.Context(), filter)
+		if singleResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		singleResult.Decode(user)
+	}
+
+	following := new(followingOutput)
+	followings := make([]*followingOutput, 0)
+
+	for _, followingID := range *user.FollowingIDs {
+		filter := bson.D{{Key: "_id", Value: followingID}}
+		singleResult := userCollection.FindOne(c.Context(), filter)
+		if singleResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		singleResult.Decode(following)
+		following.ID = followingID.Hex()
+		followings = append(followings, following)
+	}
+
+	return c.Render("following", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "userAvatarUrl": user.AvatarURL, "userEmail": user.Email, "followingIDs": user.FollowingIDs, "followings": followings}, "layout/main")
 }
 
 // DeleteUser removes current user and all related documents from the database and related fields

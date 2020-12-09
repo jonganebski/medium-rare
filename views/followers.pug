@@ -1,0 +1,5 @@
+header.followers-list-page__header
+  h3 #{getSliceLen .targetUser.FollowerIDs} Followers
+ul.followers-list-page__followers-list
+  for _,_ in .followers
+    include views/partials/userCard.pug
