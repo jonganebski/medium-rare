@@ -1,15 +1,23 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
+	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/database"
 	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/util"
+	"image"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -167,7 +175,7 @@ func Unfollow(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
-	// --- add author's userID into current user's FollowingIDs ---
+	// --- remove author's userID from current user's FollowingIDs ---
 
 	filter := bson.D{{Key: "_id", Value: userOID}}
 	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "followingIds", Value: authorOID}}}}
@@ -176,7 +184,7 @@ func Unfollow(c *fiber.Ctx) error {
 		return c.SendStatus(404)
 	}
 
-	// --- add current user's userID into author's FollowingIDs ---
+	// --- remove current user's userID from author's FollowingIDs ---
 
 	filter = bson.D{{Key: "_id", Value: authorOID}}
 	update = bson.D{{Key: "$pull", Value: bson.D{{Key: "followerIds", Value: userOID}}}}
@@ -287,10 +295,6 @@ func EditBio(c *fiber.Ctx) error {
 // EditUserAvatar updates user's username
 func EditUserAvatar(c *fiber.Ctx) error {
 
-	type editUserAvatarInput struct {
-		AvatarURL string `json:"avatarUrl"`
-	}
-
 	userCollection := mg.Db.Collection(UserCollection)
 
 	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
@@ -298,14 +302,62 @@ func EditUserAvatar(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
-	input := new(editUserAvatarInput)
-	if err := c.BodyParser(input); err != nil {
+	file, err := c.FormFile("avatarUrl")
+	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(400)
+	}
+	oldURL := c.FormValue("oldAvatarUrl")
+	oldFileName := strings.Split(oldURL, "amazonaws.com/")[1]
+
+	f, err := file.Open()
+	imageSrc, _, err := image.Decode(f)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+	resizedImg := imaging.Resize(imageSrc, 200, 0, imaging.Lanczos)
+
+	uuidWithHypen := uuid.New()
+	uuid := strings.Replace(uuidWithHypen.String(), "-", "", -1)
+
+	// ------
+	// AWS S3
+	// ------
+
+	bucketName := config.Config("BUCKET_NAME")
+
+	sess := myaws.ConnectAws()
+	uploader := s3manager.NewUploader(sess)
+
+	filename := uuid + file.Filename
+
+	buf := new(bytes.Buffer)
+	imaging.Encode(buf, resizedImg, imaging.JPEG)
+	reader := bytes.NewReader(buf.Bytes())
+
+	up, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucketName),
+		ACL:    aws.String("public-read"),
+		Key:    aws.String(filename),
+		Body:   reader,
+	})
+
+	if err != nil {
+		fmt.Println("Failed to upload file")
+		return c.SendStatus(500)
+	}
+
+	svc := s3.New(sess)
+	_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
 	}
 
 	user := new(model.User)
 	filter := bson.D{{Key: "_id", Value: userOID}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "avatarUrl", Value: input.AvatarURL}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "avatarUrl", Value: up.Location}}}}
 	_, err = userCollection.UpdateOne(c.Context(), filter, update)
 	if err != nil {
 		return c.SendStatus(500)
@@ -319,6 +371,12 @@ func EditUserAvatar(c *fiber.Ctx) error {
 	singleResult.Decode(user)
 
 	return c.Status(200).SendString(user.AvatarURL)
+}
+
+// EditPassword changes current user's password
+func EditPassword(c *fiber.Ctx) error {
+
+	return c.SendStatus(200)
 }
 
 // DeleteUser removes current user and all related documents from the database and related fields

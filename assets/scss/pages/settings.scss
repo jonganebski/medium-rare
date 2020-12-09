@@ -17,11 +17,15 @@
   .settings__stack-content {
     width: 70%;
     .settings__stack-label {
-      margin-bottom: 1rem;
+      width: 100%;
       display: block;
+      margin-bottom: 1rem;
       font-weight: 700;
       font-size: 1.1rem;
       color: $fontBlack8;
+      p {
+        font-weight: 500;
+      }
     }
     .settings__stack-input {
       width: 100%;
@@ -42,10 +46,22 @@
       line-height: 1.2rem;
       color: $fontBlack8;
     }
+    .settings__stack-avatar-description {
+      width: 60%;
+    }
     ._avatar-frame {
       width: 5rem;
       height: 5rem;
-      margin-bottom: 1rem;
+      margin-left: 1rem;
+      .settings__uploadAvatar-guide {
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        opacity: 0.6;
+        color: white;
+        font-size: 0.9rem;
+        z-index: $headerZIndex;
+      }
     }
   }
   .settings__stack-control {

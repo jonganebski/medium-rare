@@ -14,16 +14,15 @@ section#settings__profile.settings__profile
       p.settings__stack-description Your bio appears on your stories and your profile page. Max 160 characters.
     .settings__stack-control
       button.settings__gray-btn.settings__editBio-btn Edit
-  .settings__stack._flex-sb
+  form.settings__stack._flex-sb.settings__stack-avatar-form
     .settings__stack-content
       label.settings__stack-label Photo
-      input.settings__stack-file-input.settings__avatarInput(type="file")
-      ._avatar-frame
-        img._avatar-img(src="{{ .userAvatarUrl }}")
-      p.settings__stack-description Your name appears on your Profile page, on your stories as an author name and in your responses. It is a required field.
+      ._flex-sb
+        p.settings__stack-description.settings__stack-avatar-description Your name appears on your Profile page, on your stories as an author name and in your responses. It is a required field.
+        ._avatar-frame._flex-cc
+          img._avatar-img.settings__avatar-img(src="{{ .userAvatarUrl }}")
+      input.settings__stack-file-input.settings__avatarInput(name="avatarUrl",type="file", accept="image/*", multipart=false)
     .settings__stack-control
-      button.settings__green-btn.settings__saveAvatar-btn Save
-      button.settings__gray-btn.settings__cancelAvatar-btn Cancel
       button.settings__gray-btn.settings__editAvatar-btn Edit
 section#settings__followers.settings__followers
   h2.settings__heading Followers

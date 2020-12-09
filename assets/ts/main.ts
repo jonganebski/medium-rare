@@ -6,6 +6,7 @@ import "./page.ReadStory";
 import "./useHeader";
 import "./editUsername";
 import "./editBio";
+import "./editAvatar";
 import "./auth";
 import "./addStory";
 import "./editStory";
