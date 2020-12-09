@@ -2,12 +2,16 @@ package handler
 
 import (
 	"fmt"
+	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/helper"
 	"home/jonganebski/github/medium-rare/model"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -926,7 +930,26 @@ func DeleteStory(c *fiber.Ctx) error {
 		}
 	}
 
-	// remove the story
+	// --- remove related images in AWS S3 ---
+
+	objects := make([]*s3.ObjectIdentifier, 0)
+	for _, block := range story.Blocks {
+		if block.Type == "image" {
+			fileName := strings.Split(block.Data.File.URL, "amazonaws.com/")[1]
+			objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(fileName)})
+		}
+	}
+
+	sess := myaws.ConnectAws()
+	svc := s3.New(sess)
+	bucketName := config.Config("BUCKET_NAME")
+	_, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(500)
+	}
+
+	// --- remove the story ---
 
 	filter = bson.D{{Key: "_id", Value: storyOID}}
 	deleteResult, err := storyCollection.DeleteOne(c.Context(), filter)

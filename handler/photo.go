@@ -3,13 +3,12 @@ package handler
 import (
 	"bytes"
 	"fmt"
+	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"image"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
@@ -18,6 +17,7 @@ import (
 
 // UploadPhotoByFilename saves photo that user attached on the story 'when attatchment occurs'
 func UploadPhotoByFilename(c *fiber.Ctx) error {
+
 	type fileDetail struct {
 		URL string `json:"url"`
 	}
@@ -26,6 +26,8 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 		Success uint8      `json:"success"`
 		File    fileDetail `json:"file"`
 	}
+
+	output := new(uploadPhotoByFileOutput)
 
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -39,7 +41,7 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 		fmt.Println(err)
 		return c.SendStatus(500)
 	}
-	resizedImg := imaging.Resize(imageSrc, 800, 0, imaging.Lanczos)
+	resizedImg := imaging.Resize(imageSrc, 1000, 0, imaging.Lanczos)
 
 	uuidWithHypen := uuid.New()
 	uuid := strings.Replace(uuidWithHypen.String(), "-", "", -1)
@@ -50,7 +52,7 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 
 	bucketName := config.Config("BUCKET_NAME")
 
-	sess := connectAws()
+	sess := myaws.ConnectAws()
 	uploader := s3manager.NewUploader(sess)
 
 	filename := uuid + file.Filename
@@ -70,6 +72,7 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 		fmt.Println("Failed to upload file")
 		return c.SendStatus(500)
 	}
+	output.File.URL = up.Location
 
 	// ------
 	// Local
@@ -81,11 +84,9 @@ func UploadPhotoByFilename(c *fiber.Ctx) error {
 	// 	fmt.Println(err)
 	// 	c.SendStatus(500)
 	// }
-
-	output := new(uploadPhotoByFileOutput)
-	output.Success = 1
 	// output.File.URL = "http://localhost:4000" + localURL
-	output.File.URL = up.Location
+
+	output.Success = 1
 
 	return c.Status(200).JSON(output)
 }
@@ -97,20 +98,4 @@ func DeletePhoto(c *fiber.Ctx) error {
 	// It's also on github issue https://github.com/editor-js/image/issues/54
 	// Wait for editorjs update.
 	return c.SendStatus(200)
-}
-
-func connectAws() *session.Session {
-	AccessKeyID := config.Config("AWS_ACCESS_KEY_ID")
-	SecretAccessKey := config.Config("AWS_SECRET_ACCESS_KEY")
-	MyRegion := config.Config("AWS_REGION")
-
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(MyRegion),
-		Credentials: credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, ""),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	return sess
 }
