@@ -1,4 +1,4 @@
-import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
+import EditorJS, { LogLevels, OutputBlockData } from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
@@ -65,6 +65,7 @@ export const useEditor = (
     data: {
       blocks,
     },
+    logLevel: LogLevels?.ERROR ?? "ERROR",
   });
   publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
 };

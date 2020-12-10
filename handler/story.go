@@ -60,7 +60,8 @@ func Home(c *fiber.Ctx) error {
 		userFilter := bson.D{{Key: "_id", Value: userOID}}
 		userResult := userCollection.FindOne(c.Context(), userFilter)
 		if userResult.Err() != nil {
-			return c.SendStatus(404)
+			c.ClearCookie()
+			return c.Redirect("/")
 		}
 		userResult.Decode(user)
 		userAvatarURL = user.AvatarURL
@@ -770,6 +771,7 @@ func MyBookmarks(c *fiber.Ctx) error {
 
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
+		outputItem.AuthorID = author.ID
 		outputItem.Header = story.Blocks[0].Data.Text
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt

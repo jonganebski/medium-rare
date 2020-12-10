@@ -9,7 +9,6 @@ import (
 	"home/jonganebski/github/medium-rare/helper"
 	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/util"
-	"image"
 	"strings"
 	"time"
 
@@ -331,7 +330,7 @@ func EditUserAvatar(c *fiber.Ctx) error {
 	oldFileName := strings.Split(oldURL, "amazonaws.com/")[1]
 
 	f, err := file.Open()
-	imageSrc, _, err := image.Decode(f)
+	imageSrc, err := imaging.Decode(f)
 	if err != nil {
 		fmt.Println(err)
 		return c.SendStatus(500)
@@ -368,11 +367,13 @@ func EditUserAvatar(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
-	svc := s3.New(sess)
-	_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
-	if err != nil {
-		fmt.Println(err)
-		return c.SendStatus(500)
+	if oldFileName != "blank-profile.webp" {
+		svc := s3.New(sess)
+		_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(500)
+		}
 	}
 
 	user := new(model.User)

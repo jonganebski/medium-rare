@@ -4,6 +4,7 @@ import {
   addCommentBtn,
   cancelCommentBtn,
   commentCountDisplay,
+  commentDrawerCommentCount,
   preparedCommentBox,
 } from "./elements.readStory";
 import { clearCommentBox, drawNewComment } from "./page.ReadStory";
@@ -32,6 +33,13 @@ const initAddComment = () => {
           }
         );
         if (status === 201) {
+          if (commentDrawerCommentCount) {
+            const prevCount = +commentDrawerCommentCount.innerText;
+            if (!isNaN(prevCount)) {
+              commentDrawerCommentCount.innerText = prevCount + 1 + "";
+            }
+          }
+          preparedCommentBox.innerText = "";
           commentCountDisplay.innerText = (commentCount + 1).toLocaleString();
           drawNewComment(comment);
         }

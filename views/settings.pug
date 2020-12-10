@@ -21,7 +21,7 @@ section#settings__profile.settings__profile
         p.settings__stack-description.settings__stack-avatar-description Your name appears on your Profile page, on your stories as an author name and in your responses. It is a required field.
         ._avatar-frame._flex-cc
           img._avatar-img.settings__avatar-img(src="{{ .userAvatarUrl }}")
-      input.settings__stack-file-input.settings__avatarInput(name="avatarUrl",type="file", accept="image/*", multipart=false)
+      input.settings__stack-file-input.settings__avatarInput(name="avatarUrl",type="file", accept="image/png, image/jpg, image/jpeg", multipart=false)
     .settings__stack-control
       button.settings__gray-btn.settings__editAvatar-btn Edit
 section#settings__followers.settings__followers
@@ -50,8 +50,6 @@ section#settings__security.settings__security
       input.settings__stack-input.settings__passInput(type="password", disabled)
       p.settings__stack-description.settings__passDesc Change your password. 
     .settings__stack-control
-      //- button.settings__stack-green-btn Save
-      //- button.settings__stack-gray-btn Cancel
       button.settings__gray-btn.settings__editPass-btn Change
   .settings__stack._flex-sb
     .settings__stack-content

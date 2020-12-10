@@ -42,6 +42,9 @@ export const commentDrawer = document.getElementById("drawer-comment");
 export const commentDrawerCloseIcon = commentDrawer?.querySelector(
   ".drawer-comment__close-icon"
 );
+export const commentDrawerCommentCount = commentDrawer?.querySelector(
+  ".drawer-comment__commentCount"
+) as HTMLSpanElement | null;
 export const preparedCommentBox = commentDrawer?.querySelector(
   ".add-comment__text"
 ) as HTMLParagraphElement | null;

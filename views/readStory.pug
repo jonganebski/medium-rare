@@ -18,8 +18,6 @@
       a(href="/edit-story/{{ .story.ID }}")
         button.editor-readOnly__authorArea__edit Edit
       button.editor-readOnly__authorArea__delete Delete
-    else
-      img(src="/image/bookmark.far.svg")._fai.editor-readOnly__authorArea__bookmark-icon
 #editor-readOnly__body
 #fixed-authorInfo.fixed-authorInfo
   header(id="{{ .author.ID }}")._flex-c-se

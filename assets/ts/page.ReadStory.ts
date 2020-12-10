@@ -1,4 +1,4 @@
-import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
+import EditorJS, { LogLevels, OutputBlockData } from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
@@ -22,6 +22,26 @@ import {
 import { onFollowBtnClick, onFollowingBtnClick } from "./follow";
 import { deleteComment } from "./deleteComment";
 import { deleteStory } from "./deleteStory";
+import { getIdParam } from "./helper";
+
+const getFomattedCommentDate = (createdAt: any): string => {
+  const createdAtNum = +createdAt;
+  if (!isNaN(createdAtNum)) {
+    const inMilliSec = createdAtNum * 1000;
+    const unixNow = new Date().getTime();
+    const diff = unixNow - inMilliSec;
+    const diffMin = Math.ceil(diff / 60 / 1000);
+    if (diffMin === 1) {
+      return `just now`;
+    }
+    if (diffMin < 60) {
+      return `${diffMin} minutes ago`;
+    }
+    return new Date(inMilliSec).toLocaleString();
+  } else {
+    return "unknown";
+  }
+};
 
 export const drawNewComment = (comment: any) => {
   if (commentsUlEl) {
@@ -33,6 +53,7 @@ export const drawNewComment = (comment: any) => {
       username,
       isAuthorized,
     } = comment;
+    const commentDate = getFomattedCommentDate(createdAt);
     const textEl = document.createElement("p");
     const timestampEl = document.createElement("div");
     const usernameEl = document.createElement("div");
@@ -52,7 +73,7 @@ export const drawNewComment = (comment: any) => {
     liEl.className = "drawer-comment__comment-container";
     liEl.id = commentId;
     textEl.innerText = text;
-    timestampEl.innerText = createdAt;
+    timestampEl.innerText = commentDate;
     usernameEl.innerText = username;
     avatarImgEl.src = avatarUrl;
     infoEl.append(usernameEl);
@@ -157,6 +178,7 @@ const initEditorReadOnly = async (storyId: string) => {
       },
     },
     data: { blocks },
+    logLevel: LogLevels?.ERROR ?? "ERROR",
   });
   headerEditor.isReady.then(async () => {
     await headerEditor.readOnly.toggle(true);
@@ -183,8 +205,7 @@ const openCommentDrawer = () => {
 };
 
 const getComments = async () => {
-  const splitedPath = document.location.pathname.split("read");
-  const storyId = splitedPath[1].replace(/[/]/g, "");
+  const storyId = getIdParam("read");
   const { status, data } = await Axios.get(
     BASE_URL + `/api/comment/${storyId}`
   );
@@ -196,8 +217,7 @@ const getComments = async () => {
 };
 
 const likeOrUnlike = async () => {
-  const splitedPath = document.location.pathname.split("read");
-  const storyId = splitedPath[1].replace(/[/]/g, "");
+  const storyId = getIdParam("read");
   const childIcon = likedContainer?.querySelector("i");
   const childSpan = likedContainer?.querySelector("span");
   if (childIcon && childSpan) {
@@ -218,7 +238,6 @@ const likeOrUnlike = async () => {
       const { status } = await Axios.post(
         BASE_URL + `/api/like/${storyId}/${plusMinus}`
       );
-      console.log(status);
       if (status === 200) {
         if (childIcon.className.includes("false")) {
           childSpan.innerText = (likedCount + 1).toLocaleString();
@@ -239,8 +258,7 @@ const likeOrUnlike = async () => {
 };
 
 const handleBookmark = async () => {
-  const splitedPath = document.location.pathname.split("read");
-  const storyId = splitedPath[1].replace(/[/]/g, "");
+  const storyId = getIdParam("read");
   const childIcon = bookmarkContainer?.querySelector("i");
   if (childIcon) {
     if (childIcon.className.includes("false")) {
@@ -269,7 +287,7 @@ const initReadStory = async () => {
   if (BASE_URL) {
     const params = document.location.pathname.split(BASE_URL)[0].split("/");
     if (params[1] === "read") {
-      const storyId = params[2];
+      const storyId = getIdParam("read");
       await initEditorReadOnly(storyId);
     }
   }
