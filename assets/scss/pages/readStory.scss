@@ -38,10 +38,6 @@
     background-color: $red;
     color: white;
   }
-  .editor-readOnly__authorArea__follow-btn {
-    border-color: $blue;
-    color: $blue;
-  }
   .editor-readOnly__authorArea__bookmark-icon {
     font-size: 1.1rem;
     cursor: pointer;
@@ -73,6 +69,7 @@
       margin-bottom: 0.8rem;
       color: $fontBlack7;
       font-size: 0.8rem;
+      line-height: 1.2rem;
     }
     .fixed-authorInfo__followerCount {
       margin-bottom: 0.8rem;

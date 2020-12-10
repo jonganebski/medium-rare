@@ -21,10 +21,12 @@
       cursor: default;
     }
     .userBio__userBio {
+      max-width: 400px;
       margin-top: 1rem;
       font-size: 0.9rem;
       color: $fontBlack7;
       font-weight: 500;
+      line-height: 1.2rem;
     }
   }
 }

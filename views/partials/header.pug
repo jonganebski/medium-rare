@@ -9,7 +9,7 @@ header#main-header.main-header._flex-cc
       button.main-header__publish-btn #{publishBtnText .path}
     if .userId
       a(href="/me/bookmarks")
-        i.far.fa-bookmark.main-header__bookmark-icon
+        img(src="/image/bookmark.far.svg").main-header__bookmark-icon
       div._relative
         .main-header__avatar-frame._avatar-frame
           img.main-header__avatar-img._avatar-img(src="{{ .userAvatarUrl }}")

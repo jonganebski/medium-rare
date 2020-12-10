@@ -18,8 +18,8 @@
       a(href="/edit-story/{{ .story.ID }}")
         button.editor-readOnly__authorArea__edit Edit
       button.editor-readOnly__authorArea__delete Delete
-    button.editor-readOnly__authorArea__follow-btn Follow
-    i.far.fa-bookmark.editor-readOnly__authorArea__bookmark-icon
+    else
+      img(src="/image/bookmark.far.svg")._fai.editor-readOnly__authorArea__bookmark-icon
 #editor-readOnly__body
 #fixed-authorInfo.fixed-authorInfo
   header(id="{{ .author.ID }}")._flex-c-se
@@ -32,7 +32,7 @@
     .fixed-authorInfo__followerCount
       a(href="/followers/{{ .author.ID }}") #{ getSliceLen .author.FollowerIDs } Followers
     if .userId  
-      if isMyStory .author.ID .userId  
+      if isMyStory .author.ID .userId
       else
         if .isFollowing
           button.fixed-authorInfo__following-btn Following
@@ -58,7 +58,7 @@
         else
           i.far.fa-bookmark.fixed-authorInfo__bookmark-icon-false
       else 
-        i.far.fa-bookmark.fixed-authorInfo__bookmark-icon-deactivated
+        i.fa-bookamrk.far.fixed-authorInfo__bookmark-icon-deactivated
 
 include views/partials/drawer.comment.pug
 //- <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>

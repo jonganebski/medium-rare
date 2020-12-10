@@ -3,7 +3,7 @@
         img._avatar-img(src="{{ .targetUser.AvatarURL }}")
     .userBio__userInfo-container
         ._flex-cs
-            a.userBio__username(href="/user-home/{{ .targetUser.ID }}") #{ .targetUser.Username }
+            p.userBio__username(href="/user-home/{{ .targetUser.ID }}") #{ .targetUser.Username }
             if .targetUser.IsEditor
                 button.userBio__editorBadge(disabled) Editor
         p.userBio__userBio #{ .targetUser.Bio }

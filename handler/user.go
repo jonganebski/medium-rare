@@ -46,7 +46,8 @@ func CreateUser(c *fiber.Ctx) error {
 	user.Email = email
 	user.Password = util.HashPassword(password)
 	user.Username = strings.Split(email, "@")[0]
-	user.AvatarURL = "http://localhost:4000/image/blank-profile.webp"
+	// user.AvatarURL = "http://localhost:4000/image/blank-profile.webp"
+	user.AvatarURL = "https://medium-rare.s3.amazonaws.com/blank-profile.webp"
 	user.CreatedAt = time.Now().Unix()
 	user.UpdatedAt = time.Now().Unix()
 	user.CommentIDs = &[]primitive.ObjectID{}
@@ -140,9 +141,27 @@ func Follow(c *fiber.Ctx) error {
 		return c.SendStatus(500)
 	}
 
+	// --- find author ---
+
+	author := new(model.User)
+	filter := bson.D{{Key: "_id", Value: authorOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(author)
+
+	// --- check the user is following the author already or not
+
+	for _, followerID := range *author.FollowerIDs {
+		if followerID == userOID {
+			return c.SendStatus(400)
+		}
+	}
+
 	// --- add author's userID into current user's FollowingIDs ---
 
-	filter := bson.D{{Key: "_id", Value: userOID}}
+	filter = bson.D{{Key: "_id", Value: userOID}}
 	update := bson.D{{Key: "$push", Value: bson.D{{Key: "followingIds", Value: authorOID}}}}
 	updateResult := userCollection.FindOneAndUpdate(c.Context(), filter, update)
 	if updateResult.Err() != nil {
@@ -489,18 +508,19 @@ func SeeFollowers(c *fiber.Ctx) error {
 			}
 			followers = append(followers, *follower)
 		}
-	}
-	for _, followerID := range *targetUser.FollowerIDs {
-		filter := bson.D{{Key: "_id", Value: followerID}}
-		singleResult := userCollection.FindOne(c.Context(), filter)
-		if singleResult.Err() != nil {
-			return c.SendStatus(404)
+	} else {
+		for _, followerID := range *targetUser.FollowerIDs {
+			filter := bson.D{{Key: "_id", Value: followerID}}
+			singleResult := userCollection.FindOne(c.Context(), filter)
+			if singleResult.Err() != nil {
+				return c.SendStatus(404)
+			}
+			singleResult.Decode(follower)
+			follower.ID = followerID.Hex()
+			follower.IsMe = false
+			follower.AmIFollowing = false
+			followers = append(followers, *follower)
 		}
-		singleResult.Decode(follower)
-		follower.ID = followerID.Hex()
-		follower.IsMe = false
-		follower.AmIFollowing = false
-		followers = append(followers, *follower)
 	}
 
 	return c.Render("followers",
