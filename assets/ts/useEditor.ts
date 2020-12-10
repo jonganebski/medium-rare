@@ -6,8 +6,16 @@ import { publishBtn } from "./elements.header";
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 
-const handlePublishBtnClick = async (editor: EditorJS) => {
+const handlePublishBtnClick = async (
+  editor: EditorJS,
+  imgUrlsHistory: Set<string>
+) => {
   const savedData = await editor.save();
+  const imgBlocks = savedData.blocks.filter((block) => block.type === "image");
+  imgBlocks.forEach((imgBlock) => {
+    const usedImg = imgBlock.data.file.url;
+    imgUrlsHistory.delete(usedImg);
+  });
   if (document.location.pathname.includes("new-story")) {
     try {
       const { status, data: storyId } = await Axios.post(
@@ -16,6 +24,7 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
       );
       if (status === 201) {
         document.location.href = `/read/${storyId}`;
+        // request delete images in imgUrlsHistory
       }
     } catch {}
     return;
@@ -30,6 +39,7 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
       );
       if (status === 200) {
         document.location.href = `/read/${storyId}`;
+        // request delete images in imgUrlsHistory
       }
     } catch {}
     return;
@@ -67,5 +77,20 @@ export const useEditor = (
     },
     logLevel: LogLevels?.ERROR ?? "ERROR",
   });
-  publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
+  editor.isReady.then(() => {
+    const imgUrlsHistory = new Set<string>();
+    publishBtn?.addEventListener("click", () =>
+      handlePublishBtnClick(editor, imgUrlsHistory)
+    );
+    document.body.addEventListener("click", () => {
+      const imgElements = document
+        .getElementById(holder)
+        ?.querySelectorAll(
+          ".image-tool__image-picture"
+        ) as NodeListOf<HTMLImageElement>;
+      imgElements?.forEach((imgEl) => {
+        imgUrlsHistory.add(imgEl.src);
+      });
+    });
+  });
 };

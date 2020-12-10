@@ -5,7 +5,6 @@ import { editUsernameEl } from "./elements.settings";
 let prevUsernameInputValue = "";
 
 const updateUsername = async (e: Event) => {
-  console.log("foo");
   if (!editUsernameEl.input) {
     return;
   }

@@ -36,7 +36,6 @@ const handleAvatarClick = () => {
 };
 
 const updateAvatar = async (e: Event) => {
-  console.log("foo");
   e.preventDefault();
   const form = e.currentTarget as HTMLFormElement | null;
   if (!form) {
