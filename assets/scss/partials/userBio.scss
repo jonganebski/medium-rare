@@ -1,0 +1,30 @@
+.userBio {
+  margin-bottom: 3rem;
+  ._avatar-frame {
+    width: 7rem;
+    height: 7rem;
+  }
+  .userBio__userInfo-container {
+    margin-left: 2rem;
+    .userBio__username {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .userBio__editorBadge {
+      margin-left: 1rem;
+      padding: 0.25rem 0.5rem;
+      border: none;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background-color: teal;
+      cursor: default;
+    }
+    .userBio__userBio {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: $fontBlack7;
+      font-weight: 500;
+    }
+  }
+}

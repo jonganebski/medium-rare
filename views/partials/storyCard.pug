@@ -6,7 +6,7 @@ li.storyCard._flex
           h3.storyCard__header {{ .Header }}
           p.storyCard__body #{grindBody .Body 120}
         div
-          span.storyCard__author-name {{ .AuthorUsername }} 
+          a(href="user-home/{{ .AuthorID }}").storyCard__author-name._block {{ .AuthorUsername }} 
           .storyCard__info 
             span #{getStoryDate .CreatedAt}
             ._devider-dot

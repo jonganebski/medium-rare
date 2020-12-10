@@ -8,7 +8,7 @@ section.home__picks
       .home__picks-c-l__header #{ .editorsPickR.Header }
       .home__picks-c-l__body #{ grindBody (.editorsPickR.Body) 200 }
     .home__picks-c-l__info
-      .home__picks-c-l__author-name #{ .editorsPickR.AuthorUsername }
+      a(href="/user-home/{{ .editorsPickR.AuthorID }}").home__picks-c-l__author-name._block #{ .editorsPickR.AuthorUsername }
       .home__picks-c-l__detail
         span #{ getStoryDate .editorsPickR.CreatedAt }
         ._devider-dot
@@ -23,7 +23,7 @@ section.home__picks
         .home__picks-c-c__content._flex-c-sb
           a(href="/read/{{ .StoryID }}").home__picks-c-c__header #{ .Header }
           a(href="/read/{{ .StoryID }}").home__picks-c-c__body #{ grindBody .Body 40 }
-          .home__picks-c-c__author-name #{ .AuthorUsername }
+          a(href="/user-home/{{ .AuthorID }}").home__picks-c-c__author-name._block #{ .AuthorUsername }
           .home__picks-c-c__detail
             span #{ getStoryDate .CreatedAt }
             ._devider-dot
@@ -36,7 +36,7 @@ section.home__picks
     .home__picks-c-r__content
       a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__header #{ .editorsPickL.Header }
       a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__body #{ grindBody .editorsPickL.Body 100 }
-      .home__picks-c-r__author-name #{ .editorsPickL.AuthorUsername }
+      a(href="/user-home/{{ .editorsPickL.AuthorID }}").home__picks-c-r__author-name._block #{ .editorsPickL.AuthorUsername }
       .home__picks-c-r__detail 
         span #{ getStoryDate .editorsPickL.CreatedAt }
         ._devider-dot
@@ -53,7 +53,7 @@ section.home__articles
         .home__popularList-item__rank 0#{.Ranking}
         .home__popularList-item__content
           a(href="/read/{{ .StoryID }}").home__popularList-item__title #{ .Header }
-          span.home__popularList-item__author-name #{ .AuthorUsername }
+          a(href="/user-home/{{ .AuthorID }}").home__popularList-item__author-name._block #{ .AuthorUsername }
          .home__popularList-item__info
             span #{ getStoryDate .CreatedAt }
             ._devider-dot

@@ -14,6 +14,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/read/:storyId", handler.ReadStory)
 	app.Get("/edit-story/:storyId", middleware.Protected, handler.EditStory)
 	app.Get("/followers/:userId", handler.SeeFollowers)
+	app.Get("/user-home/:userId", handler.UserHome)
 
 	app.Get("/signout", middleware.Protected, handler.Signout)
 	app.Post("/signup", handler.CreateUser)

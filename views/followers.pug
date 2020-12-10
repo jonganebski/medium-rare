@@ -1,4 +1,5 @@
-header.followers-list-page__header
+header.followers-list-page__header._flex-c-cs
+  include views/partials/userBio.pug
   h3 #{getSliceLen .targetUser.FollowerIDs} Followers
 ul.followers-list-page__followers-list
   for _,_ in .followers

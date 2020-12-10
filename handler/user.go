@@ -6,6 +6,7 @@ import (
 	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/database"
+	"home/jonganebski/github/medium-rare/helper"
 	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/util"
 	"image"
@@ -527,7 +528,7 @@ func SeeFollowings(c *fiber.Ctx) error {
 	userCollection := mg.Db.Collection(UserCollection)
 
 	user := new(model.User)
-	if c.Locals("userId") != "" {
+	if c.Locals("userId") != nil {
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
 			return c.SendStatus(500)
@@ -556,6 +557,109 @@ func SeeFollowings(c *fiber.Ctx) error {
 	}
 
 	return c.Render("following", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "username": user.Username, "userAvatarUrl": user.AvatarURL, "userEmail": user.Email, "followingIDs": user.FollowingIDs, "followings": followings}, "layout/main")
+}
+
+// UserHome renders target user's page
+func UserHome(c *fiber.Ctx) error {
+
+	type storyCardOutput struct {
+		StoryID        string `json:"storyId"`
+		AuthorID       string `json:"authorId"`
+		AuthorUsername string `json:"authorUsername"`
+		CreatedAt      int64  `json:"createdAt"`
+		Header         string `json:"header"`
+		Body           string `json:"body"`
+		CoverImgURL    string `json:"coverImgUrl"`
+		ReadTime       string `json:"readTime"`
+		Ranking        int    `json:"ranking,omitempty"`
+	}
+
+	userCollection := mg.Db.Collection(UserCollection)
+	storyCollection := mg.Db.Collection(StoryCollection)
+
+	outputItem := new(storyCardOutput)
+	output := make([]storyCardOutput, 0)
+
+	targetUserID := c.Params("userId")
+	targetUserOID, err := primitive.ObjectIDFromHex(targetUserID)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	targetUser := new(model.User)
+	filter := bson.D{{Key: "_id", Value: targetUserOID}}
+	singleResult := userCollection.FindOne(c.Context(), filter)
+	if singleResult.Err() != nil {
+		return c.SendStatus(404)
+	}
+	singleResult.Decode(targetUser)
+
+	stories := make([]model.Story, 0)
+	filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: targetUser.StoryIDs}}}}
+	cursor, err := storyCollection.Find(c.Context(), filter)
+	if err != nil {
+		return c.SendStatus(500)
+	}
+	if err = cursor.All(c.Context(), &stories); err != nil {
+		return c.SendStatus(500)
+	}
+
+	for _, story := range stories {
+
+		body := ""
+		coverImgURL := ""
+		totalText := ""
+		for _, block := range story.Blocks {
+			if block.Type == "paragraph" {
+				totalText += block.Data.Text
+				if body == "" {
+					body = block.Data.Text
+				}
+			}
+			if block.Type == "image" && coverImgURL == "" {
+				coverImgURL = block.Data.File.URL
+			}
+			if block.Type == "code" {
+				totalText += block.Data.Code
+			}
+		}
+		readTimeText := helper.ComputeReadTime(totalText)
+
+		outputItem.AuthorUsername = targetUser.Username
+		outputItem.StoryID = story.ID
+		outputItem.Header = story.Blocks[0].Data.Text
+		outputItem.Body = body
+		outputItem.CreatedAt = story.CreatedAt
+		outputItem.CoverImgURL = coverImgURL
+		outputItem.ReadTime = readTimeText
+		output = append(output, *outputItem)
+	}
+
+	user := new(model.User)
+	if c.Locals("userId") != nil {
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		filter = bson.D{{Key: "_id", Value: userOID}}
+		singleResult = userCollection.FindOne(c.Context(), filter)
+		if singleResult.Err() != nil {
+			return c.SendStatus(404)
+		}
+		singleResult.Decode(user)
+	}
+
+	return c.Render("user-home",
+		fiber.Map{
+			"path":          c.Path(),
+			"userId":        c.Locals("userId"),
+			"username":      user.Username,
+			"userAvatarUrl": user.AvatarURL,
+			"userEmail":     user.Email,
+			"targetUser":    targetUser,
+			"output":        output,
+		},
+		"layout/main")
 }
 
 // DeleteUser removes current user and all related documents from the database and related fields

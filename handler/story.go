@@ -190,6 +190,7 @@ func Home(c *fiber.Ctx) error {
 
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
+		outputItem.AuthorID = author.ID
 		outputItem.Header = story.Blocks[0].Data.Text
 		outputItem.Body = body
 		outputItem.CreatedAt = story.CreatedAt
@@ -249,6 +250,7 @@ func Home(c *fiber.Ctx) error {
 
 		outputItem.AuthorUsername = author.Username
 		outputItem.StoryID = story.ID
+		outputItem.AuthorID = author.ID
 		outputItem.Header = story.Blocks[0].Data.Text
 		outputItem.Body = ""
 		outputItem.CreatedAt = story.CreatedAt
