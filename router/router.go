@@ -27,18 +27,18 @@ func SetupRoutes(app *fiber.App) {
 	me.Get("/stories", handler.MyStories)       // refactored
 
 	publicAPI := app.Group("/api")
-	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)
-	publicAPI.Get("/comment/:storyId", handler.ProvideComments)
+	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks) // refactored
+	publicAPI.Get("/comment/:storyId", handler.ProvideComments)   // refactored
 
 	privateAPI := app.Group("/api", middleware.APIGuard)
 
-	privateAPI.Post("/bookmark/:storyId", handler.BookmarkStory)
-	privateAPI.Post("/comment/:storyId", handler.AddComment)
-	privateAPI.Post("/follow/:authorId", handler.Follow)
-	privateAPI.Post("/like/:storyId/:plusMinus", handler.HandleLikeCount)
-	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)
-	privateAPI.Post("/unfollow/:authorId", handler.Unfollow)
-	privateAPI.Post("/story", handler.AddStory)
+	privateAPI.Post("/bookmark/:storyId", handler.BookmarkStory)          // refactored
+	privateAPI.Post("/comment/:storyId", handler.AddComment)              // refactored
+	privateAPI.Post("/follow/:authorId", handler.Follow)                  // refactored
+	privateAPI.Post("/like/:storyId/:plusMinus", handler.HandleLikeCount) // refactored
+	privateAPI.Post("/photo/byfile", handler.UploadPhotoByFilename)       // refactored
+	privateAPI.Post("/unfollow/:authorId", handler.Unfollow)              // refactored
+	privateAPI.Post("/story", handler.AddStory)                           // refactored
 
 	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
 	privateAPI.Patch("/user/username", handler.EditUsername)

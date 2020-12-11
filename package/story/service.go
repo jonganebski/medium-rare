@@ -3,6 +3,7 @@ package story
 import (
 	"home/jonganebski/github/medium-rare/model"
 
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -14,6 +15,9 @@ type Service interface {
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
 	FindStoryByID(storyID primitive.ObjectID) (*model.Story, error)
 	FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error)
+	AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error
+	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error
+	CreateStory(story *model.Story) (*primitive.ObjectID, error)
 }
 
 type service struct {
@@ -25,6 +29,18 @@ func NewService(r Repository) Service {
 	return &service{
 		repository: r,
 	}
+}
+
+func (s *service) CreateStory(story *model.Story) (*primitive.ObjectID, error) {
+	return s.repository.InsertStory(story)
+}
+
+func (s *service) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error {
+	return s.repository.UpdateLikedUserIDs(storyID, userID, key)
+}
+
+func (s *service) AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error {
+	return s.repository.AddCommentID(storyID, commentID)
 }
 
 func (s *service) FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error) {

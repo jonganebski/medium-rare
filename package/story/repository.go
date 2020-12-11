@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"home/jonganebski/github/medium-rare/model"
 
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,6 +20,9 @@ type Repository interface {
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
 	FindStoryByID(storyID primitive.ObjectID) (*model.Story, error)
 	FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error)
+	AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error
+	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error
+	InsertStory(story *model.Story) (*primitive.ObjectID, error)
 }
 
 type repository struct {
@@ -30,6 +34,44 @@ func NewRepo(collection *mongo.Collection) Repository {
 	return &repository{
 		Collection: collection,
 	}
+}
+
+func (r *repository) InsertStory(story *model.Story) (*primitive.ObjectID, error) {
+	insertOneResult, err := r.Collection.InsertOne(context.Background(), story)
+	if err != nil {
+		return nil, err
+	}
+	storyOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", insertOneResult.InsertedID))
+	if err != nil {
+		return nil, err
+	}
+	return &storyOID, nil
+}
+
+func (r *repository) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error {
+	f := bson.D{{Key: "_id", Value: storyID}}
+	u := bson.D{{Key: key, Value: bson.D{{Key: "likedUserIds", Value: userID}}}}
+	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	if err != nil {
+		return fiber.NewError(500, "Failed to update")
+	}
+	if updateResult.ModifiedCount == 0 {
+		return fiber.NewError(404, "Story not found")
+	}
+	return nil
+}
+
+func (r *repository) AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error {
+	storyFilter := bson.D{{Key: "_id", Value: storyID}}
+	update := bson.D{{Key: "$push", Value: bson.D{{Key: "commentIds", Value: commentID}}}}
+	updateResult, err := r.Collection.UpdateOne(context.Background(), storyFilter, update)
+	if err != nil {
+		return fiber.NewError(500, "Failed to update")
+	}
+	if updateResult.ModifiedCount == 0 {
+		return fiber.NewError(404, "Story not found")
+	}
+	return nil
 }
 
 func (r *repository) FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error) {
