@@ -9,22 +9,22 @@ import (
 
 // SetupRoutes sets up the routes
 func SetupRoutes(app *fiber.App) {
-	app.Get("/", handler.Home) // refactored
-	app.Get("/new-story", middleware.Protected, handler.NewStory)
-	app.Get("/read/:storyId", handler.ReadStory)
-	app.Get("/edit-story/:storyId", middleware.Protected, handler.EditStory)
-	app.Get("/followers/:userId", handler.SeeFollowers)
-	app.Get("/user-home/:userId", handler.UserHome)
+	app.Get("/", handler.Home)                                               // refactored
+	app.Get("/new-story", middleware.Protected, handler.NewStory)            // refactored
+	app.Get("/read/:storyId", handler.ReadStory)                             // refactored
+	app.Get("/edit-story/:storyId", middleware.Protected, handler.EditStory) // refactored
+	app.Get("/followers/:userId", handler.SeeFollowers)                      // refactored.. kind of
+	app.Get("/user-home/:userId", handler.UserHome)                          // refactored
 
 	app.Get("/signout", middleware.Protected, handler.Signout) // refactored
 	app.Post("/signup", handler.CreateUser)                    // refactored
 	app.Post("/signin", handler.Signin)                        // refactored
 
 	me := app.Group("/me", middleware.Protected)
-	me.Get("/bookmarks", handler.MyBookmarks)
-	me.Get("/following", handler.SeeFollowings)
-	me.Get("/settings", handler.SettingsPage)
-	me.Get("/stories", handler.MyStories)
+	me.Get("/bookmarks", handler.MyBookmarks)   // refactored
+	me.Get("/following", handler.SeeFollowings) // refactored
+	me.Get("/settings", handler.SettingsPage)   // refactored
+	me.Get("/stories", handler.MyStories)       // refactored
 
 	publicAPI := app.Group("/api")
 	publicAPI.Get("/blocks/:storyId", handler.ProvideStoryBlocks)

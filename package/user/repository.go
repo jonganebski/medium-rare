@@ -14,6 +14,7 @@ import (
 type Repository interface {
 	FindUserByEmail(user *model.User) (*model.User, error)
 	FindUserByID(userID primitive.ObjectID) (*model.User, error)
+	FindUsers(userIDs *[]primitive.ObjectID) (*[]model.User, error)
 	InsertUser(user *model.User) (*primitive.ObjectID, error)
 }
 
@@ -26,6 +27,19 @@ func NewRepo(collection *mongo.Collection) Repository {
 	return &repository{
 		Collection: collection,
 	}
+}
+
+func (r *repository) FindUsers(userIDs *[]primitive.ObjectID) (*[]model.User, error) {
+	users := make([]model.User, 0)
+	f := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: userIDs}}}}
+	c, err := r.Collection.Find(context.Background(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = c.All(context.Background(), &users); err != nil {
+		return nil, err
+	}
+	return &users, nil
 }
 
 func (r *repository) FindUserByEmail(user *model.User) (*model.User, error) {

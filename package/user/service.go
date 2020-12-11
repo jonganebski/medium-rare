@@ -10,6 +10,7 @@ import (
 type Service interface {
 	FindUserByEmail(user *model.User) (*model.User, error)
 	FindUserByID(userID primitive.ObjectID) (*model.User, error)
+	FindUsers(userIDs *[]primitive.ObjectID) (*[]model.User, error)
 	CreateUser(user *model.User) (*primitive.ObjectID, error)
 }
 
@@ -22,6 +23,10 @@ func NewService(r Repository) Service {
 	return &service{
 		repository: r,
 	}
+}
+
+func (s *service) FindUsers(userIDs *[]primitive.ObjectID) (*[]model.User, error) {
+	return s.repository.FindUsers(userIDs)
 }
 
 func (s *service) FindUserByEmail(user *model.User) (*model.User, error) {
