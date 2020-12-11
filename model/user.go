@@ -13,10 +13,10 @@ type User struct {
 	Password      string                `json:"password"`
 	Bio           string                `json:"bio,omitempty"`
 	IsEditor      bool                  `json:"isEditor" bson:"isEditor"`
-	FollowerIDs   *[]primitive.ObjectID `json:"followerIds" bson:"followerIds"`
-	FollowingIDs  *[]primitive.ObjectID `json:"followingIds" bson:"followingIds"`
-	CommentIDs    *[]primitive.ObjectID `json:"commentIds" bson:"commentIds"`
-	StoryIDs      *[]primitive.ObjectID `json:"storyIds" bson:"storyIds"`
-	LikedStoryIDs *[]primitive.ObjectID `json:"likedStoryIds" bson:"likedStoryIds"`
-	SavedStoryIDs *[]primitive.ObjectID `json:"savedStoryIds" bson:"savedStoryIds"`
+	FollowerIDs   *[]primitive.ObjectID `json:"followerIds,omitempty" bson:"followerIds"`
+	FollowingIDs  *[]primitive.ObjectID `json:"followingIds,omitempty" bson:"followingIds"`
+	CommentIDs    *[]primitive.ObjectID `json:"commentIds,omitempty" bson:"commentIds"`
+	StoryIDs      *[]primitive.ObjectID `json:"storyIds,omitempty" bson:"storyIds"`
+	LikedStoryIDs *[]primitive.ObjectID `json:"likedStoryIds,omitempty" bson:"likedStoryIds"`
+	SavedStoryIDs *[]primitive.ObjectID `json:"savedStoryIds,omitempty" bson:"savedStoryIds"`
 }

@@ -88,7 +88,6 @@ func CreateUser(c *fiber.Ctx) error {
 
 // Signin verify user password and gives jwt token
 func Signin(c *fiber.Ctx) error {
-	fmt.Println(c.Path())
 	userCollection := mg.Db.Collection(UserCollection)
 	email := c.FormValue("email")
 	password := c.FormValue("password")

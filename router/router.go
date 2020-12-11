@@ -9,16 +9,16 @@ import (
 
 // SetupRoutes sets up the routes
 func SetupRoutes(app *fiber.App) {
-	app.Get("/", handler.Home)
+	app.Get("/", handler.Home) // refactored
 	app.Get("/new-story", middleware.Protected, handler.NewStory)
 	app.Get("/read/:storyId", handler.ReadStory)
 	app.Get("/edit-story/:storyId", middleware.Protected, handler.EditStory)
 	app.Get("/followers/:userId", handler.SeeFollowers)
 	app.Get("/user-home/:userId", handler.UserHome)
 
-	app.Get("/signout", middleware.Protected, handler.Signout)
-	app.Post("/signup", handler.CreateUser)
-	app.Post("/signin", handler.Signin)
+	app.Get("/signout", middleware.Protected, handler.Signout) // refactored
+	app.Post("/signup", handler.CreateUser)                    // refactored
+	app.Post("/signin", handler.Signin)                        // refactored
 
 	me := app.Group("/me", middleware.Protected)
 	me.Get("/bookmarks", handler.MyBookmarks)
