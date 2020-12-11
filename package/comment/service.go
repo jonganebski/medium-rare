@@ -3,14 +3,17 @@ package comment
 import (
 	"home/jonganebski/github/medium-rare/model"
 
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //Service is an interface from which our api module can access our repository of all our models
 type Service interface {
+	CreateComment(comment *model.Comment) (*model.Comment, error)
 	FindComment(commentID primitive.ObjectID) (*model.Comment, error)
 	FindComments(commentIDs *[]primitive.ObjectID) (*[]model.Comment, error)
-	CreateComment(comment *model.Comment) (*model.Comment, error)
+	RemoveComment(commentID primitive.ObjectID) *fiber.Error
+	RemoveComments(commentIDs *[]primitive.ObjectID) *fiber.Error
 }
 
 type service struct {
@@ -24,6 +27,10 @@ func NewService(r Repository) Service {
 	}
 }
 
+func (s *service) CreateComment(comment *model.Comment) (*model.Comment, error) {
+	return s.repository.InsertComment(comment)
+}
+
 func (s *service) FindComment(commentID primitive.ObjectID) (*model.Comment, error) {
 	return s.repository.FindComment(commentID)
 }
@@ -32,6 +39,10 @@ func (s *service) FindComments(commentIDs *[]primitive.ObjectID) (*[]model.Comme
 	return s.repository.FindComments(commentIDs)
 }
 
-func (s *service) CreateComment(comment *model.Comment) (*model.Comment, error) {
-	return s.repository.InsertComment(comment)
+func (s *service) RemoveComment(commentID primitive.ObjectID) *fiber.Error {
+	return s.repository.DeleteComment(commentID)
+}
+
+func (s *service) RemoveComments(commentIDs *[]primitive.ObjectID) *fiber.Error {
+	return s.repository.DeleteComments(commentIDs)
 }

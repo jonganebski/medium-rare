@@ -26,6 +26,43 @@ type commentOutput struct {
 func CommentRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
 	app.Get("/comment/:storyId", provideComments(userService, storyService, commentService))
 	app.Post("/comment/:storyId", middleware.APIGuard, addComment(userService, storyService, commentService))
+	app.Delete("/comment/:commentId", middleware.APIGuard, removeComment(userService, storyService, commentService))
+}
+
+func removeComment(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		commentID := c.Params("commentId")
+		commentOID, err := primitive.ObjectIDFromHex(commentID)
+		if err != nil {
+			c.SendStatus(500)
+		}
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			c.SendStatus(500)
+		}
+		comment, err := commentService.FindComment(commentOID)
+		if err != nil {
+			return c.Status(404).SendString("Comment not found")
+		}
+		if comment.CreatorID != userOID {
+			return c.Status(400).SendString("You are not authorized.")
+		}
+
+		err = userService.RemoveCommentID(userOID, commentOID)
+		if err != nil {
+			return c.Status(500).SendString("Failed to update")
+		}
+		err = storyService.RemoveCommentID(comment.StoryID, commentOID)
+		if err != nil {
+			return c.Status(500).SendString("Failed to update")
+		}
+		err = commentService.RemoveComment(commentOID)
+		if err != nil {
+			return c.Status(500).SendString("Failed to delete")
+		}
+
+		return c.SendStatus(200)
+	}
 }
 
 func addComment(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {

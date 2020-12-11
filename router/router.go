@@ -40,17 +40,17 @@ func SetupRoutes(app *fiber.App) {
 	privateAPI.Post("/unfollow/:authorId", handler.Unfollow)              // refactored
 	privateAPI.Post("/story", handler.AddStory)                           // refactored
 
-	privateAPI.Patch("/story/:storyId", handler.UpdateStory)
-	privateAPI.Patch("/user/username", handler.EditUsername)
-	privateAPI.Patch("/user/bio", handler.EditBio)
-	privateAPI.Patch("/user/avatar", handler.EditUserAvatar)
-	privateAPI.Patch("/user/password", handler.EditPassword)
+	privateAPI.Patch("/story/:storyId", handler.UpdateStory) // refactored
+	privateAPI.Patch("/user/username", handler.EditUsername) // refactored
+	privateAPI.Patch("/user/bio", handler.EditBio)           // refactored
+	privateAPI.Patch("/user/avatar", handler.EditUserAvatar) // refactored
+	privateAPI.Patch("/user/password", handler.EditPassword) // refactored
 
-	privateAPI.Delete("/bookmark/:storyId", handler.DisBookmarkStory)
-	privateAPI.Delete("/comment/:commentId", handler.DeleteComment)
+	privateAPI.Delete("/bookmark/:storyId", handler.DisBookmarkStory) // refactored
+	privateAPI.Delete("/comment/:commentId", handler.DeleteComment)   // refactored
 	privateAPI.Delete("/photo", handler.DeletePhoto)
-	privateAPI.Delete("/story/:storyId", handler.DeleteStory)
-	privateAPI.Delete("/user", handler.DeleteUser)
+	privateAPI.Delete("/story/:storyId", handler.DeleteStory) // refactored
+	privateAPI.Delete("/user", handler.DeleteUser)            // refactored
 
 	admin := app.Group("/admin")
 	admin.Post("/pick/:storyId", handler.PickStory)

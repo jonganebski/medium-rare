@@ -37,7 +37,7 @@ func PageRouter(app fiber.Router, userService user.Service, storyService story.S
 	app.Get("/", homepage(userService, storyService))
 	app.Get("/new-story", middleware.Protected, newStory(userService))
 	app.Get("/read-story/:storyId", readStory(userService, storyService))
-	app.Get("/edit-story/:storyId", middleware.Protected, editStory(userService, storyService))
+	app.Get("/edit-story/:storyId", middleware.Protected, editStoryPage(userService, storyService))
 	app.Get("/followers/:userId", seeFollowers(userService))
 	app.Get("/user-home/:userId", userHome(userService, storyService))
 
@@ -257,7 +257,7 @@ func seeFollowers(userService user.Service) fiber.Handler {
 	}
 }
 
-func editStory(userService user.Service, storyService story.Service) fiber.Handler {
+func editStoryPage(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)

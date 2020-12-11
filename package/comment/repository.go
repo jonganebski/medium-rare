@@ -4,6 +4,7 @@ import (
 	"context"
 	"home/jonganebski/github/medium-rare/model"
 
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,9 +12,11 @@ import (
 
 //Repository interface allows us to access the CRUD Operations in mongo here.
 type Repository interface {
+	InsertComment(comment *model.Comment) (*model.Comment, error)
 	FindComment(commentID primitive.ObjectID) (*model.Comment, error)
 	FindComments(commnetIDs *[]primitive.ObjectID) (*[]model.Comment, error)
-	InsertComment(comment *model.Comment) (*model.Comment, error)
+	DeleteComment(commentID primitive.ObjectID) *fiber.Error
+	DeleteComments(commentIDs *[]primitive.ObjectID) *fiber.Error
 }
 
 type repository struct {
@@ -25,6 +28,27 @@ func NewRepo(collection *mongo.Collection) Repository {
 	return &repository{
 		Collection: collection,
 	}
+}
+
+func (r *repository) DeleteComments(commentIDs *[]primitive.ObjectID) *fiber.Error {
+	f := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: commentIDs}}}}
+	_, err := r.Collection.DeleteMany(context.Background(), f)
+	if err != nil {
+		return fiber.NewError(500, "Failed to delete")
+	}
+	return nil
+}
+
+func (r *repository) DeleteComment(commentID primitive.ObjectID) *fiber.Error {
+	f := bson.D{{Key: "_id", Value: commentID}}
+	deleteResult, err := r.Collection.DeleteOne(context.Background(), f)
+	if err != nil {
+		return fiber.NewError(500, "Failed to update")
+	}
+	if deleteResult.DeletedCount == 0 {
+		return fiber.NewError(404, "Comment not found")
+	}
+	return nil
 }
 
 func (r *repository) InsertComment(comment *model.Comment) (*model.Comment, error) {
