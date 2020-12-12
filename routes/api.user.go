@@ -465,6 +465,7 @@ func signup(userService user.Service) fiber.Handler {
 		}
 		userOID, err := userService.CreateUser(user)
 		if err != nil {
+			fmt.Println(err)
 			return c.Status(500).SendString("Sorry.. server has a problem")
 		}
 		exp := time.Hour * 24 * 7 // 7 days
@@ -494,8 +495,11 @@ func signin(userService user.Service) fiber.Handler {
 			return c.SendStatus(400)
 		}
 		exp := time.Hour * 24 * 7 // 7 days
-
-		cookie, err := util.GenerateCookie(user, exp)
+		userOID, err := primitive.ObjectIDFromHex(foundUser.ID)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+		cookie, err := util.GenerateCookieBeta(&userOID, exp)
 		if err != nil {
 			return c.SendStatus(500)
 		}

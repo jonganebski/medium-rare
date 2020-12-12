@@ -5,7 +5,7 @@ li.userCard__container._flex-cb
         span.userCard__username #{ .Username }
     if $.followings
         button.userCard__unfollow-btn Unfollow
-    if (and $.followers $.userId)
+    if (and $.followersOutput $.userId)
         if .IsMe
         else if .AmIFollowing
             button.userCard__following-btn Following

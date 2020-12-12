@@ -24,13 +24,13 @@ type storyCardOutput struct {
 	Ranking        int    `json:"ranking,omitempty"`
 }
 
-// type followerOutput struct {
-// 	ID           string `json:"id"`
-// 	Username     string `json:"username"`
-// 	AvatarURL    string `json:"avatarUrl"`
-// 	AmIFollowing bool   `json:"amIFollowing"`
-// 	IsMe         bool   `json:"isMe"`
-// }
+type followerOutput struct {
+	ID           string `json:"id"`
+	Username     string `json:"username"`
+	AvatarURL    string `json:"avatarUrl"`
+	AmIFollowing bool   `json:"amIFollowing"`
+	IsMe         bool   `json:"isMe"`
+}
 
 // PageRouter has the routes where renders webpage
 func PageRouter(app fiber.Router, userService user.Service, storyService story.Service) {
@@ -83,19 +83,16 @@ func settings(userService user.Service) fiber.Handler {
 			fmt.Println(err)
 			return c.SendStatus(500)
 		}
-		user, err := userService.FindUserByID(userOID)
+		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
 		return c.Render("settings", fiber.Map{
 			"path":           c.Path(),
 			"userId":         c.Locals("userId"),
-			"userAvatarUrl":  user.AvatarURL,
-			"username":       user.Username,
-			"userEmail":      user.Email,
-			"bio":            user.Bio,
-			"followerCount":  len(*user.FollowerIDs),
-			"followingCount": len(*user.FollowingIDs),
+			"currentUser":    currentUser,
+			"followerCount":  len(*currentUser.FollowerIDs),
+			"followingCount": len(*currentUser.FollowingIDs),
 		}, "layout/main")
 	}
 }
@@ -201,12 +198,9 @@ func seeFollowers(userService user.Service) fiber.Handler {
 			return c.Status(404).SendString("This user is not found")
 		}
 
-		followers, err := userService.FindUsers(targetUser.FollowerIDs)
-		if err != nil {
-			return c.Status(404).SendString("Followers not found")
-		}
-
 		currentUser := new(model.User)
+		outputItem := new(followerOutput)
+		output := make([]followerOutput, 0)
 
 		if c.Locals("userId") != nil {
 			// When current user is not signed in user
@@ -219,40 +213,46 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				return c.Status(404).SendString("User not found")
 			}
 
-			// for _, followerID := range *targetUser.FollowerIDs {
-			// 	follower, err := userService.FindUserByID(followerID)
-			// 	follower.ID = followerID.Hex()
-			// 	follower.IsMe = (userOID == followerID)
-			// 	follower.AmIFollowing = false
-			// 	for _, followingID := range *user.FollowingIDs {
-			// 		if followingID == followerID {
-			// 			follower.AmIFollowing = true
-			// 			break
-			// 		}
-			// 	}
-			// 	followers = append(followers, *follower)
-			// }
+			for _, followerID := range *targetUser.FollowerIDs {
+				follower, err := userService.FindUserByID(followerID)
+				if err != nil {
+					return c.SendStatus(404)
+				}
+				outputItem.ID = followerID.Hex()
+				outputItem.Username = follower.Username
+				outputItem.AvatarURL = follower.AvatarURL
+				outputItem.IsMe = (currentUserOID == followerID)
+				outputItem.AmIFollowing = false
+				for _, followingID := range *currentUser.FollowingIDs {
+					if followingID == followerID {
+						outputItem.AmIFollowing = true
+						break
+					}
+				}
+				output = append(output, *outputItem)
+			}
 		} else {
-			// for _, followerID := range *targetUser.FollowerIDs {
-			// 	filter := bson.D{{Key: "_id", Value: followerID}}
-			// 	singleResult := userCollection.FindOne(c.Context(), filter)
-			// 	if singleResult.Err() != nil {
-			// 		return c.SendStatus(404)
-			// 	}
-			// 	singleResult.Decode(follower)
-			// 	follower.ID = followerID.Hex()
-			// 	follower.IsMe = false
-			// 	follower.AmIFollowing = false
-			// 	followers = append(followers, *follower)
-			// }
+			for _, followerID := range *targetUser.FollowerIDs {
+				follower, err := userService.FindUserByID(followerID)
+				if err != nil {
+					return c.SendStatus(404)
+				}
+				outputItem.ID = followerID.Hex()
+				outputItem.Username = follower.Username
+				outputItem.AvatarURL = follower.AvatarURL
+				outputItem.IsMe = false
+				outputItem.AmIFollowing = false
+				output = append(output, *outputItem)
+			}
 		}
+		fmt.Println(output[0].AmIFollowing)
 
 		return c.Render("followers", fiber.Map{
-			"path":        c.Path(),
-			"userId":      c.Locals("userId"),
-			"currentUser": currentUser,
-			"targetUser":  targetUser,
-			"followers":   followers,
+			"path":            c.Path(),
+			"userId":          c.Locals("userId"),
+			"currentUser":     currentUser,
+			"targetUser":      targetUser,
+			"followersOutput": output,
 		}, "layout/main")
 	}
 }

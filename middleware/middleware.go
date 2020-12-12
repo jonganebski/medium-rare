@@ -24,8 +24,7 @@ func getTokenFromCookie(c *fiber.Ctx) (*jwt.Token, error) {
 // Protected only accepts logged-in users
 func Protected(c *fiber.Ctx) error {
 	userID := c.Locals("userId")
-	username := c.Locals("username")
-	if userID == nil || username == nil {
+	if userID == nil {
 		return c.Redirect("/")
 	}
 	return c.Next()
@@ -34,8 +33,7 @@ func Protected(c *fiber.Ctx) error {
 // APIGuard only accepts logged-in users
 func APIGuard(c *fiber.Ctx) error {
 	userID := c.Locals("userId")
-	username := c.Locals("username")
-	if userID == nil || username == nil {
+	if userID == nil {
 		return c.SendStatus(400)
 	}
 	return c.Next()

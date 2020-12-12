@@ -16,6 +16,8 @@ type Service interface {
 	FindPopularStories() (*[]model.Story, error)
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
 	AddCommentID(storyID, commentID primitive.ObjectID) error
+	PickStory(storyID primitive.ObjectID) error
+	UnpickStory(storyID primitive.ObjectID) error
 	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error
 	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error
 	RemoveCommentID(storyID, commentID primitive.ObjectID) error
@@ -31,6 +33,14 @@ func NewService(r Repository) Service {
 	return &service{
 		repository: r,
 	}
+}
+
+func (s *service) PickStory(storyID primitive.ObjectID) error {
+	return s.repository.UpdatePickUnpick(storyID, true)
+}
+
+func (s *service) UnpickStory(storyID primitive.ObjectID) error {
+	return s.repository.UpdatePickUnpick(storyID, false)
 }
 
 func (s *service) RemoveStory(storyID primitive.ObjectID) error {

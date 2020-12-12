@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"home/jonganebski/github/medium-rare/model"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -191,9 +190,6 @@ func (r *repository) InsertUser(user *model.User) (*primitive.ObjectID, error) {
 	if err != nil {
 		return nil, err
 	}
-	userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", insertOneResult.InsertedID))
-	if err != nil {
-		return nil, err
-	}
-	return &userOID, nil
+	userID := insertOneResult.InsertedID.(primitive.ObjectID)
+	return &userID, nil
 }

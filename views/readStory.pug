@@ -8,7 +8,7 @@
   .editor-readOnly__authorArea__name {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
   .editor-readOnly__authorArea__readTime
-  if .isEditor 
+  if .currentUser.IsEditor 
     if .story.EditorsPick
       button.editor-readOnly__unpick Unpick 
     else

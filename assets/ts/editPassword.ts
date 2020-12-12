@@ -87,7 +87,7 @@ const updatePassword = async (e: Event) => {
   if (firstPass.length < 6 || secondPass.length < 6) {
     editPasswordEl.desc &&
       (editPasswordEl.desc.innerHTML =
-        "Password must longer than 6 characters");
+        "Password must longer than 5 characters");
     return;
   }
   if (firstPass !== secondPass) {
