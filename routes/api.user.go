@@ -6,13 +6,11 @@ import (
 	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/middleware"
-	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/package/comment"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
 	"home/jonganebski/github/medium-rare/util"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -24,13 +22,8 @@ import (
 )
 
 // UserRouter has routes related with the user
-func UserRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
-	app.Post("/signup", signup(userService))
-	app.Post("/signin", signin(userService))
-	app.Get("/signout", middleware.Protected, signout())
-	// route 재설정 필요
+func UserRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
 	// bookmark, disbookmark가 post와 delete여야할 이유가 없음.
-	api := app.Group("/api")
 	api.Post("/bookmark/:storyId", middleware.APIGuard, bookmarkStory(userService))
 	api.Post("/follow/:authorId", middleware.APIGuard, follow(userService))
 	api.Post("/unfollow/:authorId", middleware.APIGuard, unfollow(userService))
@@ -69,7 +62,7 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 
 		isValid := util.VerifyPassword(input.Password, user.Password)
 		if !isValid {
-			return c.Status(400).SendString("You are not authorized.")
+			return c.Status(403).SendString("Wrong password")
 		}
 
 		// --- delete user's stories and related fields ---
@@ -112,19 +105,29 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 				}
 			}
 
-			sess := myaws.ConnectAws()
-			svc := s3.New(sess)
-			bucketName := config.Config("BUCKET_NAME")
-			_, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
-			if err != nil {
-				fmt.Println(err)
-				return c.SendStatus(500)
+			if len(objects) != 0 {
+
+				sess := myaws.ConnectAws()
+				svc := s3.New(sess)
+				bucketName := config.Config("BUCKET_NAME")
+				_, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
+				if err != nil {
+					fmt.Println(err)
+					return c.SendStatus(500)
+				}
 			}
 
 			err = storyService.RemoveStory(storyOID)
 			if err != nil {
 				return c.Status(500).SendString("Failed to delete")
 			}
+		}
+
+		// --- find user again as commentIDs can be changed when story was being removed (if user commented his/her own story) ---
+
+		user, err = userService.FindUserByID(userOID)
+		if err != nil {
+			return c.Status(404).SendString("User not found")
 		}
 
 		// --- delete user's comments and related fields ---
@@ -153,17 +156,25 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 			userService.RemoveFollowingID(followerOID, userOID)
 		}
 
+		// --- delte from other users's followerIDs ---
+
+		for _, followingOID := range *user.FollowingIDs {
+			userService.RemoveFollowerID(followingOID, userOID)
+		}
+
 		// --- delete avatar photo ---
 
 		bucketName := config.Config("BUCKET_NAME")
 
 		sess := myaws.ConnectAws()
-		svc := s3.New(sess)
 		avatarFileName := strings.Split(user.AvatarURL, "amazonaws.com/")[1]
-		_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(avatarFileName)})
-		if err != nil {
-			fmt.Println(err)
-			return c.Status(500).SendString("Failed to delete avatar image")
+		if avatarFileName != "blank-profile.webp" {
+			svc := s3.New(sess)
+			_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(avatarFileName)})
+			if err != nil {
+				fmt.Println(err)
+				return c.SendStatus(500)
+			}
 		}
 
 		// --- delete user ---
@@ -417,7 +428,6 @@ func follow(userService user.Service) fiber.Handler {
 
 func bookmarkStory(userService user.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		fmt.Println("foo")
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {
@@ -430,89 +440,5 @@ func bookmarkStory(userService user.Service) fiber.Handler {
 		}
 
 		return c.SendStatus(200)
-	}
-}
-
-func signup(userService user.Service) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		user := new(model.User)
-		email := c.FormValue("email")
-		password := c.FormValue("password")
-		user.Email = email
-		_, err := userService.FindUserByEmail(user)
-		if err == nil {
-			return c.Status(400).SendString("This email already exists")
-		}
-		user.ID = ""
-		user.Password = util.HashPassword(password)
-		user.Username = strings.Split(email, "@")[0]
-		// user.AvatarURL = "http://localhost:4000/image/blank-profile.webp"
-		user.AvatarURL = "https://medium-rare.s3.amazonaws.com/blank-profile.webp"
-		user.CreatedAt = time.Now().Unix()
-		user.UpdatedAt = time.Now().Unix()
-		user.CommentIDs = &[]primitive.ObjectID{}
-		user.FollowerIDs = &[]primitive.ObjectID{}
-		user.FollowingIDs = &[]primitive.ObjectID{}
-		user.StoryIDs = &[]primitive.ObjectID{}
-		user.LikedStoryIDs = &[]primitive.ObjectID{}
-		user.SavedStoryIDs = &[]primitive.ObjectID{}
-		user.IsEditor = false
-		editorEmails := strings.Fields(config.Config("EDITORS"))
-		for _, editorEmail := range editorEmails {
-			if editorEmail == email {
-				user.IsEditor = true
-			}
-		}
-		userOID, err := userService.CreateUser(user)
-		if err != nil {
-			fmt.Println(err)
-			return c.Status(500).SendString("Sorry.. server has a problem")
-		}
-		exp := time.Hour * 24 * 7 // 7 days
-		cookie, err := util.GenerateCookieBeta(userOID, exp)
-		if err != nil {
-			return c.Status(500).SendString("Sorry.. server has a problem")
-		}
-
-		c.Cookie(cookie)
-
-		return c.SendStatus(201)
-	}
-}
-
-func signin(userService user.Service) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		user := new(model.User)
-		email := c.FormValue("email")
-		password := c.FormValue("password")
-		user.Email = email
-		foundUser, err := userService.FindUserByEmail(user)
-		if err != nil {
-			return c.SendStatus(404)
-		}
-		isValid := util.VerifyPassword(password, foundUser.Password)
-		if !isValid {
-			return c.SendStatus(400)
-		}
-		exp := time.Hour * 24 * 7 // 7 days
-		userOID, err := primitive.ObjectIDFromHex(foundUser.ID)
-		if err != nil {
-			return c.SendStatus(500)
-		}
-		cookie, err := util.GenerateCookieBeta(&userOID, exp)
-		if err != nil {
-			return c.SendStatus(500)
-		}
-
-		c.Cookie(cookie)
-
-		return c.SendStatus(200)
-	}
-}
-
-func signout() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		c.ClearCookie()
-		return c.Redirect("/")
 	}
 }

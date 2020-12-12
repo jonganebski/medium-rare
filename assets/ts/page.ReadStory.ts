@@ -19,7 +19,7 @@ import {
   readTimeSpan,
   deleteStoryBtn,
 } from "./elements.readStory";
-import { onFollowBtnClick, onFollowingBtnClick } from "./follow";
+import { readPageFollowBtnClick, readPageFollowingBtnClick } from "./follow";
 import { deleteComment } from "./deleteComment";
 import { deleteStory } from "./deleteStory";
 import { getIdParam } from "./helper";
@@ -297,8 +297,8 @@ const initReadStory = async () => {
   commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
   likedContainer?.addEventListener("click", likeOrUnlike);
   bookmarkContainer?.addEventListener("click", handleBookmark);
-  followBtn?.addEventListener("click", onFollowBtnClick);
-  followingBtn?.addEventListener("click", onFollowingBtnClick);
+  followBtn?.addEventListener("click", readPageFollowBtnClick);
+  followingBtn?.addEventListener("click", readPageFollowingBtnClick);
   deleteStoryBtn?.addEventListener("click", deleteStory);
 };
 

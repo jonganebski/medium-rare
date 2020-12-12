@@ -41,7 +41,7 @@ const handlePassEditBtn = (e: Event) => {
   }
   const currentTarget = e.currentTarget as HTMLButtonElement | null;
   const parentElement = currentTarget?.parentElement as HTMLElement | null;
-  currentTarget?.removeEventListener("click", () => {});
+  currentTarget?.removeEventListener("click", handlePassEditBtn);
   currentTarget?.remove();
   const saveBtnEl = document.createElement("button");
   const cancelBtnEl = document.createElement("button");
@@ -111,10 +111,10 @@ const updatePassword = async (e: Event) => {
       if (!editPasswordEl.input) {
         return;
       }
-      const currentTarget = e.currentTarget as HTMLButtonElement | null;
-      const parentElement = currentTarget?.parentElement as HTMLElement | null;
-      currentTarget?.removeEventListener("click", updatePassword);
-      currentTarget?.remove();
+      const target = e.target as HTMLButtonElement | null;
+      const parentElement = target?.parentElement as HTMLElement | null;
+      target?.removeEventListener("click", updatePassword);
+      target?.remove();
       const cancelBtnEl = parentElement?.querySelector(
         ".settings__cancelPass-btn"
       );

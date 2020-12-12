@@ -1,6 +1,11 @@
 header.followers-list-page__header._flex-c-cs
   include views/partials/userBio.pug
-  h3 #{getSliceLen .targetUser.FollowerIDs} Followers
-ul.followers-list-page__followers-list
+  if (eq "0" (getSliceLen .targetUser.FollowerIDs))
+    h3 #{getSliceLen .targetUser.FollowerIDs} no followers yet
+  else if (eq "1" (getSliceLen .targetUser.FollowerIDs))
+    h3 1 Follower
+  else
+    h3 #{getSliceLen .targetUser.FollowerIDs} Followers
+ul#followers-list.followers-list-page__followers-list
   for _,_ in .followersOutput
     include views/partials/userCard.pug

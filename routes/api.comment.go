@@ -23,8 +23,7 @@ type commentOutput struct {
 }
 
 // CommentRouter has api routes for comment
-func CommentRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
-	api := app.Group("/api")
+func CommentRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
 	api.Get("/comment/:storyId", provideComments(userService, storyService, commentService))
 	api.Post("/comment/:storyId", middleware.APIGuard, addComment(userService, storyService, commentService))
 	api.Delete("/comment/:commentId", middleware.APIGuard, removeComment(userService, storyService, commentService))
@@ -103,7 +102,6 @@ func addComment(userService user.Service, storyService story.Service, commentSer
 		}
 		err = userService.AddCommentID(userOID, commentOID)
 		if err != nil {
-			fmt.Println("foo")
 			return c.Status(500).SendString("Update failed")
 		}
 		err = storyService.AddCommentID(storyOID, commentOID)

@@ -35,3 +35,13 @@ export const editPasswordEl = {
     ".settings__passDesc"
   ) as HTMLElement | null,
 };
+
+export const delAccountEl = {
+  input: settingsSecurity?.querySelector(
+    ".settings__delAccountPassInput"
+  ) as HTMLInputElement | null,
+  delBtn: settingsSecurity?.querySelector(".settings__delAccount-btn"),
+  desc: settingsSecurity?.querySelector(
+    ".settings__delAccountDesc"
+  ) as HTMLElement | null,
+};

@@ -30,6 +30,9 @@ export const seeCommentDiv = fixedAuthorInfo?.querySelector(
 export const bookmarkContainer = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__bookmark-container"
 );
+export const followersCountDisplay = fixedAuthorInfo?.querySelector(
+  ".fixed-authorInfo__followerCount"
+) as HTMLElement | null;
 export const followBtn = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__follow-btn"
 ) as HTMLButtonElement | null;

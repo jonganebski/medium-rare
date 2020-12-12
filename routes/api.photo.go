@@ -17,8 +17,7 @@ import (
 )
 
 // ImageRouter has routes related uploading images
-func ImageRouter(app fiber.Router) {
-	api := app.Group("/api")
+func ImageRouter(api fiber.Router) {
 	api.Post("/photo/byfile", middleware.APIGuard, uploadPhotoByFilename)
 }
 

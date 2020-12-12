@@ -54,9 +54,9 @@ section#settings__security.settings__security
   .settings__stack._flex-sb
     .settings__stack-content
       label.settings__stack-label Delete account
-      input.settings__stack-input(type="password")
-      p.settings__stack-description Your account and all related information will be removed.
+      input.settings__stack-input.settings__delAccountPassInput(type="password")
+      p.settings__stack-description.settings__delAccountDesc Your account and all related information will be removed.
     .settings__stack-control
-      button.settings__stack-red-btn Delete
-      button.settings__stack-gray-btn Cancel
-      button.settings__gray-btn Delete
+      //- button.settings__stack-red-btn Delete
+      //- button.settings__stack-gray-btn Cancel
+      button.settings__gray-btn.settings__delAccount-btn Delete

@@ -28,5 +28,20 @@
       font-weight: 500;
       line-height: 1.2rem;
     }
+    .userBio__follow-btn,
+    .userBio__following-btn {
+      margin-top: 1rem;
+      padding: 0.3rem 0.5rem;
+      font-weight: 400;
+    }
+    .userBio__follow-btn {
+      border-color: $green;
+      color: $green;
+    }
+    .userBio__following-btn {
+      border: none;
+      background-color: $green;
+      color: white;
+    }
   }
 }

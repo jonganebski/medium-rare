@@ -5,7 +5,8 @@
       img.editor-readOnly__authorArea__avatar-img._avatar-img(
         src="{{ .author.AvatarURL }}"
       )
-  .editor-readOnly__authorArea__name {{  .author.Username  }}
+  .editor-readOnly__authorArea__name 
+    a(href="/user-home/{{ .author.ID }}") {{  .author.Username  }}
   .editor-readOnly__authorArea__postDate #{getStoryDate .story.CreatedAt}
   .editor-readOnly__authorArea__readTime
   if .currentUser.IsEditor 
@@ -24,7 +25,7 @@
     .fixed-authorInfo__writtenBy 
       span WRITTEN BY
     .fixed-authorInfo__authour 
-      span #{.author.Username}
+      a(href="/user-home/{{ .author.ID }}") #{.author.Username}
     .fixed-authorInfo__bio 
       span #{.author.Bio}
     .fixed-authorInfo__followerCount

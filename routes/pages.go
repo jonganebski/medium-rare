@@ -33,15 +33,15 @@ type followerOutput struct {
 }
 
 // PageRouter has the routes where renders webpage
-func PageRouter(app fiber.Router, userService user.Service, storyService story.Service) {
-	app.Get("/", homepage(userService, storyService))
-	app.Get("/new-story", middleware.Protected, newStory(userService))
-	app.Get("/read-story/:storyId", readStory(userService, storyService))
-	app.Get("/edit-story/:storyId", middleware.Protected, editStoryPage(userService, storyService))
-	app.Get("/followers/:userId", seeFollowers(userService))
-	app.Get("/user-home/:userId", userHome(userService, storyService))
+func PageRouter(root fiber.Router, userService user.Service, storyService story.Service) {
+	root.Get("/", homepage(userService, storyService))
+	root.Get("/read-story/:storyId", readStory(userService, storyService))
+	root.Get("/followers/:userId", seeFollowers(userService))
+	root.Get("/user-home/:userId", userHome(userService, storyService))
+	root.Get("/new-story", middleware.Protected, newStory(userService))
+	root.Get("/edit-story/:storyId", middleware.Protected, editStoryPage(userService, storyService))
 
-	me := app.Group("/me", middleware.Protected)
+	me := root.Group("/me", middleware.Protected)
 	me.Get("/bookmarks", myBookmarks(userService, storyService))
 	me.Get("/following", seeFollowings(userService))
 	me.Get("/settings", settings(userService))
@@ -168,20 +168,28 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 			return c.Status(404).SendString("Author not found")
 		}
 		currentUser := new(model.User)
+		isFollowingTargetUser := false
 		if c.Locals("userId") != nil {
 			userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				return c.SendStatus(500)
 			}
 			currentUser, err = userService.FindUserByID(userOID)
+			for _, followingID := range *currentUser.FollowingIDs {
+				if followingID == targetUserOID {
+					isFollowingTargetUser = true
+					break
+				}
+			}
 		}
 
 		return c.Render("user-home", fiber.Map{
-			"path":        c.Path(),
-			"userId":      c.Locals("userId"),
-			"currentUser": currentUser,
-			"targetUser":  targetUser,
-			"storyCards":  storyCards,
+			"path":                  c.Path(),
+			"userId":                c.Locals("userId"),
+			"currentUser":           currentUser,
+			"targetUser":            targetUser,
+			"storyCards":            storyCards,
+			"isFollowingTargetUser": isFollowingTargetUser,
 		}, "layout/main")
 	}
 }
@@ -201,6 +209,7 @@ func seeFollowers(userService user.Service) fiber.Handler {
 		currentUser := new(model.User)
 		outputItem := new(followerOutput)
 		output := make([]followerOutput, 0)
+		isFollowingTargetUser := false
 
 		if c.Locals("userId") != nil {
 			// When current user is not signed in user
@@ -223,6 +232,9 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				outputItem.AvatarURL = follower.AvatarURL
 				outputItem.IsMe = (currentUserOID == followerID)
 				outputItem.AmIFollowing = false
+				if followerID == currentUserOID {
+					isFollowingTargetUser = true
+				}
 				for _, followingID := range *currentUser.FollowingIDs {
 					if followingID == followerID {
 						outputItem.AmIFollowing = true
@@ -245,14 +257,14 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				output = append(output, *outputItem)
 			}
 		}
-		fmt.Println(output[0].AmIFollowing)
 
 		return c.Render("followers", fiber.Map{
-			"path":            c.Path(),
-			"userId":          c.Locals("userId"),
-			"currentUser":     currentUser,
-			"targetUser":      targetUser,
-			"followersOutput": output,
+			"path":                  c.Path(),
+			"userId":                c.Locals("userId"),
+			"currentUser":           currentUser,
+			"targetUser":            targetUser,
+			"followersOutput":       output,
+			"isFollowingTargetUser": isFollowingTargetUser,
 		}, "layout/main")
 	}
 }

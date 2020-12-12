@@ -1,7 +1,12 @@
 header.userHome__header
   include views/partials/userBio.pug
 .userHome__details
-    a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") #{ getSliceLen .targetUser.FollowerIDs } followers
+    if (eq "0" (getSliceLen .targetUser.FollowerIDs))
+        a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") no followers yet
+    else if (eq "1" (getSliceLen .targetUser.FollowerIDs))
+        a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") 1 follower
+    else
+        a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") #{ getSliceLen .targetUser.FollowerIDs } followers
     ._devider-dot
     if (eq "0" (getSliceLen .targetUser.StoryIDs))
         span.userHome__storiesCount No stories published
@@ -10,5 +15,5 @@ header.userHome__header
     else 
         span.userHome__storiesCount #{ getSliceLen .targetUser.StoryIDs } stories
 ul.userHome__stories
-    for _,_ in .output
+    for _,_ in .storyCards
         include views/partials/storyCard.pug

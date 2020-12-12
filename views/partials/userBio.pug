@@ -1,9 +1,14 @@
-.userBio._flex-cb
-    ._avatar-frame
+#userBio.userBio._flex-cb
+    a(href="/user-home/{{ .targetUser.ID }}")._avatar-frame
         img._avatar-img(src="{{ .targetUser.AvatarURL }}")
-    .userBio__userInfo-container
+    .userBio__userInfo-container(id="{{ .targetUser.ID }}")
         ._flex-cs
-            p.userBio__username(href="/user-home/{{ .targetUser.ID }}") #{ .targetUser.Username }
+            a.userBio__username(href="/user-home/{{ .targetUser.ID }}") #{ .targetUser.Username }
             if .targetUser.IsEditor
                 button.userBio__editorBadge(disabled) Editor
         p.userBio__userBio #{ .targetUser.Bio }
+        if (and .userId (ne .userId .targetUser.ID))
+            if .isFollowingTargetUser
+                button.userBio__following-btn Following
+            else 
+                button.userBio__follow-btn Follow
