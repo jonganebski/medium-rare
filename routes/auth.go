@@ -27,18 +27,19 @@ func signup(userService user.Service) fiber.Handler {
 		email := c.FormValue("email")
 		password := c.FormValue("password")
 		user.Email = email
+		// --- check same email exists or not ---
 		_, err := userService.FindUserByEmail(user)
 		if err == nil {
 			return c.Status(400).SendString("This email already exists")
 		}
-		user.ID = ""
+		// --- make basic user struct ---
+		user.ID = "" // this will let mongodb make ID automatically
 		user.Password = util.HashPassword(password)
-		user.Username = strings.Split(email, "@")[0]
-		// user.AvatarURL = "http://localhost:4000/image/blank-profile.webp"
+		user.Username = strings.Split(email, "@")[0] // first username is gonna be from email. username is not unique field.
 		user.AvatarURL = "https://medium-rare.s3.amazonaws.com/blank-profile.webp"
 		user.CreatedAt = time.Now().Unix()
 		user.UpdatedAt = time.Now().Unix()
-		user.CommentIDs = &[]primitive.ObjectID{}
+		user.CommentIDs = &[]primitive.ObjectID{} // without these mongodb makes these slice fields null
 		user.FollowerIDs = &[]primitive.ObjectID{}
 		user.FollowingIDs = &[]primitive.ObjectID{}
 		user.StoryIDs = &[]primitive.ObjectID{}
@@ -51,17 +52,18 @@ func signup(userService user.Service) fiber.Handler {
 				user.IsEditor = true
 			}
 		}
+		// --- insert user into mongodb ---
 		userOID, err := userService.CreateUser(user)
 		if err != nil {
 			fmt.Println(err)
 			return c.Status(500).SendString("Sorry.. server has a problem")
 		}
+		// --- generate and issue cookie ---
 		exp := time.Hour * 24 * 7 // 7 days
 		cookie, err := util.GenerateCookieBeta(userOID, exp)
 		if err != nil {
 			return c.Status(500).SendString("Sorry.. server has a problem")
 		}
-
 		c.Cookie(cookie)
 
 		return c.SendStatus(201)
@@ -74,14 +76,17 @@ func signin(userService user.Service) fiber.Handler {
 		email := c.FormValue("email")
 		password := c.FormValue("password")
 		user.Email = email
+		// --- find signing in user by email ---
 		foundUser, err := userService.FindUserByEmail(user)
 		if err != nil {
 			return c.SendStatus(404)
 		}
+		// --- verify password ---
 		isValid := util.VerifyPassword(password, foundUser.Password)
 		if !isValid {
 			return c.SendStatus(400)
 		}
+		// --- generate and issue cookie
 		exp := time.Hour * 24 * 7 // 7 days
 		userOID, err := primitive.ObjectIDFromHex(foundUser.ID)
 		if err != nil {
@@ -91,9 +96,7 @@ func signin(userService user.Service) fiber.Handler {
 		if err != nil {
 			return c.SendStatus(500)
 		}
-
 		c.Cookie(cookie)
-
 		return c.SendStatus(200)
 	}
 }

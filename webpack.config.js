@@ -18,7 +18,7 @@ const config = {
         APP_ENV: JSON.stringify(process.env.APP_ENV),
       },
     }),
-    new Dotenv(),
+    ENV === "development" && new Dotenv(),
   ],
   module: {
     rules: [

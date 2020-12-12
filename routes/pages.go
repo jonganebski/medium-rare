@@ -54,14 +54,17 @@ func myStories(userService user.Service, storyService story.Service) fiber.Handl
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find current user ---
 		user, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+		// --- find current user's stories ---
 		stories, err := storyService.FindStories(user.StoryIDs)
 		if err != nil {
 			return c.Status(404).SendString("Stories not found")
 		}
+		// --- make output for pug partial storyCard ---
 		storyCards, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			// 여기서 저자는 곧 유저이므로 찾을 필요가 없긴 하다. 나중에 고쳐볼 것.
@@ -83,6 +86,7 @@ func settings(userService user.Service) fiber.Handler {
 			fmt.Println(err)
 			return c.SendStatus(500)
 		}
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
@@ -103,10 +107,12 @@ func seeFollowings(userService user.Service) fiber.Handler {
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+		// --- find people current user is following ---
 		followings, err := userService.FindUsers(currentUser.FollowingIDs)
 		if err != nil {
 			return c.Status(404).SendString("Followings not found")
@@ -126,14 +132,17 @@ func myBookmarks(userService user.Service, storyService story.Service) fiber.Han
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+		// --- find current user's bookmarked stories ---
 		stories, err := storyService.FindStories(currentUser.SavedStoryIDs)
 		if err != nil {
 			return c.Status(404).SendString("Stories not found")
 		}
+		// --- make output for pug partial storyCard ---
 		storyCards, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			return c.Status(404).SendString("Author not found")
@@ -155,14 +164,17 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find user of the page ---
 		targetUser, err := userService.FindUserByID(targetUserOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+		// --- find page user's stories ---
 		stories, err := storyService.FindStories(targetUser.StoryIDs)
 		if err != nil {
 			return c.Status(404).SendString("Stories not found")
 		}
+		// --- make output for pug partial storyCard ---
 		storyCards, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			return c.Status(404).SendString("Author not found")
@@ -170,11 +182,14 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 		currentUser := new(model.User)
 		isFollowingTargetUser := false
 		if c.Locals("userId") != nil {
+			// if current user is signed-in
 			userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				return c.SendStatus(500)
 			}
+			// find current user
 			currentUser, err = userService.FindUserByID(userOID)
+			// check relationship between current user and user of the page
 			for _, followingID := range *currentUser.FollowingIDs {
 				if followingID == targetUserOID {
 					isFollowingTargetUser = true
@@ -182,7 +197,6 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 				}
 			}
 		}
-
 		return c.Render("user-home", fiber.Map{
 			"path":                  c.Path(),
 			"userId":                c.Locals("userId"),
@@ -201,6 +215,7 @@ func seeFollowers(userService user.Service) fiber.Handler {
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find user of the page ---
 		targetUser, err := userService.FindUserByID(targetUserOID)
 		if err != nil {
 			return c.Status(404).SendString("This user is not found")
@@ -212,16 +227,17 @@ func seeFollowers(userService user.Service) fiber.Handler {
 		isFollowingTargetUser := false
 
 		if c.Locals("userId") != nil {
-			// When current user is not signed in user
+			// --- if current user is signed-in ---
 			currentUserOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				return c.SendStatus(500)
 			}
+			// find current user
 			currentUser, err = userService.FindUserByID(currentUserOID)
 			if err != nil {
 				return c.Status(404).SendString("User not found")
 			}
-
+			// make output struct for pug partial userCard
 			for _, followerID := range *targetUser.FollowerIDs {
 				follower, err := userService.FindUserByID(followerID)
 				if err != nil {
@@ -232,9 +248,11 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				outputItem.AvatarURL = follower.AvatarURL
 				outputItem.IsMe = (currentUserOID == followerID)
 				outputItem.AmIFollowing = false
+				// check relationship between current user and user of the page
 				if followerID == currentUserOID {
 					isFollowingTargetUser = true
 				}
+				// check relationship between current user and followers of user of the page
 				for _, followingID := range *currentUser.FollowingIDs {
 					if followingID == followerID {
 						outputItem.AmIFollowing = true
@@ -244,6 +262,8 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				output = append(output, *outputItem)
 			}
 		} else {
+			// --- if current user is not signed-in ---
+			// make output struct for pug partial userCard
 			for _, followerID := range *targetUser.FollowerIDs {
 				follower, err := userService.FindUserByID(followerID)
 				if err != nil {
@@ -257,7 +277,6 @@ func seeFollowers(userService user.Service) fiber.Handler {
 				output = append(output, *outputItem)
 			}
 		}
-
 		return c.Render("followers", fiber.Map{
 			"path":                  c.Path(),
 			"userId":                c.Locals("userId"),
@@ -281,23 +300,27 @@ func editStoryPage(userService user.Service, storyService story.Service) fiber.H
 			fmt.Println("error at conversion")
 			return c.SendStatus(500)
 		}
-
+		// --- find story ---
 		story, err := storyService.FindStoryByID(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
-
+		// --- check the story belongs to current user ---
 		if userOID != story.CreatorID {
 			fmt.Println("You are not authorized")
 			c.Redirect("/")
 		}
-
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
-
-		return c.Render("editStory", fiber.Map{"path": c.Path(), "userId": c.Locals("userId"), "currentUser": currentUser, "story": story}, "layout/main")
+		return c.Render("editStory", fiber.Map{
+			"path":        c.Path(),
+			"userId":      c.Locals("userId"),
+			"currentUser": currentUser,
+			"story":       story,
+		}, "layout/main")
 	}
 }
 
@@ -308,10 +331,12 @@ func readStory(userService user.Service, storyService story.Service) fiber.Handl
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- increase view count of the story ---
 		story, err := storyService.IncreaseViewCount(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
+		// --- find author user of the story ---
 		author, err := userService.FindUserByID(story.CreatorID)
 		if err != nil {
 			return c.Status(404).SendString("Author not found")
@@ -320,39 +345,34 @@ func readStory(userService user.Service, storyService story.Service) fiber.Handl
 		didLiked := false
 		bookmarked := false
 		isFollowing := false
-		// --- currnet user ---
 		currentUser := new(model.User)
 		if c.Locals("userId") != nil {
+			// --- if currnet user is signed in ---
 			userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				return c.SendStatus(500)
 			}
+			// find current user
 			currentUser, err = userService.FindUserByID(userOID)
 			if err != nil {
 				c.ClearCookie()
 				return c.Redirect("/")
 			}
-
-			// --- did currnet user liked this story? ---
-
+			// did currnet user liked this story?
 			for _, likedStoryID := range *currentUser.LikedStoryIDs {
 				if likedStoryID == storyOID {
 					didLiked = true
 					break
 				}
 			}
-
-			// --- did current user bookmarked this story?
-
+			// did current user bookmarked this story?
 			for _, savedStoryID := range *currentUser.SavedStoryIDs {
 				if savedStoryID == storyOID {
 					bookmarked = true
 					break
 				}
 			}
-
-			// --- is current user following author of the story
-
+			// is current user following author of the story
 			for _, followerID := range *author.FollowerIDs {
 				if followerID == userOID {
 					isFollowing = true
@@ -360,7 +380,6 @@ func readStory(userService user.Service, storyService story.Service) fiber.Handl
 				}
 			}
 		}
-
 		return c.Render("readStory", fiber.Map{
 			"path":        c.Path(),
 			"userId":      c.Locals("userId"),
@@ -380,6 +399,7 @@ func newStory(userService user.Service) fiber.Handler {
 		if err != nil {
 			return c.SendStatus(500)
 		}
+		// --- find current user ---
 		user, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Redirect("/")
@@ -396,44 +416,51 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 	return func(c *fiber.Ctx) error {
 		currentUser := new(model.User)
 		if c.Locals("userId") != nil {
+			// --- if current user is signed-in ---
 			userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
+			// find current user
 			currentUser, err = userService.FindUserByID(userOID)
 			if err != nil {
 				c.ClearCookie()
 				return c.Redirect("/")
 			}
 		}
+		// --- find stories by time ---
 		stories, err := storyService.FindRecentStories()
 		if err != nil {
 			return c.SendStatus(404)
 		}
+		// --- make output for pug partial storyCard ---
 		recentStories, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			return c.SendStatus(404)
 		}
-
+		// --- find stories picked by editor ---
 		stories, err = storyService.FindPickedStories()
 		if err != nil {
 			return c.SendStatus(404)
 		}
+		// --- make output for pug partial storyCard ---
 		pickedStories, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			return c.SendStatus(404)
 		}
-
+		// --- find stories by view count ---
 		stories, err = storyService.FindPopularStories()
 		if err != nil {
 			return c.SendStatus(404)
 		}
+		// --- make output for pug partial storyCard ---
 		popularStories, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
 			return c.SendStatus(404)
 		}
-
+		// --- split stories picked by editor ---
+		// this can be unnecessary if I fix structure of grid in pug file
 		editorsPickR := new(storyCardOutput)
 		editorsPickC := make([]storyCardOutput, 0)
 		editorsPickL := new(storyCardOutput)
@@ -467,9 +494,7 @@ func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[
 	storyCard := new(storyCardOutput)
 	storyCards := make([]storyCardOutput, 0)
 	for _, story := range stories {
-
-		// find body & coverImgUrl & compute readTime
-
+		// --- find body & coverImgUrl & compute readTime ---
 		body := ""
 		coverImgURL := ""
 		totalText := ""
@@ -488,16 +513,12 @@ func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[
 			}
 		}
 		readTimeText := helper.ComputeReadTime(totalText)
-
-		// find author
-
+		// --- find author ---
 		author, err := userService.FindUserByID(story.CreatorID)
 		if err != nil {
 			return nil, err
 		}
-
-		// build outputItem and append to output
-
+		// --- build outputItem and append to output ---
 		storyCard.AuthorUsername = author.Username
 		storyCard.StoryID = story.ID
 		storyCard.AuthorID = author.ID

@@ -15,12 +15,15 @@ var mg = &database.Mongo
 
 // SetupRoutes sets up the routes
 func SetupRoutes(app *fiber.App) {
+	// --- mongodb collections ---
 	userCollection := mg.Db.Collection(config.Config("COLLECTION_USER"))
 	storyCollection := mg.Db.Collection(config.Config("COLLECTION_STORY"))
 	commentCollection := mg.Db.Collection(config.Config("COLLECTION_COMMENT"))
+	// --- initialized repositories with collections ---
 	userRepo := user.NewRepo(userCollection)
 	storyRepo := story.NewRepo(storyCollection)
 	commentRepo := comment.NewRepo(commentCollection)
+	// -- initialize services with repositories ---
 	userService := user.NewService(userRepo)
 	storyService := story.NewService(storyRepo)
 	commentService := comment.NewService(commentRepo)

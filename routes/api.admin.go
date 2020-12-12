@@ -17,7 +17,6 @@ func AdminRouter(admin fiber.Router, userService user.Service, storyService stor
 
 func unpickStory(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {
@@ -27,21 +26,25 @@ func unpickStory(userService user.Service, storyService story.Service) fiber.Han
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- find current user and check he/she is editor ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if !currentUser.IsEditor {
 			return c.SendStatus(403)
 		}
+
+		// --- update story's EditorsPick field false ---
 		err = storyService.UnpickStory(storyOID)
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
 		return c.SendStatus(200)
 	}
 }
 
 func pickStory(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {
@@ -51,14 +54,19 @@ func pickStory(userService user.Service, storyService story.Service) fiber.Handl
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- find current user and check he/she is editor ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if !currentUser.IsEditor {
 			return c.SendStatus(403)
 		}
+
+		// --- update story's EditorsPick field true ---
 		err = storyService.PickStory(storyOID)
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
 		return c.SendStatus(200)
 	}
 }

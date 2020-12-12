@@ -66,7 +66,7 @@ export const useEditor = (
         class: ImageTool,
         config: {
           endpoints: {
-            byFile: "http://localhost:4000/api/photo/byfile",
+            byFile: BASE_URL + "/api/photo/byfile",
           },
         },
       },
