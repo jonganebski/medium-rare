@@ -27,18 +27,19 @@ import (
 func UserRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
 	app.Post("/signup", signup(userService))
 	app.Post("/signin", signin(userService))
-	app.Post("/signout", middleware.Protected, signout())
+	app.Get("/signout", middleware.Protected, signout())
 	// route 재설정 필요
 	// bookmark, disbookmark가 post와 delete여야할 이유가 없음.
-	app.Post("/bookmark/:storyId", middleware.APIGuard, bookmarkStory(userService))
-	app.Post("/follow/:authorId", middleware.APIGuard, follow(userService))
-	app.Post("/unfollow/:authorId", middleware.APIGuard, unfollow(userService))
-	app.Patch("/user/username", middleware.APIGuard, editUsername(userService))
-	app.Patch("/user/bio", middleware.APIGuard, editBio(userService))
-	app.Patch("/user/avatar", middleware.APIGuard, editAvatar(userService))
-	app.Patch("/user/password", middleware.APIGuard, editPassword(userService))
-	app.Delete("/bookmark/:storyId", middleware.APIGuard, disbookmarkStory(userService))
-	app.Delete("/user", middleware.APIGuard, removeAccount(userService, storyService, commentService))
+	api := app.Group("/api")
+	api.Post("/bookmark/:storyId", middleware.APIGuard, bookmarkStory(userService))
+	api.Post("/follow/:authorId", middleware.APIGuard, follow(userService))
+	api.Post("/unfollow/:authorId", middleware.APIGuard, unfollow(userService))
+	api.Patch("/user/username", middleware.APIGuard, editUsername(userService))
+	api.Patch("/user/bio", middleware.APIGuard, editBio(userService))
+	api.Patch("/user/avatar", middleware.APIGuard, editAvatar(userService))
+	api.Patch("/user/password", middleware.APIGuard, editPassword(userService))
+	api.Delete("/bookmark/:storyId", middleware.APIGuard, disbookmarkStory(userService))
+	api.Delete("/user", middleware.APIGuard, removeAccount(userService, storyService, commentService))
 }
 
 func removeAccount(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
@@ -93,9 +94,11 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 			if err != nil {
 				return c.Status(500).SendString("Failed to delete")
 			}
-			err = userService.RemoveManyCommentIDs(story.CommentIDs)
-			if err != nil {
-				return c.Status(500).SendString("Failed to delete")
+			for _, commentID := range *story.CommentIDs {
+				err = userService.RemoveManyUsersCommentID(commentID)
+				if err != nil {
+					return c.Status(500).SendString("Failed to delete")
+				}
 			}
 
 			// --- remove related images in AWS S3 ---
@@ -414,6 +417,7 @@ func follow(userService user.Service) fiber.Handler {
 
 func bookmarkStory(userService user.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		fmt.Println("foo")
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {

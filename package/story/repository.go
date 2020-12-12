@@ -6,7 +6,6 @@ import (
 	"home/jonganebski/github/medium-rare/model"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,10 +21,10 @@ type Repository interface {
 	FindPickedStories() (*[]model.Story, error)
 	FindPopularStories() (*[]model.Story, error)
 	UpdateViewCount(storyID primitive.ObjectID) (*model.Story, error)
-	UpdateCommentID(storyID, commentID primitive.ObjectID, key string) *fiber.Error
-	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error
-	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) *fiber.Error
-	DeleteStory(storyID primitive.ObjectID) *fiber.Error
+	UpdateCommentID(storyID, commentID primitive.ObjectID, key string) error
+	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error
+	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error
+	DeleteStory(storyID primitive.ObjectID) error
 }
 
 type repository struct {
@@ -39,27 +38,24 @@ func NewRepo(collection *mongo.Collection) Repository {
 	}
 }
 
-func (r *repository) DeleteStory(storyID primitive.ObjectID) *fiber.Error {
+func (r *repository) DeleteStory(storyID primitive.ObjectID) error {
 	f := bson.D{{Key: "_id", Value: storyID}}
 	deleteResult, err := r.Collection.DeleteOne(context.Background(), f)
 	if err != nil {
-		return fiber.NewError(500, "Failed to delete")
+		return err
 	}
 	if deleteResult.DeletedCount == 0 {
-		return fiber.NewError(404, "Story not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) *fiber.Error {
+func (r *repository) UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error {
 	f := bson.D{{Key: "_id", Value: storyID}}
 	u := bson.D{{Key: "$set", Value: bson.D{{Key: "blocks", Value: blocks}, {Key: "updatedAt", Value: time.Now().Unix()}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "Story not found")
+		return err
 	}
 	return nil
 }
@@ -69,35 +65,26 @@ func (r *repository) InsertStory(story *model.Story) (*primitive.ObjectID, error
 	if err != nil {
 		return nil, err
 	}
-	storyOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", insertOneResult.InsertedID))
-	if err != nil {
-		return nil, err
-	}
+	storyOID := insertOneResult.InsertedID.(primitive.ObjectID)
 	return &storyOID, nil
 }
 
-func (r *repository) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: storyID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "likedUserIds", Value: userID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "Story not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateCommentID(storyID, commentID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateCommentID(storyID, commentID primitive.ObjectID, key string) error {
 	storyFilter := bson.D{{Key: "_id", Value: storyID}}
 	update := bson.D{{Key: key, Value: bson.D{{Key: "commentIds", Value: commentID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), storyFilter, update)
+	_, err := r.Collection.UpdateOne(context.Background(), storyFilter, update)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "Story not found")
+		return err
 	}
 	return nil
 }

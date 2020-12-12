@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"home/jonganebski/github/medium-rare/model"
 
-	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,17 +16,17 @@ type Repository interface {
 	FindUserByID(userID primitive.ObjectID) (*model.User, error)
 	FindUserByEmail(user *model.User) (*model.User, error)
 	FindUsers(userIDs *[]primitive.ObjectID) (*[]model.User, error)
-	UpdateUserBookmark(userID, storyID primitive.ObjectID, key string) *fiber.Error
-	UpdateCommentID(userID, commentID primitive.ObjectID, key string) *fiber.Error
-	UpdateFollowingID(subjectUserID, targetUserID primitive.ObjectID, key string) *fiber.Error
-	UpdateFollowerID(subjectUserID, targetUserID primitive.ObjectID, key string) *fiber.Error
-	UpdateLikedStoryIDs(userID, storyID primitive.ObjectID, key string) *fiber.Error
-	UpdateStoryIDs(userID, storyID primitive.ObjectID, key string) *fiber.Error
-	UpdateUserDetails(userID primitive.ObjectID, field, value string) *fiber.Error
-	RemoveManyLikedStoryIDs(storyID primitive.ObjectID) *fiber.Error
-	RemoveManySavedStoryIDs(storyID primitive.ObjectID) *fiber.Error
-	RemoveManyCommentIDs(commentIDs *[]primitive.ObjectID) *fiber.Error
-	DeleteUser(userID primitive.ObjectID) *fiber.Error
+	UpdateUserBookmark(userID, storyID primitive.ObjectID, key string) error
+	UpdateCommentID(userID, commentID primitive.ObjectID, key string) error
+	UpdateFollowingID(subjectUserID, targetUserID primitive.ObjectID, key string) error
+	UpdateFollowerID(subjectUserID, targetUserID primitive.ObjectID, key string) error
+	UpdateLikedStoryIDs(userID, storyID primitive.ObjectID, key string) error
+	UpdateStoryIDs(userID, storyID primitive.ObjectID, key string) error
+	UpdateUserDetails(userID primitive.ObjectID, field, value string) error
+	RemoveManyLikedStoryIDs(storyID primitive.ObjectID) error
+	RemoveManySavedStoryIDs(storyID primitive.ObjectID) error
+	RemoveManyUsersCommentID(commentID primitive.ObjectID) error
+	DeleteUser(userID primitive.ObjectID) error
 }
 
 type repository struct {
@@ -41,135 +40,114 @@ func NewRepo(collection *mongo.Collection) Repository {
 	}
 }
 
-func (r *repository) DeleteUser(userID primitive.ObjectID) *fiber.Error {
+func (r *repository) DeleteUser(userID primitive.ObjectID) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	deleteResult, err := r.Collection.DeleteOne(context.Background(), f)
 	if err != nil {
-		return fiber.NewError(500, "Failed to delete account")
+		return err
 	}
 	if deleteResult.DeletedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) RemoveManyCommentIDs(commentIDs *[]primitive.ObjectID) *fiber.Error {
-	f := bson.D{{}}
-	u := bson.D{{Key: "$pull", Value: bson.D{{Key: "commentIds", Value: bson.D{{Key: "$in", Value: commentIDs}}}}}} // 이거 맞나?
-	_, err := r.Collection.UpdateMany(context.Background(), f, u)
-	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	return nil
-}
-
-func (r *repository) RemoveManySavedStoryIDs(storyID primitive.ObjectID) *fiber.Error {
+func (r *repository) RemoveManySavedStoryIDs(storyID primitive.ObjectID) error {
 	f := bson.D{{Key: "savedStoryIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: storyID}}}}}}
 	u := bson.D{{Key: "$pull", Value: bson.D{{Key: "savedStoryIds", Value: storyID}}}}
 	_, err := r.Collection.UpdateMany(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) RemoveManyLikedStoryIDs(storyID primitive.ObjectID) *fiber.Error {
+func (r *repository) RemoveManyLikedStoryIDs(storyID primitive.ObjectID) error {
 	f := bson.D{{Key: "likedStoryIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: storyID}}}}}}
 	u := bson.D{{Key: "$pull", Value: bson.D{{Key: "likedStoryIds", Value: storyID}}}}
 	_, err := r.Collection.UpdateMany(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateUserDetails(userID primitive.ObjectID, field, value string) *fiber.Error {
+func (r *repository) UpdateUserDetails(userID primitive.ObjectID, field, value string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	u := bson.D{{Key: "$set", Value: bson.D{{Key: field, Value: value}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateStoryIDs(userID, storyID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateStoryIDs(userID, storyID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "storyIds", Value: storyID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateLikedStoryIDs(userID, storyID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateLikedStoryIDs(userID, storyID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "likedStoryIds", Value: storyID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateFollowingID(subjectUserID, targetUserID primitive.ObjectID, key string) *fiber.Error {
+func (r repository) RemoveManyUsersCommentID(commentID primitive.ObjectID) error {
+	f := bson.D{{Key: "commentIds", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "$eq", Value: commentID}}}}}}
+	u := bson.D{{Key: "$pull", Value: bson.D{{Key: "commentIds", Value: commentID}}}}
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) UpdateFollowingID(subjectUserID, targetUserID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: subjectUserID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "followingIds", Value: targetUserID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateFollowerID(subjectUserID, targetUserID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateFollowerID(subjectUserID, targetUserID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: subjectUserID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "followerIds", Value: targetUserID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Failed to update")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateCommentID(userID, commentID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateCommentID(userID, commentID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "commentIds", Value: commentID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Update failed")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }
 
-func (r *repository) UpdateUserBookmark(userID, storyID primitive.ObjectID, key string) *fiber.Error {
+func (r *repository) UpdateUserBookmark(userID, storyID primitive.ObjectID, key string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
 	u := bson.D{{Key: key, Value: bson.D{{Key: "savedStoryIds", Value: storyID}}}}
-	updateResult, err := r.Collection.UpdateOne(context.Background(), f, u)
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
-		return fiber.NewError(500, "Update failed")
-	}
-	if updateResult.ModifiedCount == 0 {
-		return fiber.NewError(404, "User not found")
+		return err
 	}
 	return nil
 }

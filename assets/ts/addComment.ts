@@ -23,7 +23,7 @@ const initAddComment = () => {
       if (commentText.length === 0) {
         return;
       }
-      const splitedPath = document.location.pathname.split("read");
+      const splitedPath = document.location.pathname.split("read-story");
       const storyId = splitedPath[1].replace(/[/]/g, "");
       try {
         const { status, data: comment } = await Axios.post(

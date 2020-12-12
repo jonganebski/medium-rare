@@ -141,7 +141,7 @@ func myBookmarks(userService user.Service, storyService story.Service) fiber.Han
 		if err != nil {
 			return c.Status(404).SendString("Author not found")
 		}
-		return c.Render("bookmarkds", fiber.Map{
+		return c.Render("bookmarks", fiber.Map{
 			"path":        c.Path(),
 			"userId":      c.Locals("userId"),
 			"currentUser": currentUser,
@@ -308,7 +308,6 @@ func readStory(userService user.Service, storyService story.Service) fiber.Handl
 		didLiked := false
 		bookmarked := false
 		isFollowing := false
-
 		// --- currnet user ---
 		currentUser := new(model.User)
 		if c.Locals("userId") != nil {
@@ -373,20 +372,24 @@ func newStory(userService user.Service) fiber.Handler {
 		if err != nil {
 			return c.Redirect("/")
 		}
-		return c.Render("newStory", fiber.Map{"currentUser": user}, "layout/main")
+		return c.Render("newStory", fiber.Map{
+			"path":        c.Path(),
+			"userId":      c.Locals("userId"),
+			"currentUser": user,
+		}, "layout/main")
 	}
 }
 
 func homepage(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		currnetUser := new(model.User)
+		currentUser := new(model.User)
 		if c.Locals("userId") != nil {
 			userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
-			currnetUser, err = userService.FindUserByID(userOID)
+			currentUser, err = userService.FindUserByID(userOID)
 			if err != nil {
 				c.ClearCookie()
 				return c.Redirect("/")
@@ -438,7 +441,7 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 		return c.Render("home", fiber.Map{
 			"path":           c.Path(),
 			"userId":         c.Locals("userId"),
-			"currentUser":    currnetUser,
+			"currentUser":    currentUser,
 			"editorsPickR":   editorsPickR,
 			"editorsPickC":   editorsPickC,
 			"editorsPickL":   editorsPickL,

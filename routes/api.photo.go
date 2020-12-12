@@ -18,7 +18,8 @@ import (
 
 // ImageRouter has routes related uploading images
 func ImageRouter(app fiber.Router) {
-	app.Post("/photo/byfile", middleware.APIGuard, uploadPhotoByFilename)
+	api := app.Group("/api")
+	api.Post("/photo/byfile", middleware.APIGuard, uploadPhotoByFilename)
 }
 
 func uploadPhotoByFilename(c *fiber.Ctx) error {

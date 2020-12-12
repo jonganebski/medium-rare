@@ -205,7 +205,7 @@ const openCommentDrawer = () => {
 };
 
 const getComments = async () => {
-  const storyId = getIdParam("read");
+  const storyId = getIdParam("read-story");
   const { status, data } = await Axios.get(
     BASE_URL + `/api/comment/${storyId}`
   );
@@ -217,7 +217,7 @@ const getComments = async () => {
 };
 
 const likeOrUnlike = async () => {
-  const storyId = getIdParam("read");
+  const storyId = getIdParam("read-story");
   const childIcon = likedContainer?.querySelector("i");
   const childSpan = likedContainer?.querySelector("span");
   if (childIcon && childSpan) {
@@ -258,7 +258,7 @@ const likeOrUnlike = async () => {
 };
 
 const handleBookmark = async () => {
-  const storyId = getIdParam("read");
+  const storyId = getIdParam("read-story");
   const childIcon = bookmarkContainer?.querySelector("i");
   if (childIcon) {
     if (childIcon.className.includes("false")) {
@@ -286,8 +286,8 @@ const handleBookmark = async () => {
 const initReadStory = async () => {
   if (BASE_URL) {
     const params = document.location.pathname.split(BASE_URL)[0].split("/");
-    if (params[1] === "read") {
-      const storyId = getIdParam("read");
+    if (params[1] === "read-story") {
+      const storyId = getIdParam("read-story");
       await initEditorReadOnly(storyId);
     }
   }

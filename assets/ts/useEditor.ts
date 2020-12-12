@@ -23,7 +23,7 @@ const handlePublishBtnClick = async (
         savedData
       );
       if (status === 201) {
-        document.location.href = `/read/${storyId}`;
+        document.location.href = `/read-story/${storyId}`;
         // request delete images in imgUrlsHistory
       }
     } catch {}
@@ -38,7 +38,7 @@ const handlePublishBtnClick = async (
         savedData
       );
       if (status === 200) {
-        document.location.href = `/read/${storyId}`;
+        document.location.href = `/read-story/${storyId}`;
         // request delete images in imgUrlsHistory
       }
     } catch {}

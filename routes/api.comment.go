@@ -24,9 +24,10 @@ type commentOutput struct {
 
 // CommentRouter has api routes for comment
 func CommentRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
-	app.Get("/comment/:storyId", provideComments(userService, storyService, commentService))
-	app.Post("/comment/:storyId", middleware.APIGuard, addComment(userService, storyService, commentService))
-	app.Delete("/comment/:commentId", middleware.APIGuard, removeComment(userService, storyService, commentService))
+	api := app.Group("/api")
+	api.Get("/comment/:storyId", provideComments(userService, storyService, commentService))
+	api.Post("/comment/:storyId", middleware.APIGuard, addComment(userService, storyService, commentService))
+	api.Delete("/comment/:commentId", middleware.APIGuard, removeComment(userService, storyService, commentService))
 }
 
 func removeComment(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
@@ -92,7 +93,6 @@ func addComment(userService user.Service, storyService story.Service, commentSer
 		comment.CreatorID = userOID
 		comment.CreatedAt = time.Now().Unix()
 		comment.StoryID = storyOID
-
 		comment, err = commentService.CreateComment(comment)
 		if err != nil {
 			return c.Status(500).SendString("Create comment failed")
@@ -103,6 +103,7 @@ func addComment(userService user.Service, storyService story.Service, commentSer
 		}
 		err = userService.AddCommentID(userOID, commentOID)
 		if err != nil {
+			fmt.Println("foo")
 			return c.Status(500).SendString("Update failed")
 		}
 		err = storyService.AddCommentID(storyOID, commentOID)

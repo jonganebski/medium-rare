@@ -3,7 +3,6 @@ package story
 import (
 	"home/jonganebski/github/medium-rare/model"
 
-	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -16,11 +15,11 @@ type Service interface {
 	FindPickedStories() (*[]model.Story, error)
 	FindPopularStories() (*[]model.Story, error)
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
-	AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error
-	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error
-	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) *fiber.Error
-	RemoveCommentID(storyID, commentID primitive.ObjectID) *fiber.Error
-	RemoveStory(storyID primitive.ObjectID) *fiber.Error
+	AddCommentID(storyID, commentID primitive.ObjectID) error
+	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error
+	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error
+	RemoveCommentID(storyID, commentID primitive.ObjectID) error
+	RemoveStory(storyID primitive.ObjectID) error
 }
 
 type service struct {
@@ -34,11 +33,11 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) RemoveStory(storyID primitive.ObjectID) *fiber.Error {
+func (s *service) RemoveStory(storyID primitive.ObjectID) error {
 	return s.repository.DeleteStory(storyID)
 }
 
-func (s *service) UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) *fiber.Error {
+func (s *service) UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error {
 	return s.repository.UpdateStoryBlock(storyID, blocks)
 }
 
@@ -46,15 +45,15 @@ func (s *service) CreateStory(story *model.Story) (*primitive.ObjectID, error) {
 	return s.repository.InsertStory(story)
 }
 
-func (s *service) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) *fiber.Error {
+func (s *service) UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error {
 	return s.repository.UpdateLikedUserIDs(storyID, userID, key)
 }
 
-func (s *service) AddCommentID(storyID, commentID primitive.ObjectID) *fiber.Error {
+func (s *service) AddCommentID(storyID, commentID primitive.ObjectID) error {
 	return s.repository.UpdateCommentID(storyID, commentID, "$push")
 }
 
-func (s *service) RemoveCommentID(storyID, commentID primitive.ObjectID) *fiber.Error {
+func (s *service) RemoveCommentID(storyID, commentID primitive.ObjectID) error {
 	return s.repository.UpdateCommentID(storyID, commentID, "$pull")
 }
 

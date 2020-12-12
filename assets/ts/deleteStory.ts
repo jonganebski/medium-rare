@@ -7,7 +7,7 @@ export const deleteStory = async () => {
 Are you sure?`
   );
   if (isConfirmed) {
-    const splitedPath = document.location.pathname.split("read");
+    const splitedPath = document.location.pathname.split("read-story");
     const storyId = splitedPath[1].replace(/[/]/g, "");
     const { status } = await Axios.delete(BASE_URL + `/api/story/${storyId}`);
     if (status === 204) {

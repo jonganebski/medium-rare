@@ -7,8 +7,8 @@
     .drawer-comment__add-comment
       .add-comment__header._flex-cs
         ._avatar-frame
-          img._avatar-img(src="{{ .userAvatarUrl }}")
-        .add-comment__username {{  .username  }}
+          img._avatar-img(src="{{ .currentUser.AvatarURL }}")
+        .add-comment__username #{ .currentUser.Username }
       p.add-comment__text(contenteditable="true")
       .add-comment__btns._flex-ce
         button.add-comment__cancel-btn Cancel

@@ -2,10 +2,10 @@
   .header-usermenu__arrow
   header._relative._flex-cc
     .usermenu__avatar-frame._avatar-frame
-      img.usermenu__avatar-img._avatar-img(src="{{ .userAvatarUrl }}")
+      img.usermenu__avatar-img._avatar-img(src="{{ .currentUser.AvatarURL }}")
     div
-      span.usermenu__username._block #{ .username }
-      span.usermenu__email._block #{ .userEmail }
+      span.usermenu__username._block #{ .currentUser.Username }
+      span.usermenu__email._block #{ .currentUser.Email }
   ul
     li
       a._hover-color-black(href="/new-story") Write a story

@@ -35,7 +35,7 @@ func GenerateCookie(foundUser *model.User, exp time.Duration) (*fiber.Cookie, er
 func GenerateCookieBeta(userOID *primitive.ObjectID, exp time.Duration) (*fiber.Cookie, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["userId"] = &userOID
+	claims["userId"] = userOID.Hex()
 	claims["exp"] = time.Now().Add(exp)
 	signedString, err := token.SignedString([]byte(config.Config("JWT_SECRET")))
 	if err != nil {

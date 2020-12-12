@@ -21,16 +21,17 @@ import (
 
 // StoryRouter has api routes for stories
 func StoryRouter(app fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
-	app.Get("/blocks/:storyId", provideStoryBlocks(storyService))
-	app.Post("/story", middleware.APIGuard, addStory(userService, storyService))
-	app.Post("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
-	app.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
-	app.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService))
+	api := app.Group("/api")
+	api.Get("/blocks/:storyId", provideStoryBlocks(storyService))
+	api.Post("/story", middleware.APIGuard, addStory(userService, storyService))
+	api.Post("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
+	api.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
+	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService))
 }
 
 func removeStory(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		storyID := c.Params("storyID")
+		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {
 			fmt.Println(err)
@@ -65,9 +66,11 @@ func removeStory(userService user.Service, storyService story.Service, commentSe
 		if err != nil {
 			return c.Status(500).SendString("Failed to delete")
 		}
-		err = userService.RemoveManyCommentIDs(story.CommentIDs)
-		if err != nil {
-			return c.Status(500).SendString("Failed to delete")
+		for _, commentID := range *story.CommentIDs {
+			err = userService.RemoveManyUsersCommentID(commentID)
+			if err != nil {
+				return c.Status(500).SendString("Failed to delete")
+			}
 		}
 
 		// --- remove related images in AWS S3 ---
@@ -236,7 +239,6 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 
 func provideStoryBlocks(storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {

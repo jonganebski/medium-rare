@@ -3,7 +3,6 @@ package comment
 import (
 	"home/jonganebski/github/medium-rare/model"
 
-	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,8 +11,8 @@ type Service interface {
 	CreateComment(comment *model.Comment) (*model.Comment, error)
 	FindComment(commentID primitive.ObjectID) (*model.Comment, error)
 	FindComments(commentIDs *[]primitive.ObjectID) (*[]model.Comment, error)
-	RemoveComment(commentID primitive.ObjectID) *fiber.Error
-	RemoveComments(commentIDs *[]primitive.ObjectID) *fiber.Error
+	RemoveComment(commentID primitive.ObjectID) error
+	RemoveComments(commentIDs *[]primitive.ObjectID) error
 }
 
 type service struct {
@@ -39,10 +38,10 @@ func (s *service) FindComments(commentIDs *[]primitive.ObjectID) (*[]model.Comme
 	return s.repository.FindComments(commentIDs)
 }
 
-func (s *service) RemoveComment(commentID primitive.ObjectID) *fiber.Error {
+func (s *service) RemoveComment(commentID primitive.ObjectID) error {
 	return s.repository.DeleteComment(commentID)
 }
 
-func (s *service) RemoveComments(commentIDs *[]primitive.ObjectID) *fiber.Error {
+func (s *service) RemoveComments(commentIDs *[]primitive.ObjectID) error {
 	return s.repository.DeleteComments(commentIDs)
 }

@@ -1,10 +1,10 @@
 section.home__picks
   .home__picks-c-l._flex-c-es
-    a(href="/read/{{ .editorsPickR.StoryID }}").home__picks-c-l__cover-frame
+    a(href="/read-story/{{ .editorsPickR.StoryID }}").home__picks-c-l__cover-frame
       img.home__picks-c-l__cover-img(
         src="{{ .editorsPickR.CoverImgURL }}"
       )
-    a(href="/read/{{ .editorsPickR.StoryID }}").home__picks-c-l__content
+    a(href="/read-story/{{ .editorsPickR.StoryID }}").home__picks-c-l__content
       .home__picks-c-l__header #{ .editorsPickR.Header }
       .home__picks-c-l__body #{ grindBody (.editorsPickR.Body) 200 }
     .home__picks-c-l__info
@@ -16,26 +16,26 @@ section.home__picks
   .home__picks-c-c._flex-c-sb
     for _,_ in .editorsPickC
        .home__picks-c-c__stack._flex-cs
-        a(href="/read/{{ .StoryID }}").home__picks-c-c__cover-frame
+        a(href="/read-story/{{ .StoryID }}").home__picks-c-c__cover-frame
           img.home__picks-c-c__cover-img(
           src="{{ .CoverImgURL }}"
         )
         .home__picks-c-c__content._flex-c-sb
-          a(href="/read/{{ .StoryID }}").home__picks-c-c__header #{ .Header }
-          a(href="/read/{{ .StoryID }}").home__picks-c-c__body #{ grindBody .Body 40 }
+          a(href="/read-story/{{ .StoryID }}").home__picks-c-c__header #{ .Header }
+          a(href="/read-story/{{ .StoryID }}").home__picks-c-c__body #{ grindBody .Body 40 }
           a(href="/user-home/{{ .AuthorID }}").home__picks-c-c__author-name._block #{ .AuthorUsername }
           .home__picks-c-c__detail
             span #{ getStoryDate .CreatedAt }
             ._devider-dot
             span #{ .ReadTime }
   .home__picks-c-r
-    a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__cover-frame
+    a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__cover-frame
       img.home__picks-c-r__cover-img(
         src="{{ .editorsPickL.CoverImgURL }}"
       )
     .home__picks-c-r__content
-      a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__header #{ .editorsPickL.Header }
-      a(href="/read/{{ .editorsPickL.StoryID }}").home__picks-c-r__body #{ grindBody .editorsPickL.Body 100 }
+      a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__header #{ .editorsPickL.Header }
+      a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__body #{ grindBody .editorsPickL.Body 100 }
       a(href="/user-home/{{ .editorsPickL.AuthorID }}").home__picks-c-r__author-name._block #{ .editorsPickL.AuthorUsername }
       .home__picks-c-r__detail 
         span #{ getStoryDate .editorsPickL.CreatedAt }
@@ -44,15 +44,15 @@ section.home__picks
 .home__divider
 section.home__articles
   ul.home__mainList
-   for _,_ in .output
+   for _,_ in .recentStories
      include views/partials/storyCard.pug
   ul.home__popularList 
     h2._flex-cs Popular on Medium-rare
-    for _,_ in .popular
+    for _,_ in .popularStories
       li.home__popularList-item._flex
         .home__popularList-item__rank 0#{.Ranking}
         .home__popularList-item__content
-          a(href="/read/{{ .StoryID }}").home__popularList-item__title #{ .Header }
+          a(href="/read-story/{{ .StoryID }}").home__popularList-item__title #{ .Header }
           a(href="/user-home/{{ .AuthorID }}").home__popularList-item__author-name._block #{ .AuthorUsername }
          .home__popularList-item__info
             span #{ getStoryDate .CreatedAt }

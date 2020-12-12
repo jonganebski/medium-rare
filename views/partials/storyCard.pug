@@ -1,6 +1,6 @@
 li.storyCard._flex
     .storyCard__content._flex-c-sb
-        a(href="/read/{{ .StoryID }}")
+        a(href="/read-story/{{ .StoryID }}")
           if (eq $.path "/")
             .storyCard__reference NOT BASED ON YOUR READING HISTORY
           h3.storyCard__header {{ .Header }}
@@ -11,7 +11,7 @@ li.storyCard._flex
             span #{getStoryDate .CreatedAt}
             ._devider-dot
             span #{.ReadTime}
-    a.storyCard__cover-frame(href="/read/{{ .StoryID }}")
+    a.storyCard__cover-frame(href="/read-story/{{ .StoryID }}")
         img.storyCard__cover-img(
           src="{{ .CoverImgURL }}"
         )
