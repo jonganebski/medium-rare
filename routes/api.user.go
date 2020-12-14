@@ -2,8 +2,6 @@ package routes
 
 import (
 	"fmt"
-	myaws "home/jonganebski/github/medium-rare/aws"
-	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/middleware"
 	"home/jonganebski/github/medium-rare/package/comment"
 	"home/jonganebski/github/medium-rare/package/photo"
@@ -30,10 +28,10 @@ func UserRouter(api fiber.Router, userService user.Service, storyService story.S
 	api.Patch("/user/bio", middleware.APIGuard, editBio(userService))
 	api.Patch("/user/avatar", middleware.APIGuard, editAvatar(userService, photoService))
 	api.Patch("/user/password", middleware.APIGuard, editPassword(userService))
-	api.Delete("/user", middleware.APIGuard, removeAccount(userService, storyService, commentService))
+	api.Delete("/user", middleware.APIGuard, removeAccount(userService, storyService, commentService, photoService))
 }
 
-func removeAccount(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
+func removeAccount(userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		type removeAccountInput struct {
 			Password string `json:"password"`
@@ -106,10 +104,7 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 
 			if len(objects) != 0 {
 				// in case of deleting many objects, aws throws error when the slice of objects is empty
-				sess := myaws.ConnectAws()
-				svc := s3.New(sess)
-				bucketName := config.Config("BUCKET_NAME")
-				_, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
+				_, err = photoService.DeleteImagesOfS3(objects)
 				if err != nil {
 					fmt.Println(err)
 					return c.SendStatus(500)
@@ -162,13 +157,10 @@ func removeAccount(userService user.Service, storyService story.Service, comment
 		}
 
 		// --- remove avatar photo in aws-s3 ---
-		bucketName := config.Config("BUCKET_NAME")
 
-		sess := myaws.ConnectAws()
 		avatarFileName := strings.Split(user.AvatarURL, "amazonaws.com/")[1]
 		if avatarFileName != "blank-profile.webp" {
-			svc := s3.New(sess)
-			_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(avatarFileName)})
+			_, err = photoService.DeleteImageOfS3(avatarFileName)
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
@@ -285,46 +277,20 @@ func editAvatar(userService user.Service, photoService photo.Service) fiber.Hand
 		// ------
 		// AWS S3
 		// ------
-
+		// --- upload new avatar image to aws s3 ---
 		up, err := photoService.UploadImageToS3(resizedImg, filename)
 		if err != nil {
 			fmt.Println("Failed to upload file")
 			return c.SendStatus(500)
 		}
-		// bucketName := config.Config("BUCKET_NAME")
-		// sess := myaws.ConnectAws()
-		// uploader := s3manager.NewUploader(sess)
 
-		// --- encode image and make reader ---
-		// buf := new(bytes.Buffer)
-		// imaging.Encode(buf, resizedImg, imaging.JPEG)
-		// reader := bytes.NewReader(buf.Bytes())
-
-		// // --- upload avatar image to aws-s3 ---
-		// up, err := uploader.Upload(&s3manager.UploadInput{
-		// 	Bucket: aws.String(bucketName),
-		// 	ACL:    aws.String("public-read"),
-		// 	Key:    aws.String(filename),
-		// 	Body:   reader,
-		// })
-		// if err != nil {
-		// 	fmt.Println("Failed to upload file")
-		// 	return c.SendStatus(500)
-		// }
-
-		// --- remove previous avatar image ---
+		// --- remove previous avatar image from aws s3 ---
 		if oldFileName != "blank-profile.webp" {
 			_, err = photoService.DeleteImageOfS3(oldFileName)
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
-			// svc := s3.New(sess)
-			// _, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	return c.SendStatus(500)
-			// }
 		}
 
 		// --- update user's avatar url ---

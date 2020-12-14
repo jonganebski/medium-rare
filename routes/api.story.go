@@ -99,14 +99,6 @@ func removeStory(userService user.Service, storyService story.Service, commentSe
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
-			// sess := myaws.ConnectAws()
-			// svc := s3.New(sess)
-			// bucketName := config.Config("BUCKET_NAME")
-			// _, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	return c.SendStatus(500)
-			// }
 		}
 
 		// --- remove story document ---

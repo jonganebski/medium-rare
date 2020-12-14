@@ -1,5 +1,6 @@
 body * {
   box-sizing: border-box;
+  position: relative;
 }
 
 #filter {
@@ -47,6 +48,13 @@ input[type="submit"] {
   border-radius: 5px;
   font-size: 0.9rem;
   cursor: pointer;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  box-shadow: 0 0 0 30px white inset !important;
 }
 
 main {

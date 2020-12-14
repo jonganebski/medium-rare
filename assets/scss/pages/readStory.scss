@@ -49,12 +49,12 @@
   left: 5rem;
   width: 10rem;
   display: grid;
-  grid-template-rows: 1fr 1fr;
   gap: 1px;
   background-color: lightgray;
   z-index: $headerZIndex;
   header {
     background-color: white;
+    padding-left: 1rem;
     .fixed-authorInfo__writtenBy {
       margin-bottom: 0.6rem;
       color: $fontBlack6;
@@ -91,6 +91,7 @@
     }
   }
   footer {
+    padding-left: 1rem;
     background-color: white;
     color: $fontBlack7;
     i {
@@ -113,5 +114,16 @@
       margin-bottom: 1rem;
       cursor: pointer;
     }
+  }
+}
+
+@media screen and (max-width: 1300px) {
+  .fixed-authorInfo {
+    position: absolute;
+    top: auto;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
   }
 }

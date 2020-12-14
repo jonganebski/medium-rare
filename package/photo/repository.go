@@ -30,8 +30,9 @@ func NewRepo(session *session.Session) Repository {
 	}
 }
 
+var bucketName string = config.Config("BUCKET_NAME")
+
 func (r *repository) DeleteImages(objects []*s3.ObjectIdentifier) (*s3.DeleteObjectsOutput, error) {
-	bucketName := config.Config("BUCKET_NAME")
 	svc := s3.New(r.Session)
 	output, err := svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
 	if err != nil {
@@ -41,8 +42,6 @@ func (r *repository) DeleteImages(objects []*s3.ObjectIdentifier) (*s3.DeleteObj
 }
 
 func (r *repository) UploadImage(resizedImg *image.NRGBA, filename string) (*s3manager.UploadOutput, error) {
-	bucketName := config.Config("BUCKET_NAME")
-
 	uploader := s3manager.NewUploader(r.Session)
 
 	buf := new(bytes.Buffer)
@@ -63,8 +62,6 @@ func (r *repository) UploadImage(resizedImg *image.NRGBA, filename string) (*s3m
 }
 
 func (r *repository) DeleteImage(filename string) (*s3.DeleteObjectOutput, error) {
-	bucketName := config.Config("BUCKET_NAME")
-
 	svc := s3.New(r.Session)
 	deleteOutput, err := svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(filename)})
 	if err != nil {

@@ -263,7 +263,7 @@ const handleBookmark = async () => {
   const childIcon = bookmarkContainer?.querySelector("i");
   if (childIcon) {
     if (childIcon.className.includes("false")) {
-      const { status } = await Axios.post(
+      const { status } = await Axios.patch(
         BASE_URL + `/api/bookmark/${storyId}`
       );
       if (status === 200) {

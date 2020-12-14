@@ -17,8 +17,9 @@ html
   body._flex-c-cs
     #filter._none
     #filter-black
-    include views/partials/modal.signin.pug
-    include views/partials/modal.signup.pug
+    unless .userId
+      include views/partials/modal.signin.pug
+      include views/partials/modal.signup.pug
     include views/partials/header.pug
     main._mt-5._max-w-78._flex-c-cs
       | {{ embed }}

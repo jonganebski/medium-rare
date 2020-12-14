@@ -17,6 +17,7 @@
     font-size: 1.1rem;
     color: $fontBlack6;
     cursor: pointer;
+    z-index: $commentDrawerZIndex;
   }
   .drawer-comment__header {
     width: 100%;
