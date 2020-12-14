@@ -114,8 +114,8 @@ const computeAndPasteReadTime = (blocks: OutputBlockData[]) => {
       wordCount += words.length;
     }
     if (block.type === "code") {
-      let words: string[] = block.data.code.split(" ");
-      words = words.filter(
+      let words: string[] = block.data.code?.split(" ");
+      words = words?.filter(
         (word) =>
           word !== "" &&
           !word.includes("=") &&
@@ -127,11 +127,12 @@ const computeAndPasteReadTime = (blocks: OutputBlockData[]) => {
           word != "<" &&
           word != ">"
       );
-      wordCount += words.length;
+      wordCount += words?.length;
     }
   });
   const readTimeMinute = Math.ceil(wordCount / 200);
-  readTimeSpan.innerText = `${readTimeMinute} min read`;
+  !isNaN(readTimeMinute) &&
+    (readTimeSpan.innerText = `${readTimeMinute} min read`);
 };
 
 const overrideEditorJsStyle = () => {
@@ -235,7 +236,7 @@ const likeOrUnlike = async () => {
       return;
     }
     try {
-      const { status } = await Axios.post(
+      const { status } = await Axios.patch(
         BASE_URL + `/api/like/${storyId}/${plusMinus}`
       );
       if (status === 200) {
@@ -271,8 +272,8 @@ const handleBookmark = async () => {
           .replace("far", "fas");
       }
     } else if (childIcon.className.includes("true")) {
-      const { status } = await Axios.delete(
-        BASE_URL + `/api/bookmark/${storyId}`
+      const { status } = await Axios.patch(
+        BASE_URL + `/api/disbookmark/${storyId}`
       );
       if (status === 200) {
         childIcon.className = childIcon.className

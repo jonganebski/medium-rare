@@ -11,8 +11,8 @@ import (
 
 // AdminRouter has api routes only for editors
 func AdminRouter(admin fiber.Router, userService user.Service, storyService story.Service) {
-	admin.Post("/pick/:storyId", pickStory(userService, storyService))
-	admin.Post("/unpick/:storyId", unpickStory(userService, storyService))
+	admin.Patch("/pick/:storyId", pickStory(userService, storyService))
+	admin.Patch("/unpick/:storyId", unpickStory(userService, storyService))
 }
 
 func unpickStory(userService user.Service, storyService story.Service) fiber.Handler {

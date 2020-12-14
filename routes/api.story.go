@@ -2,11 +2,10 @@ package routes
 
 import (
 	"fmt"
-	myaws "home/jonganebski/github/medium-rare/aws"
-	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/middleware"
 	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/package/comment"
+	"home/jonganebski/github/medium-rare/package/photo"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
 	"strconv"
@@ -20,16 +19,16 @@ import (
 )
 
 // StoryRouter has api routes for stories
-func StoryRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
+func StoryRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) {
 	api.Get("/blocks/:storyId", provideStoryBlocks(storyService))
 	api.Post("/story", middleware.APIGuard, addStory(userService, storyService))
-	api.Post("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
+	api.Patch("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
 	api.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
-	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService))
+	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService, photoService))
 
 }
 
-func removeStory(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
+func removeStory(userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		storyID := c.Params("storyId")
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
@@ -37,35 +36,42 @@ func removeStory(userService user.Service, storyService story.Service, commentSe
 			fmt.Println(err)
 			return c.SendStatus(500)
 		}
-
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
 			fmt.Println(err)
 			return c.SendStatus(500)
 		}
+
+		// --- find story ---
 		story, err := storyService.FindStoryByID(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
+
+		// --- check current user is the author of the story ---
 		if story.CreatorID != userOID {
 			return c.Status(400).SendString("You are not authorized.")
 		}
+
+		// --- pull storyID from currnet user's storyIDs field ---
 		err = userService.RemoveStoryID(userOID, storyOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
+		// --- pull storyID from other users' likedStoryIDs field ---
 		err = userService.RemoveManyLikedStoryIDs(storyOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
+		// --- pull storyID from other users' savedStoryIDs field ---
 		err = userService.RemoveManySavedStoryIDs(storyOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
-		err = commentService.RemoveComments(story.CommentIDs)
-		if err != nil {
-			return c.Status(500).SendString("Failed to delete")
-		}
+
+		// --- pull every commentID of the story from other users' commentIDs field ---
 		for _, commentID := range *story.CommentIDs {
 			err = userService.RemoveManyUsersCommentID(commentID)
 			if err != nil {
@@ -73,48 +79,54 @@ func removeStory(userService user.Service, storyService story.Service, commentSe
 			}
 		}
 
+		// --- remove all comment documents of the story ---
+		err = commentService.RemoveComments(story.CommentIDs)
+		if err != nil {
+			return c.Status(500).SendString("Failed to delete")
+		}
+
 		// --- remove related images in AWS S3 ---
-
 		objects := make([]*s3.ObjectIdentifier, 0)
-
 		for _, block := range story.Blocks {
 			if block.Type == "image" {
 				fileName := strings.Split(block.Data.File.URL, "amazonaws.com/")[1]
 				objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(fileName)})
 			}
 		}
-
 		if len(objects) != 0 {
-			sess := myaws.ConnectAws()
-			svc := s3.New(sess)
-			bucketName := config.Config("BUCKET_NAME")
-			_, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
+			_, err = photoService.DeleteImagesOfS3(objects)
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
+			// sess := myaws.ConnectAws()
+			// svc := s3.New(sess)
+			// bucketName := config.Config("BUCKET_NAME")
+			// _, err = svc.DeleteObjects(&s3.DeleteObjectsInput{Bucket: aws.String(bucketName), Delete: &s3.Delete{Objects: objects, Quiet: aws.Bool(true)}})
+			// if err != nil {
+			// 	fmt.Println(err)
+			// 	return c.SendStatus(500)
+			// }
 		}
 
+		// --- remove story document ---
 		err = storyService.RemoveStory(storyOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to delete")
 		}
+
 		return c.SendStatus(204)
 	}
 }
 
 func editStory(storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		editedStory := new(model.Story)
-
 		if err := c.BodyParser(editedStory); err != nil {
 			fmt.Println("error at body parser")
 			return c.SendStatus(400)
 		}
-
 		storyID := c.Params("storyId")
-
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
 			fmt.Println("error at conversion")
@@ -126,19 +138,23 @@ func editStory(storyService story.Service) fiber.Handler {
 			return c.SendStatus(500)
 		}
 
+		// --- find story ---
 		story, err := storyService.FindStoryByID(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
 
+		// --- check current user is the author of the story ---
 		if userOID != story.CreatorID {
 			return c.Status(400).SendString("You are not authorized")
 		}
 
+		// --- update story's blocks field ---
 		err = storyService.UpdateStoryBlock(storyOID, &editedStory.Blocks)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
 		return c.SendStatus(200)
 	}
 }
@@ -146,15 +162,15 @@ func editStory(storyService story.Service) fiber.Handler {
 func addStory(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		story := new(model.Story)
-
 		if err := c.BodyParser(story); err != nil {
 			return c.SendStatus(400)
 		}
-
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- fill the fields need to be filled ---
 		story.ID = ""
 		story.CreatedAt = time.Now().Unix()
 		story.UpdatedAt = time.Now().Unix()
@@ -165,11 +181,13 @@ func addStory(userService user.Service, storyService story.Service) fiber.Handle
 		story.EditorsPick = false
 		story.IsPublished = true
 
+		// --- insert story document ---
 		storyOID, err := storyService.CreateStory(story)
 		if err != nil {
 			return c.Status(500).SendString("Failed to publish story")
 		}
 
+		// --- add the storyID into current user's storyIDs field ---
 		err = userService.AddStoryID(userOID, *storyOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
@@ -195,10 +213,13 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+
 		// --- check the user is allowed to like or unlike the story ---
 		var isAllowed bool
 		if plusMinus > 0 {
@@ -220,6 +241,8 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 		if !isAllowed {
 			return c.Status(400).SendString("You can't like or unlike twice.")
 		}
+
+		// --- determine update operator of mongodb ---
 		var key string
 		if plusMinus > 0 {
 			key = "$push"
@@ -227,14 +250,19 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 		if plusMinus < 0 {
 			key = "$pull"
 		}
+
+		// --- manipulate story's LikedUserIDs field ---
 		err = storyService.UpdateLikedUserIDs(storyOID, userOID, key)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
+		// --- manipulate user's LikedStoryIDs field ---
 		userService.UpdateLikedStoryIDs(userOID, storyOID, key)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
 		return c.SendStatus(200)
 	}
 }
@@ -246,11 +274,14 @@ func provideStoryBlocks(storyService story.Service) fiber.Handler {
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- find story ---
 		story, err := storyService.FindStoryByID(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
 
+		// return blocks of the story
 		return c.JSON(story.Blocks)
 	}
 }

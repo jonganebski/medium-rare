@@ -7,7 +7,7 @@ export const readPageFollowBtnClick = async (e: Event) => {
   const followBtn = e.currentTarget as HTMLButtonElement;
   const authorId = followBtn.closest("header")?.id;
   if (authorId) {
-    const { status } = await Axios.post(BASE_URL + `/api/follow/${authorId}`);
+    const { status } = await Axios.patch(BASE_URL + `/api/follow/${authorId}`);
     if (status === 200) {
       const followersCount = followersCountDisplay?.innerText
         .replace("Followers", "")
@@ -34,7 +34,9 @@ export const readPageFollowingBtnClick = async (e: Event) => {
     if (!isConfirmed) {
       return;
     }
-    const { status } = await Axios.post(BASE_URL + `/api/unfollow/${authorId}`);
+    const { status } = await Axios.patch(
+      BASE_URL + `/api/unfollow/${authorId}`
+    );
     if (status === 200) {
       const followersCountLink = followersCountDisplay?.querySelector("a");
       const followersCount = followersCountLink?.innerText
@@ -68,7 +70,7 @@ export const followersPageFollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.post(BASE_URL + `/api/follow/${authorId}`);
+    const { status } = await Axios.patch(BASE_URL + `/api/follow/${authorId}`);
     if (status === 200) {
       followBtn.className = "userCard__following-btn";
       followBtn.innerText = "Following";
@@ -89,7 +91,9 @@ export const followersPageFollowingBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.post(BASE_URL + `/api/unfollow/${authorId}`);
+    const { status } = await Axios.patch(
+      BASE_URL + `/api/unfollow/${authorId}`
+    );
     if (status === 200) {
       followingBtn.className = "userCard__follow-btn";
       followingBtn.innerText = "Follow";
@@ -111,7 +115,9 @@ export const followingsPageUnfollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.post(BASE_URL + `/api/unfollow/${authorId}`);
+    const { status } = await Axios.patch(
+      BASE_URL + `/api/unfollow/${authorId}`
+    );
     if (status === 200) {
       userCard.remove();
       const prevCount = followingPageHeader.innerText
@@ -139,7 +145,7 @@ export const userBioFollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.post(
+    const { status } = await Axios.patch(
       BASE_URL + `/api/follow/${targetUserId}`
     );
     if (status === 200) {
@@ -162,7 +168,7 @@ export const userBioFollowingBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.post(
+    const { status } = await Axios.patch(
       BASE_URL + `/api/unfollow/${targetUserId}`
     );
     if (status === 200) {

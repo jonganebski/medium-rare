@@ -5,7 +5,7 @@ import { pickStoryBtn, unpickStoryBtn } from "./elements.readStory";
 const pickStory = async (e: Event) => {
   const splitedPath = document.location.pathname.split("read-story");
   const storyId = splitedPath[1].replace(/[/]/g, "");
-  const { status } = await Axios.post(BASE_URL + `/api/admin/pick/${storyId}`);
+  const { status } = await Axios.patch(BASE_URL + `/api/admin/pick/${storyId}`);
   if (status === 200) {
     const target = e.target as HTMLButtonElement | null;
     if (target) {

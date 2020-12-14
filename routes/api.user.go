@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"bytes"
 	"fmt"
 	myaws "home/jonganebski/github/medium-rare/aws"
 	"home/jonganebski/github/medium-rare/config"
 	"home/jonganebski/github/medium-rare/middleware"
 	"home/jonganebski/github/medium-rare/package/comment"
+	"home/jonganebski/github/medium-rare/package/photo"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
 	"home/jonganebski/github/medium-rare/util"
@@ -14,7 +14,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -22,16 +21,15 @@ import (
 )
 
 // UserRouter has routes related with the user
-func UserRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service) {
-	// bookmark, disbookmark가 post와 delete여야할 이유가 없음.
-	api.Post("/bookmark/:storyId", middleware.APIGuard, bookmarkStory(userService))
-	api.Post("/follow/:authorId", middleware.APIGuard, follow(userService))
-	api.Post("/unfollow/:authorId", middleware.APIGuard, unfollow(userService))
+func UserRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) {
+	api.Patch("/follow/:authorId", middleware.APIGuard, follow(userService))
+	api.Patch("/unfollow/:authorId", middleware.APIGuard, unfollow(userService))
+	api.Patch("/bookmark/:storyId", middleware.APIGuard, bookmarkStory(userService))
+	api.Patch("/disbookmark/:storyId", middleware.APIGuard, disbookmarkStory(userService))
 	api.Patch("/user/username", middleware.APIGuard, editUsername(userService))
 	api.Patch("/user/bio", middleware.APIGuard, editBio(userService))
-	api.Patch("/user/avatar", middleware.APIGuard, editAvatar(userService))
+	api.Patch("/user/avatar", middleware.APIGuard, editAvatar(userService, photoService))
 	api.Patch("/user/password", middleware.APIGuard, editPassword(userService))
-	api.Delete("/bookmark/:storyId", middleware.APIGuard, disbookmarkStory(userService))
 	api.Delete("/user", middleware.APIGuard, removeAccount(userService, storyService, commentService))
 }
 
@@ -254,7 +252,7 @@ func editPassword(userService user.Service) fiber.Handler {
 	}
 }
 
-func editAvatar(userService user.Service) fiber.Handler {
+func editAvatar(userService user.Service, photoService photo.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
 		if err != nil {
@@ -288,35 +286,45 @@ func editAvatar(userService user.Service) fiber.Handler {
 		// AWS S3
 		// ------
 
-		bucketName := config.Config("BUCKET_NAME")
-		sess := myaws.ConnectAws()
-		uploader := s3manager.NewUploader(sess)
-
-		// --- encode image and make reader ---
-		buf := new(bytes.Buffer)
-		imaging.Encode(buf, resizedImg, imaging.JPEG)
-		reader := bytes.NewReader(buf.Bytes())
-
-		// --- upload avatar image to aws-s3 ---
-		up, err := uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(bucketName),
-			ACL:    aws.String("public-read"),
-			Key:    aws.String(filename),
-			Body:   reader,
-		})
+		up, err := photoService.UploadImageToS3(resizedImg, filename)
 		if err != nil {
 			fmt.Println("Failed to upload file")
 			return c.SendStatus(500)
 		}
+		// bucketName := config.Config("BUCKET_NAME")
+		// sess := myaws.ConnectAws()
+		// uploader := s3manager.NewUploader(sess)
+
+		// --- encode image and make reader ---
+		// buf := new(bytes.Buffer)
+		// imaging.Encode(buf, resizedImg, imaging.JPEG)
+		// reader := bytes.NewReader(buf.Bytes())
+
+		// // --- upload avatar image to aws-s3 ---
+		// up, err := uploader.Upload(&s3manager.UploadInput{
+		// 	Bucket: aws.String(bucketName),
+		// 	ACL:    aws.String("public-read"),
+		// 	Key:    aws.String(filename),
+		// 	Body:   reader,
+		// })
+		// if err != nil {
+		// 	fmt.Println("Failed to upload file")
+		// 	return c.SendStatus(500)
+		// }
 
 		// --- remove previous avatar image ---
 		if oldFileName != "blank-profile.webp" {
-			svc := s3.New(sess)
-			_, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
+			_, err = photoService.DeleteImageOfS3(oldFileName)
 			if err != nil {
 				fmt.Println(err)
 				return c.SendStatus(500)
 			}
+			// svc := s3.New(sess)
+			// _, err = svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucketName), Key: aws.String(oldFileName)})
+			// if err != nil {
+			// 	fmt.Println(err)
+			// 	return c.SendStatus(500)
+			// }
 		}
 
 		// --- update user's avatar url ---

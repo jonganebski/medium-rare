@@ -1,4 +1,8 @@
-import EditorJS, { LogLevels, OutputBlockData } from "@editorjs/editorjs";
+import EditorJS, {
+  LogLevels,
+  OutputBlockData,
+  OutputData,
+} from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
@@ -6,16 +10,30 @@ import { publishBtn } from "./elements.header";
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 
-const handlePublishBtnClick = async (
-  editor: EditorJS,
-  imgUrlsHistory: Set<string>
-) => {
-  const savedData = await editor.save();
+let imgHistory: string[] = [];
+
+// All these imgHistory and requestUnusedPhotosDelete are because editorJS's image plugin does not trigger any event on delete photos!!!!!
+// So this app will store all photos list and will request removal of unused photos at the point of publish.
+const requestUnusedPhotosDelete = async (
+  savedData: OutputData
+): Promise<boolean> => {
   const imgBlocks = savedData.blocks.filter((block) => block.type === "image");
   imgBlocks.forEach((imgBlock) => {
     const usedImg = imgBlock.data.file.url;
-    imgUrlsHistory.delete(usedImg);
+    imgHistory = imgHistory.filter((url) => url !== usedImg);
   });
+  const { status: removalStatus } = await Axios.delete(
+    BASE_URL + "/api/photos",
+    { data: { images: Array.from(imgHistory) } }
+  );
+  if (removalStatus === 204) {
+    return true;
+  }
+  return false;
+};
+
+const handlePublishBtnClick = async (editor: EditorJS) => {
+  const savedData = await editor.save();
   if (document.location.pathname.includes("new-story")) {
     try {
       const { status, data: storyId } = await Axios.post(
@@ -23,8 +41,10 @@ const handlePublishBtnClick = async (
         savedData
       );
       if (status === 201) {
-        document.location.href = `/read-story/${storyId}`;
-        // request delete images in imgUrlsHistory
+        // request delete images in imgHistory
+        if (await requestUnusedPhotosDelete(savedData)) {
+          document.location.href = `/read-story/${storyId}`;
+        }
       }
     } catch {}
     return;
@@ -38,8 +58,10 @@ const handlePublishBtnClick = async (
         savedData
       );
       if (status === 200) {
-        document.location.href = `/read-story/${storyId}`;
-        // request delete images in imgUrlsHistory
+        // request delete images in imgHistory
+        if (await requestUnusedPhotosDelete(savedData)) {
+          document.location.href = `/read-story/${storyId}`;
+        }
       }
     } catch {}
     return;
@@ -78,10 +100,7 @@ export const useEditor = (
     logLevel: LogLevels?.ERROR ?? "ERROR",
   });
   editor.isReady.then(() => {
-    const imgUrlsHistory = new Set<string>();
-    publishBtn?.addEventListener("click", () =>
-      handlePublishBtnClick(editor, imgUrlsHistory)
-    );
+    publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
     document.body.addEventListener("click", () => {
       const imgElements = document
         .getElementById(holder)
@@ -89,7 +108,9 @@ export const useEditor = (
           ".image-tool__image-picture"
         ) as NodeListOf<HTMLImageElement>;
       imgElements?.forEach((imgEl) => {
-        imgUrlsHistory.add(imgEl.src);
+        if (!imgHistory.some((url) => url === imgEl.src)) {
+          imgHistory.push(imgEl.src);
+        }
       });
     });
   });

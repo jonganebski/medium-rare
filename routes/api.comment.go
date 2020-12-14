@@ -40,22 +40,31 @@ func removeComment(userService user.Service, storyService story.Service, comment
 		if err != nil {
 			c.SendStatus(500)
 		}
+
+		// --- find comment ---
 		comment, err := commentService.FindComment(commentOID)
 		if err != nil {
 			return c.Status(404).SendString("Comment not found")
 		}
+
+		// --- check current user is who wrote the comment ---
 		if comment.CreatorID != userOID {
 			return c.Status(400).SendString("You are not authorized.")
 		}
 
+		// --- remove commentID from current user's commentIDs field ---
 		err = userService.RemoveCommentID(userOID, commentOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
+		// --- remove commentID from story's commentIDs field ---
 		err = storyService.RemoveCommentID(comment.StoryID, commentOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to update")
 		}
+
+		// --- remove comment document itself ---
 		err = commentService.RemoveComment(commentOID)
 		if err != nil {
 			return c.Status(500).SendString("Failed to delete")
@@ -67,7 +76,6 @@ func removeComment(userService user.Service, storyService story.Service, comment
 
 func addComment(userService user.Service, storyService story.Service, commentService comment.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		comment := new(model.Comment)
 		if err := c.BodyParser(comment); err != nil {
 			return c.SendStatus(400)
@@ -83,15 +91,19 @@ func addComment(userService user.Service, storyService story.Service, commentSer
 			return c.SendStatus(500)
 		}
 
+		// --- find current user ---
 		currentUser, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
 
+		// --- fill the fields ---
 		comment.ID = ""
 		comment.CreatorID = userOID
 		comment.CreatedAt = time.Now().Unix()
 		comment.StoryID = storyOID
+
+		// --- insert new comment document ---
 		comment, err = commentService.CreateComment(comment)
 		if err != nil {
 			return c.Status(500).SendString("Create comment failed")
@@ -100,15 +112,20 @@ func addComment(userService user.Service, storyService story.Service, commentSer
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
+		// --- push commentID into current user's commentIDs field ---
 		err = userService.AddCommentID(userOID, commentOID)
 		if err != nil {
 			return c.Status(500).SendString("Update failed")
 		}
+
+		// --- push commentID into story's commentIDs field ---
 		err = storyService.AddCommentID(storyOID, commentOID)
 		if err != nil {
 			return c.Status(500).SendString("Update failed")
 		}
 
+		// --- make a comment output ---
 		output := new(commentOutput)
 		output.CommentID = comment.ID
 		output.AvatarURL = currentUser.AvatarURL
@@ -128,23 +145,29 @@ func provideComments(userService user.Service, storyService story.Service, comme
 		if err != nil {
 			return c.SendStatus(400)
 		}
+
+		// --- find story ---
 		story, err := storyService.FindStoryByID(storyOID)
 		if err != nil {
 			return c.Status(404).SendString("Story not found")
 		}
+
+		// --- find comments of the story ---
 		comments, err := commentService.FindComments(story.CommentIDs)
 		if err != nil {
 			return c.Status(404).SendString("Comments not found")
 		}
 
+		// --- make slice of comment outputs ---
 		outputItem := new(commentOutput)
 		output := make([]commentOutput, 0)
-
 		for _, comment := range *comments {
+			// find creator if a comment
 			creator, err := userService.FindUserByID(comment.CreatorID)
 			if err != nil {
 				return c.Status(404).SendString("Commenter not found")
 			}
+			// make a comment output and append to the slice
 			outputItem.CommentID = comment.ID
 			outputItem.Username = creator.Username
 			outputItem.AvatarURL = creator.AvatarURL
