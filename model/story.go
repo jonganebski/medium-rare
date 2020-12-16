@@ -26,16 +26,19 @@ type Block struct {
 }
 
 type data struct {
-	Level          int8   `json:"level,omitempty"`
-	Text           string `json:"text,omitempty"`
-	Code           string `json:"code,omitempty"`
-	Caption        string `json:"caption,omitempty"`
-	File           file   `json:"file,omitempty"`
-	Stretched      bool   `json:"stretched,omitempty"`
-	WithBackground bool   `json:"withBackground,omitempty"`
-	WithBorder     bool   `json:"withBorder,omitempty"`
+	Alignment      string   `json:"alignment,omiempty" bson:"alignment,omiempty"`
+	Level          int8     `json:"level,omitempty" bson:"level,omitempty"`
+	Text           string   `json:"text,omitempty" bson:"text,omitempty"`
+	Code           string   `json:"code,omitempty" bson:"code,omitempty"`
+	Caption        string   `json:"caption,omitempty" bson:"caption,omitempty"`
+	File           file     `json:"file,omitempty" bson:"file,omitempty"`
+	Stretched      bool     `json:"stretched,omitempty" bson:"stretched,omitempty"`
+	Style          string   `json:"style,omitempty" bson:"style,omitempty"`
+	Items          []string `json:"items,omitempty" bson:"items,omitempty"`
+	WithBackground bool     `json:"withBackground,omitempty" bson:"withBackground,omitempty"`
+	WithBorder     bool     `json:"withBorder,omitempty" bson:"withBorder,omitempty"`
 }
 
 type file struct {
-	URL string `json:"url"`
+	URL string `json:"url,omitempty" bson:"url,omitempty"`
 }

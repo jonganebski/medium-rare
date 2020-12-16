@@ -20,6 +20,10 @@ export const unpickStoryBtn = editorReadOnlyAuthorArea?.querySelector(
   ".editor-readOnly__unpick"
 );
 
+export const editorReadOnlyBody = document.getElementById(
+  "editor-readOnly__body"
+);
+
 export const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 export const likedContainer = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__liked-container"

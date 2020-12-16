@@ -1,27 +1,31 @@
+import CodeTool from "@editorjs/code";
 import EditorJS, { LogLevels, OutputBlockData } from "@editorjs/editorjs";
 import Header from "@editorjs/header";
-import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
-import { BASE_URL } from "./constants";
+import InlineCode from "@editorjs/inline-code";
+import List from "@editorjs/list";
+import Quote from "@editorjs/quote";
 import Axios from "axios";
-import {
-  commentsUlEl,
-  preparedCommentBox,
-  editorReadOnlyHeader,
-  commentDrawer,
-  filterBlack,
-  likedContainer,
-  bookmarkContainer,
-  seeCommentDiv,
-  commentDrawerCloseIcon,
-  followBtn,
-  followingBtn,
-  readTimeSpan,
-  deleteStoryBtn,
-} from "./elements.readStory";
-import { readPageFollowBtnClick, readPageFollowingBtnClick } from "./follow";
+import { BASE_URL } from "./constants";
 import { deleteComment } from "./deleteComment";
 import { deleteStory } from "./deleteStory";
+import {
+  bookmarkContainer,
+  commentDrawer,
+  commentDrawerCloseIcon,
+  commentsUlEl,
+  deleteStoryBtn,
+  editorReadOnlyBody,
+  editorReadOnlyHeader,
+  filterBlack,
+  followBtn,
+  followingBtn,
+  likedContainer,
+  preparedCommentBox,
+  readTimeSpan,
+  seeCommentDiv,
+} from "./elements.readStory";
+import { readPageFollowBtnClick, readPageFollowingBtnClick } from "./follow";
 import { getIdParam } from "./helper";
 
 const getFomattedCommentDate = (createdAt: any): string => {
@@ -136,10 +140,9 @@ const computeAndPasteReadTime = (blocks: OutputBlockData[]) => {
 };
 
 const overrideEditorJsStyle = () => {
-  const x = editorReadOnlyHeader?.querySelector(".codex-editor__redactor") as
-    | HTMLElement
-    | null
-    | undefined;
+  const x = editorReadOnlyHeader?.querySelector(
+    ".codex-editor__redactor"
+  ) as HTMLElement | null;
   x!.style.paddingBottom = "1rem";
 };
 
@@ -160,6 +163,9 @@ const initEditorReadOnly = async (storyId: string) => {
       image: {
         class: ImageTool,
       },
+      inlineCode: {
+        class: InlineCode,
+      },
     },
     data: { blocks: [header] },
   });
@@ -177,9 +183,18 @@ const initEditorReadOnly = async (storyId: string) => {
       image: {
         class: ImageTool,
       },
+      inlineCode: {
+        class: InlineCode,
+      },
+      quote: Quote,
+      list: {
+        class: List,
+        inlineToolbar: true,
+      },
     },
     data: { blocks },
     logLevel: LogLevels?.ERROR ?? "ERROR",
+    sanitizer: { a: { href: true, target: "_blank" } },
   });
   headerEditor.isReady.then(async () => {
     await headerEditor.readOnly.toggle(true);
@@ -188,6 +203,12 @@ const initEditorReadOnly = async (storyId: string) => {
   bodyEditor.isReady.then(async () => {
     await bodyEditor.readOnly.toggle(true);
     computeAndPasteReadTime(blocks);
+    const quotes = editorReadOnlyBody?.querySelectorAll(".cdx-quote__text") as
+      | NodeListOf<HTMLElement>
+      | undefined;
+    quotes?.forEach((quote) => {
+      quote.style.minHeight = "0px";
+    });
   });
 };
 

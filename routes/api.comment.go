@@ -49,7 +49,7 @@ func removeComment(userService user.Service, storyService story.Service, comment
 
 		// --- check current user is who wrote the comment ---
 		if comment.CreatorID != userOID {
-			return c.Status(400).SendString("You are not authorized.")
+			return c.Status(403).SendString("You are not authorized.")
 		}
 
 		// --- remove commentID from current user's commentIDs field ---

@@ -6,3 +6,21 @@
 .codex-editor__redactor {
   margin-right: 0px;
 }
+.cdx-quote__text {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  min-height: 0px;
+  border: none;
+  border-radius: 0px;
+  box-shadow: none;
+  border-left: 3px solid lightgray;
+  font-style: italic;
+}
+.cdx-quote__caption {
+  padding-left: 1rem;
+  border: none;
+  border-radius: 0px;
+  box-shadow: none;
+  font-style: italic;
+}

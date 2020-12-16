@@ -144,6 +144,7 @@
   margin: 3rem 0px;
   background-color: lightgray;
 }
+
 .home__articles {
   width: 90%;
   display: grid;
@@ -190,5 +191,10 @@
         }
       }
     }
+  }
+}
+@media screen and (max-width: 900px) {
+  .home__articles {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,14 +1,17 @@
+import CodeTool from "@editorjs/code";
 import EditorJS, {
   LogLevels,
   OutputBlockData,
   OutputData,
 } from "@editorjs/editorjs";
 import Header from "@editorjs/header";
-import CodeTool from "@editorjs/code";
 import ImageTool from "@editorjs/image";
-import { publishBtn } from "./elements.header";
+import InlineCode from "@editorjs/inline-code";
+import List from "@editorjs/list";
+import Quote from "@editorjs/quote";
 import Axios from "axios";
 import { BASE_URL } from "./constants";
+import { publishBtn } from "./elements.header";
 
 let imgHistory: string[] = [];
 
@@ -93,6 +96,14 @@ export const useEditor = (
         },
       },
       code: CodeTool,
+      inlineCode: {
+        class: InlineCode,
+      },
+      quote: Quote,
+      list: {
+        class: List,
+        inlineToolbar: true,
+      },
     },
     data: {
       blocks,
@@ -112,6 +123,14 @@ export const useEditor = (
           imgHistory.push(imgEl.src);
         }
       });
+    });
+    const quotes = document
+      .getElementById(holder)
+      ?.querySelectorAll(".cdx-quote__text") as
+      | NodeListOf<HTMLElement>
+      | undefined;
+    quotes?.forEach((quote) => {
+      quote.style.minHeight = "0px";
     });
   });
 };
