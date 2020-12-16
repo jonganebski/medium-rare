@@ -18,7 +18,7 @@ const config = {
         APP_ENV: JSON.stringify(process.env.APP_ENV),
       },
     }),
-    ENV === "development" && new Dotenv(),
+    // ENV === "development" ? new Dotenv() : null,
   ],
   module: {
     rules: [
@@ -42,5 +42,9 @@ const config = {
   },
   output: { path: OUTPUT_DIR, filename: "[name].js" },
 };
+
+if (ENV === "development") {
+  config.plugins.push(new Dotenv());
+}
 
 module.exports = config;
