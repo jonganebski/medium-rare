@@ -141,8 +141,8 @@ const updatePassword = async (e: Event) => {
   }
 };
 
-const initEditPassword = () => {
+const init = () => {
   editPasswordEl.editBtn?.addEventListener("click", handlePassEditBtn);
 };
 
-initEditPassword();
+init();

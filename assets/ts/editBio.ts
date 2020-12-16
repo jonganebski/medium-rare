@@ -77,8 +77,8 @@ const handleBioEditBtn = (e: Event) => {
   editBioEl.input && (editBioEl.input.disabled = false);
 };
 
-const useSettings = () => {
+const init = () => {
   editBioEl.editBtn?.addEventListener("click", handleBioEditBtn);
 };
 
-useSettings();
+init();

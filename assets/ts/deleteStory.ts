@@ -6,12 +6,18 @@ export const deleteStory = async () => {
     `You are removing this story permanently.
 Are you sure?`
   );
-  if (isConfirmed) {
+  if (!isConfirmed) {
+    return;
+  }
+  try {
     const splitedPath = document.location.pathname.split("read-story");
     const storyId = splitedPath[1].replace(/[/]/g, "");
-    const { status } = await Axios.delete(BASE_URL + `/api/story/${storyId}`);
-    if (status === 204) {
+    const { status } = await Axios.delete(`/api/story/${storyId}`);
+    if (status < 300) {
       document.location.href = BASE_URL + "/me/stories";
     }
+  } catch {
+    alert("Failed to delete story. Please try again.");
+    document.location.href = BASE_URL + "/me/stories";
   }
 };

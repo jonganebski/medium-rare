@@ -6,7 +6,6 @@ import InlineCode from "@editorjs/inline-code";
 import List from "@editorjs/list";
 import Quote from "@editorjs/quote";
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { deleteComment } from "./deleteComment";
 import { deleteStory } from "./deleteStory";
 import {
@@ -51,6 +50,7 @@ export const drawNewComment = (comment: any) => {
   if (commentsUlEl) {
     const {
       commentId,
+      userId,
       avatarUrl,
       createdAt,
       text,
@@ -60,7 +60,7 @@ export const drawNewComment = (comment: any) => {
     const commentDate = getFomattedCommentDate(createdAt);
     const textEl = document.createElement("p");
     const timestampEl = document.createElement("div");
-    const usernameEl = document.createElement("div");
+    const usernameEl = document.createElement("a");
     const infoEl = document.createElement("div");
     const avatarImgEl = document.createElement("img");
     const avatarFrameEl = document.createElement("div");
@@ -79,6 +79,7 @@ export const drawNewComment = (comment: any) => {
     textEl.innerText = text;
     timestampEl.innerText = commentDate;
     usernameEl.innerText = username;
+    usernameEl.href = `/user-home/${userId}`;
     avatarImgEl.src = avatarUrl;
     infoEl.append(usernameEl);
     infoEl.append(timestampEl);
@@ -139,77 +140,85 @@ const computeAndPasteReadTime = (blocks: OutputBlockData[]) => {
     (readTimeSpan.innerText = `${readTimeMinute} min read`);
 };
 
-const overrideEditorJsStyle = () => {
+const overrideEditorJsStyleHeader = () => {
   const x = editorReadOnlyHeader?.querySelector(
     ".codex-editor__redactor"
   ) as HTMLElement | null;
   x!.style.paddingBottom = "1rem";
 };
 
+export const overrideEditorJsStyleBody = () => {
+  const quotes = editorReadOnlyBody?.querySelectorAll(".cdx-quote__text") as
+    | NodeListOf<HTMLElement>
+    | undefined;
+  quotes?.forEach((quote) => {
+    quote.style.minHeight = "0px";
+  });
+};
+
 const initEditorReadOnly = async (storyId: string) => {
-  const { data: blocks } = await Axios.get(BASE_URL + `/api/blocks/${storyId}`);
-  const header = blocks.shift();
-  const headerEditor = new EditorJS({
-    //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
-    holder: "editor-readOnly__header",
-    tools: {
-      header: {
-        class: Header,
-        config: {
-          levels: [2, 4, 6],
+  try {
+    const { data: blocks } = await Axios.get(`/api/blocks/${storyId}`);
+    const header = blocks.shift();
+    const headerEditor = new EditorJS({
+      //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
+      holder: "editor-readOnly__header",
+      tools: {
+        header: {
+          class: Header,
+          config: {
+            levels: [2, 4, 6],
+          },
+        },
+        code: CodeTool,
+        image: {
+          class: ImageTool,
+        },
+        inlineCode: {
+          class: InlineCode,
         },
       },
-      code: CodeTool,
-      image: {
-        class: ImageTool,
-      },
-      inlineCode: {
-        class: InlineCode,
-      },
-    },
-    data: { blocks: [header] },
-  });
-  const bodyEditor = new EditorJS({
-    //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
-    holder: "editor-readOnly__body",
-    tools: {
-      header: {
-        class: Header,
-        config: {
-          levels: [2, 4, 6],
-        },
-      },
-      code: CodeTool,
-      image: {
-        class: ImageTool,
-      },
-      inlineCode: {
-        class: InlineCode,
-      },
-      quote: Quote,
-      list: {
-        class: List,
-        inlineToolbar: true,
-      },
-    },
-    data: { blocks },
-    logLevel: LogLevels?.ERROR ?? "ERROR",
-    sanitizer: { a: { href: true, target: "_blank" } },
-  });
-  headerEditor.isReady.then(async () => {
-    await headerEditor.readOnly.toggle(true);
-    overrideEditorJsStyle();
-  });
-  bodyEditor.isReady.then(async () => {
-    await bodyEditor.readOnly.toggle(true);
-    computeAndPasteReadTime(blocks);
-    const quotes = editorReadOnlyBody?.querySelectorAll(".cdx-quote__text") as
-      | NodeListOf<HTMLElement>
-      | undefined;
-    quotes?.forEach((quote) => {
-      quote.style.minHeight = "0px";
+      data: { blocks: [header] },
     });
-  });
+    const bodyEditor = new EditorJS({
+      //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
+      holder: "editor-readOnly__body",
+      tools: {
+        header: {
+          class: Header,
+          config: {
+            levels: [2, 4, 6],
+          },
+        },
+        code: CodeTool,
+        image: {
+          class: ImageTool,
+        },
+        inlineCode: {
+          class: InlineCode,
+        },
+        quote: Quote,
+        list: {
+          class: List,
+          inlineToolbar: true,
+        },
+      },
+      data: { blocks },
+      logLevel: LogLevels?.ERROR ?? "ERROR",
+      sanitizer: { a: { href: true, target: "_blank" } },
+    });
+    headerEditor.isReady.then(async () => {
+      await headerEditor.readOnly.toggle(true);
+      overrideEditorJsStyleHeader();
+    });
+    bodyEditor.isReady.then(async () => {
+      await bodyEditor.readOnly.toggle(true);
+      computeAndPasteReadTime(blocks);
+      overrideEditorJsStyleBody();
+    });
+  } catch {
+    alert("Failed to initialize editor. Please try again.");
+  }
 };
 
 const closeCommentDrawer = () => {
@@ -228,13 +237,15 @@ const openCommentDrawer = () => {
 
 const getComments = async () => {
   const storyId = getIdParam("read-story");
-  const { status, data } = await Axios.get(
-    BASE_URL + `/api/comment/${storyId}`
-  );
-  if (status === 200) {
-    data.forEach((comment: any) => {
-      drawNewComment(comment);
-    });
+  try {
+    const { status, data } = await Axios.get(`/api/comment/${storyId}`);
+    if (status < 300) {
+      data.forEach((comment: any) => {
+        drawNewComment(comment);
+      });
+    }
+  } catch {
+    alert("Failed to load comments. Please try again.");
   }
 };
 
@@ -257,10 +268,8 @@ const likeOrUnlike = async () => {
       return;
     }
     try {
-      const { status } = await Axios.patch(
-        BASE_URL + `/api/like/${storyId}/${plusMinus}`
-      );
-      if (status === 200) {
+      const { status } = await Axios.patch(`/api/like/${storyId}/${plusMinus}`);
+      if (status < 300) {
         if (childIcon.className.includes("false")) {
           childSpan.innerText = (likedCount + 1).toLocaleString();
           childIcon.className = childIcon.className
@@ -275,7 +284,9 @@ const likeOrUnlike = async () => {
           return;
         }
       }
-    } catch {}
+    } catch {
+      alert("Failed to like/unlike the story. Please try again.");
+    }
   }
 };
 
@@ -284,35 +295,35 @@ const handleBookmark = async () => {
   const childIcon = bookmarkContainer?.querySelector("i");
   if (childIcon) {
     if (childIcon.className.includes("false")) {
-      const { status } = await Axios.patch(
-        BASE_URL + `/api/bookmark/${storyId}`
-      );
-      if (status === 200) {
-        childIcon.className = childIcon.className
-          .replace("false", "true")
-          .replace("far", "fas");
+      try {
+        const { status } = await Axios.patch(`/api/bookmark/${storyId}`);
+        if (status < 300) {
+          childIcon.className = childIcon.className
+            .replace("false", "true")
+            .replace("far", "fas");
+        }
+      } catch {
+        alert("Failed to bookmark. Please try again.");
       }
     } else if (childIcon.className.includes("true")) {
-      const { status } = await Axios.patch(
-        BASE_URL + `/api/disbookmark/${storyId}`
-      );
-      if (status === 200) {
-        childIcon.className = childIcon.className
-          .replace("true", "false")
-          .replace("fas", "far");
+      try {
+        const { status } = await Axios.patch(`/api/disbookmark/${storyId}`);
+        if (status < 300) {
+          childIcon.className = childIcon.className
+            .replace("true", "false")
+            .replace("fas", "far");
+        }
+      } catch {
+        alert("Failed to disbookmark. Please try again.");
       }
     }
   }
 };
 
-const initReadStory = async () => {
-  if (BASE_URL) {
-    const params = document.location.pathname.split(BASE_URL)[0].split("/");
-    if (params[1] === "read-story") {
-      const storyId = getIdParam("read-story");
-      await initEditorReadOnly(storyId);
-    }
-  }
+const init = async () => {
+  const storyId = getIdParam("read-story");
+  await initEditorReadOnly(storyId);
+
   filterBlack?.addEventListener("click", closeCommentDrawer);
   seeCommentDiv?.addEventListener("click", openCommentDrawer);
   seeCommentDiv?.addEventListener("click", getComments);
@@ -324,4 +335,6 @@ const initReadStory = async () => {
   deleteStoryBtn?.addEventListener("click", deleteStory);
 };
 
-initReadStory();
+if (document.location.pathname.includes("read-story")) {
+  init();
+}

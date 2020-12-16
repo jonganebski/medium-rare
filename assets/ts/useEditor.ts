@@ -12,6 +12,7 @@ import Quote from "@editorjs/quote";
 import Axios from "axios";
 import { BASE_URL } from "./constants";
 import { publishBtn } from "./elements.header";
+import { overrideEditorJsStyleBody } from "./page.ReadStory";
 
 let imgHistory: string[] = [];
 
@@ -21,18 +22,24 @@ const requestUnusedPhotosDelete = async (
   savedData: OutputData
 ): Promise<boolean> => {
   const imgBlocks = savedData.blocks.filter((block) => block.type === "image");
-  imgBlocks.forEach((imgBlock) => {
-    const usedImg = imgBlock.data.file.url;
-    imgHistory = imgHistory.filter((url) => url !== usedImg);
-  });
-  const { status: removalStatus } = await Axios.delete(
-    BASE_URL + "/api/photos",
-    { data: { images: Array.from(imgHistory) } }
-  );
-  if (removalStatus === 204) {
+  if (imgBlocks.length === 0) {
     return true;
   }
-  return false;
+  try {
+    imgBlocks.forEach((imgBlock) => {
+      const usedImg = imgBlock.data.file.url;
+      imgHistory = imgHistory.filter((url) => url !== usedImg);
+    });
+    const { status: removalStatus } = await Axios.delete("/api/photos", {
+      data: { images: Array.from(imgHistory) },
+    });
+    if (removalStatus < 300) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
 };
 
 const handlePublishBtnClick = async (editor: EditorJS) => {
@@ -40,35 +47,51 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
   if (document.location.pathname.includes("new-story")) {
     try {
       const { status, data: storyId } = await Axios.post(
-        BASE_URL + "/api/story",
+        "/api/story",
         savedData
       );
-      if (status === 201) {
+      if (status < 300) {
         // request delete images in imgHistory
-        if (await requestUnusedPhotosDelete(savedData)) {
-          document.location.href = `/read-story/${storyId}`;
+        if (await !requestUnusedPhotosDelete(savedData)) {
+          console.error("There are images failed to remove.");
         }
+        document.location.href = `/read-story/${storyId}`;
       }
-    } catch {}
+    } catch {
+      alert("Failed to publish. Please try again.");
+    }
     return;
   }
   if (document.location.pathname.includes("edit-story")) {
     const splitedPath = document.location.pathname.split("edit-story");
     const storyId = splitedPath[1].replace(/[/]/g, "");
     try {
-      const { status } = await Axios.patch(
-        BASE_URL + `/api/story/${storyId}`,
-        savedData
-      );
-      if (status === 200) {
+      const { status } = await Axios.patch(`/api/story/${storyId}`, savedData);
+      if (status < 300) {
         // request delete images in imgHistory
-        if (await requestUnusedPhotosDelete(savedData)) {
-          document.location.href = `/read-story/${storyId}`;
+        if (await !requestUnusedPhotosDelete(savedData)) {
+          console.error("There are images failed to remove.");
         }
+        document.location.href = `/read-story/${storyId}`;
       }
-    } catch {}
+    } catch {
+      alert("Failed to update. Please try again.");
+    }
     return;
   }
+};
+
+const imageCollector = (holder: string) => {
+  const imgElements = document
+    .getElementById(holder)
+    ?.querySelectorAll(
+      ".image-tool__image-picture"
+    ) as NodeListOf<HTMLImageElement>;
+  imgElements?.forEach((imgEl) => {
+    if (!imgHistory.some((url) => url === imgEl.src)) {
+      imgHistory.push(imgEl.src);
+    }
+  });
 };
 
 export const useEditor = (
@@ -112,25 +135,7 @@ export const useEditor = (
   });
   editor.isReady.then(() => {
     publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
-    document.body.addEventListener("click", () => {
-      const imgElements = document
-        .getElementById(holder)
-        ?.querySelectorAll(
-          ".image-tool__image-picture"
-        ) as NodeListOf<HTMLImageElement>;
-      imgElements?.forEach((imgEl) => {
-        if (!imgHistory.some((url) => url === imgEl.src)) {
-          imgHistory.push(imgEl.src);
-        }
-      });
-    });
-    const quotes = document
-      .getElementById(holder)
-      ?.querySelectorAll(".cdx-quote__text") as
-      | NodeListOf<HTMLElement>
-      | undefined;
-    quotes?.forEach((quote) => {
-      quote.style.minHeight = "0px";
-    });
+    document.body.addEventListener("click", () => imageCollector(holder));
+    overrideEditorJsStyleBody();
   });
 };

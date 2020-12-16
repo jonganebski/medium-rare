@@ -15,6 +15,7 @@ import (
 
 type commentOutput struct {
 	CommentID    string `json:"commentId"`
+	UserID       string `json:"userId"`
 	Username     string `json:"username"`
 	AvatarURL    string `json:"avatarUrl"`
 	CreatedAt    int64  `json:"createdAt"`
@@ -169,6 +170,7 @@ func provideComments(userService user.Service, storyService story.Service, comme
 			}
 			// make a comment output and append to the slice
 			outputItem.CommentID = comment.ID
+			outputItem.UserID = creator.ID
 			outputItem.Username = creator.Username
 			outputItem.AvatarURL = creator.AvatarURL
 			outputItem.CreatedAt = comment.CreatedAt

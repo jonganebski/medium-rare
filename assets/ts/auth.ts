@@ -89,7 +89,7 @@ const signupUser = async (e: Event) => {
   }
 };
 
-const auth = () => {
+const init = () => {
   filter?.addEventListener("click", closeAuthModals);
   openSigninModalEl?.addEventListener("click", () => openAuthModal("signin"));
   openSignupModalEl?.addEventListener("click", () => openAuthModal("signup"));
@@ -101,4 +101,4 @@ const auth = () => {
   signupModal?.addEventListener("submit", signupUser);
 };
 
-auth();
+init();

@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import {
   addCommentBtn,
   cancelCommentBtn,
@@ -7,46 +6,48 @@ import {
   commentDrawerCommentCount,
   preparedCommentBox,
 } from "./elements.readStory";
+import { getIdParam } from "./helper";
 import { clearCommentBox, drawNewComment } from "./page.ReadStory";
 
-const initAddComment = () => {
-  addCommentBtn?.addEventListener("click", async () => {
-    if (preparedCommentBox && commentCountDisplay) {
-      const commentText = preparedCommentBox.innerText;
-      const commentCount = parseInt(
-        commentCountDisplay.innerText.replace(/\,/g, "")
-      );
-      if (isNaN(commentCount)) {
-        console.error("wrong comment count format");
-        return;
-      }
-      if (commentText.length === 0) {
-        return;
-      }
-      const splitedPath = document.location.pathname.split("read-story");
-      const storyId = splitedPath[1].replace(/[/]/g, "");
-      try {
-        const { status, data: comment } = await Axios.post(
-          BASE_URL + `/api/comment/${storyId}`,
-          {
-            text: commentText,
-          }
-        );
-        if (status === 201) {
-          if (commentDrawerCommentCount) {
-            const prevCount = +commentDrawerCommentCount.innerText;
-            if (!isNaN(prevCount)) {
-              commentDrawerCommentCount.innerText = prevCount + 1 + "";
-            }
-          }
-          preparedCommentBox.innerText = "";
-          commentCountDisplay.innerText = (commentCount + 1).toLocaleString();
-          drawNewComment(comment);
-        }
-      } catch {}
+const addComment = async () => {
+  if (preparedCommentBox && commentCountDisplay && commentDrawerCommentCount) {
+    const commentText = preparedCommentBox.innerText;
+    const commentCount = parseInt(
+      commentCountDisplay.innerText.replace(/\,/g, "")
+    );
+    if (isNaN(commentCount)) {
+      console.error("wrong comment count format");
+      return;
     }
-  });
+    if (commentText.length === 0) {
+      return;
+    }
+    const storyId = getIdParam("read-story");
+    try {
+      const { status, data: comment } = await Axios.post(
+        `/api/comment/${storyId}`,
+        {
+          text: commentText,
+        }
+      );
+      if (status < 300) {
+        const prevCount = +commentDrawerCommentCount.innerText;
+        if (prevCount && !isNaN(prevCount)) {
+          commentDrawerCommentCount.innerText = prevCount + 1 + "";
+        }
+        preparedCommentBox.innerText = "";
+        commentCountDisplay.innerText = (commentCount + 1).toLocaleString();
+        drawNewComment(comment);
+      }
+    } catch {
+      alert("Failed to add comment. Please try again.");
+    }
+  }
+};
+
+const init = () => {
+  addCommentBtn?.addEventListener("click", addComment);
   cancelCommentBtn?.addEventListener("click", clearCommentBox);
 };
 
-initAddComment();
+init();

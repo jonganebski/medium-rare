@@ -125,10 +125,10 @@ const onFileInput = (e: Event) => {
   reader.readAsDataURL(file);
 };
 
-const initEditAvatar = () => {
+const init = () => {
   editAvatarEl.editBtn?.addEventListener("click", handleAvatarEditBtn);
   editAvatarEl.input?.addEventListener("input", onFileInput);
   editAvatarEl.form?.addEventListener("submit", updateAvatar);
 };
 
-initEditAvatar();
+init();

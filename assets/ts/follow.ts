@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { followingPageHeader } from "./elements.followings";
 import { followersCountDisplay } from "./elements.readStory";
 
@@ -7,21 +6,28 @@ export const readPageFollowBtnClick = async (e: Event) => {
   const followBtn = e.currentTarget as HTMLButtonElement;
   const authorId = followBtn.closest("header")?.id;
   if (authorId) {
-    const { status } = await Axios.patch(BASE_URL + `/api/follow/${authorId}`);
-    if (status === 200) {
-      const followersCount = followersCountDisplay?.innerText
-        .replace("Followers", "")
-        .replace(/[,]/g, "")
-        .trim();
-      const followersCountLink = followersCountDisplay?.querySelector("a");
-      if (followersCountLink && followersCount && !isNaN(+followersCount)) {
-        followersCountLink.innerText =
-          (+followersCount + 1).toLocaleString() + " Followers";
+    try {
+      const { status } = await Axios.patch(`/api/follow/${authorId}`);
+      if (status < 300) {
+        const followersCount = followersCountDisplay?.innerText
+          .replace("Followers", "")
+          .replace(/[,]/g, "")
+          .trim();
+        const followersCountLink = followersCountDisplay?.querySelector("a");
+        if (followersCountLink && followersCount && !isNaN(+followersCount)) {
+          followersCountLink.innerText =
+            (+followersCount + 1).toLocaleString() + " Followers";
+        }
+        followBtn.className = followBtn.className.replace(
+          "follow",
+          "following"
+        );
+        followBtn.innerText = "Following";
+        followBtn.removeEventListener("click", readPageFollowBtnClick);
+        followBtn.addEventListener("click", readPageFollowingBtnClick);
       }
-      followBtn.className = followBtn.className.replace("follow", "following");
-      followBtn.innerText = "Following";
-      followBtn.removeEventListener("click", readPageFollowBtnClick);
-      followBtn.addEventListener("click", readPageFollowingBtnClick);
+    } catch {
+      alert("Failed to follow. Please try again.");
     }
   }
 };
@@ -34,31 +40,33 @@ export const readPageFollowingBtnClick = async (e: Event) => {
     if (!isConfirmed) {
       return;
     }
-    const { status } = await Axios.patch(
-      BASE_URL + `/api/unfollow/${authorId}`
-    );
-    if (status === 200) {
-      const followersCountLink = followersCountDisplay?.querySelector("a");
-      const followersCount = followersCountLink?.innerText
-        .replace("Followers", "")
-        .replace(/[,]/g, "")
-        .trim();
-      if (
-        followersCountLink &&
-        followersCount &&
-        !isNaN(+followersCount) &&
-        +followersCount !== 0
-      ) {
-        followersCountLink.innerText =
-          (+followersCount - 1).toLocaleString() + " Followers";
+    try {
+      const { status } = await Axios.patch(`/api/unfollow/${authorId}`);
+      if (status < 300) {
+        const followersCountLink = followersCountDisplay?.querySelector("a");
+        const followersCount = followersCountLink?.innerText
+          .replace("Followers", "")
+          .replace(/[,]/g, "")
+          .trim();
+        if (
+          followersCountLink &&
+          followersCount &&
+          !isNaN(+followersCount) &&
+          +followersCount !== 0
+        ) {
+          followersCountLink.innerText =
+            (+followersCount - 1).toLocaleString() + " Followers";
+        }
+        followingBtn.className = followingBtn.className.replace(
+          "following",
+          "follow"
+        );
+        followingBtn.innerText = "Follow";
+        followingBtn.removeEventListener("click", readPageFollowingBtnClick);
+        followingBtn.addEventListener("click", readPageFollowBtnClick);
       }
-      followingBtn.className = followingBtn.className.replace(
-        "following",
-        "follow"
-      );
-      followingBtn.innerText = "Follow";
-      followingBtn.removeEventListener("click", readPageFollowingBtnClick);
-      followingBtn.addEventListener("click", readPageFollowBtnClick);
+    } catch {
+      alert("Failed to unfollow. Please try again.");
     }
   }
 };
@@ -70,14 +78,16 @@ export const followersPageFollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(BASE_URL + `/api/follow/${authorId}`);
-    if (status === 200) {
+    const { status } = await Axios.patch(`/api/follow/${authorId}`);
+    if (status < 300) {
       followBtn.className = "userCard__following-btn";
       followBtn.innerText = "Following";
       followBtn?.removeEventListener("click", followersPageFollowBtnClick);
       followBtn?.addEventListener("click", followersPageFollowingBtnClick);
     }
-  } catch {}
+  } catch {
+    alert("Failed to follow. Please try again.");
+  }
 };
 
 export const followersPageFollowingBtnClick = async (e: Event) => {
@@ -91,16 +101,16 @@ export const followersPageFollowingBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(
-      BASE_URL + `/api/unfollow/${authorId}`
-    );
+    const { status } = await Axios.patch(`/api/unfollow/${authorId}`);
     if (status === 200) {
       followingBtn.className = "userCard__follow-btn";
       followingBtn.innerText = "Follow";
       followingBtn.removeEventListener("click", followersPageFollowingBtnClick);
       followingBtn.addEventListener("click", followersPageFollowBtnClick);
     }
-  } catch {}
+  } catch {
+    alert("Failed to unfollow. Please try again.");
+  }
 };
 
 export const followingsPageUnfollowBtnClick = async (e: Event) => {
@@ -115,10 +125,8 @@ export const followingsPageUnfollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(
-      BASE_URL + `/api/unfollow/${authorId}`
-    );
-    if (status === 200) {
+    const { status } = await Axios.patch(`/api/unfollow/${authorId}`);
+    if (status < 300) {
       userCard.remove();
       const prevCount = followingPageHeader.innerText
         .replace("You are following", "")
@@ -134,7 +142,9 @@ export const followingsPageUnfollowBtnClick = async (e: Event) => {
         (+prevCount - 1).toLocaleString() +
         " medium-rares.";
     }
-  } catch {}
+  } catch {
+    alert("Failed to follow. Please try again.");
+  }
 };
 
 export const userBioFollowBtnClick = async (e: Event) => {
@@ -145,17 +155,18 @@ export const userBioFollowBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(
-      BASE_URL + `/api/follow/${targetUserId}`
-    );
+    const { status } = await Axios.patch(`/api/follow/${targetUserId}`);
     if (status === 200) {
       target && (target.className = "userBio__following-btn");
       target && (target.innerText = "Following");
       target && target.removeEventListener("click", userBioFollowBtnClick);
       target && target.addEventListener("click", userBioFollowingBtnClick);
     }
-  } catch {}
+  } catch {
+    alert("Failed to follow. Please try again.");
+  }
 };
+
 export const userBioFollowingBtnClick = async (e: Event) => {
   const target = e.target as HTMLButtonElement | null;
   const parentEl = target?.parentElement;
@@ -168,14 +179,14 @@ export const userBioFollowingBtnClick = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(
-      BASE_URL + `/api/unfollow/${targetUserId}`
-    );
-    if (status === 200) {
+    const { status } = await Axios.patch(`/api/unfollow/${targetUserId}`);
+    if (status < 300) {
       target && (target.className = "userBio__follow-btn");
       target && (target.innerText = "Follow");
       target && target.removeEventListener("click", userBioFollowingBtnClick);
       target && target.addEventListener("click", userBioFollowBtnClick);
     }
-  } catch {}
+  } catch {
+    alert("Failed to unfollow. Please try again.");
+  }
 };

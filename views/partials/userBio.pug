@@ -7,8 +7,9 @@
             if .targetUser.IsEditor
                 button.userBio__editorBadge(disabled) Editor
         p.userBio__userBio #{ .targetUser.Bio }
-        if (and .userId (ne .userId .targetUser.ID))
-            if .isFollowingTargetUser
-                button.userBio__following-btn Following
-            else 
-                button.userBio__follow-btn Follow
+        if .userId
+            if (ne .userId .targetUser.ID)
+                if .isFollowingTargetUser
+                    button.userBio__following-btn Following
+                else 
+                    button.userBio__follow-btn Follow

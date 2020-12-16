@@ -80,8 +80,8 @@ const handleUsernameEditBtn = (e: Event) => {
   editUsernameEl.input && (editUsernameEl.input.disabled = false);
 };
 
-const useSettings = () => {
+const init = () => {
   editUsernameEl.editBtn?.addEventListener("click", handleUsernameEditBtn);
 };
 
-useSettings();
+init();

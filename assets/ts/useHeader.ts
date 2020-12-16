@@ -13,8 +13,8 @@ const toggleUsermenu = () => {
   }
 };
 
-const useHeader = () => {
+const init = () => {
   avatarFrame?.addEventListener("click", toggleUsermenu);
 };
 
-useHeader();
+init();

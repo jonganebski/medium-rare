@@ -1,5 +1,4 @@
 import Axios, { AxiosError } from "axios";
-import { BASE_URL } from "./constants";
 import { delAccountEl } from "./elements.settings";
 
 const deleteAccount = async () => {
@@ -13,10 +12,10 @@ Do you want to proceed?`);
     return;
   }
   try {
-    const { status } = await Axios.delete(BASE_URL + "/api/user", {
+    const { status } = await Axios.delete("/api/user", {
       data: { password },
     });
-    if (status === 204) {
+    if (status < 300) {
       document.location.href = "/";
     }
   } catch (err) {
@@ -76,8 +75,8 @@ const handleDelAccountBtn = (e: Event) => {
   delAccountEl.input.placeholder = "Enter your password";
 };
 
-const initDeleteAccount = () => {
+const init = () => {
   delAccountEl.delBtn?.addEventListener("click", handleDelAccountBtn);
 };
 
-initDeleteAccount();
+init();

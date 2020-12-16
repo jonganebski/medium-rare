@@ -1,7 +1,7 @@
 header.followers-list-page__header._flex-c-cs
   include views/partials/userBio.pug
   if (eq "0" (getSliceLen .targetUser.FollowerIDs))
-    h3 #{getSliceLen .targetUser.FollowerIDs} no followers yet
+    h3 no followers yet
   else if (eq "1" (getSliceLen .targetUser.FollowerIDs))
     h3 1 Follower
   else

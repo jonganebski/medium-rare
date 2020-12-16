@@ -7,7 +7,7 @@ import {
   followersPageFollowingBtnClick,
 } from "./follow";
 
-const initPageFollowers = () => {
+const init = () => {
   followersPagefollowBtns?.forEach((btn) => {
     btn.addEventListener("click", followersPageFollowBtnClick);
   });
@@ -16,4 +16,4 @@ const initPageFollowers = () => {
   });
 };
 
-initPageFollowers();
+init();
