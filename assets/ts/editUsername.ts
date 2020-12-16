@@ -1,40 +1,45 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { editUsernameEl } from "./elements.settings";
 
 let prevUsernameInputValue = "";
 
 const updateUsername = async (e: Event) => {
-  if (!editUsernameEl.input) {
+  const target = e.target as HTMLButtonElement | null;
+  const parentElement = target?.parentElement as HTMLElement | null;
+  if (!editUsernameEl.input || !target) {
     return;
   }
   const newUsername = editUsernameEl.input?.value;
   if (!newUsername) {
     return;
   }
-  const { status, data: updatedUsername } = await Axios.patch(
-    BASE_URL + `/api/user/username`,
-    {
-      username: newUsername,
-    }
-  );
-  if (status === 200) {
-    const target = e.target as HTMLButtonElement | null;
-    const parentElement = target?.parentElement as HTMLElement | null;
-    target?.removeEventListener("click", updateUsername);
-    target?.remove();
-    const cancelBtnEl = parentElement?.querySelector(
-      ".settings__cancelUsername-btn"
+  try {
+    target.disabled = true;
+    target.innerText = "Loading...";
+    const { status, data: updatedUsername } = await Axios.patch(
+      `/api/user/username`,
+      {
+        username: newUsername,
+      }
     );
-    cancelBtnEl?.removeEventListener("click", handleUsernameEditCancelBtn);
-    cancelBtnEl?.remove();
-    const editBtnEl = document.createElement("button");
-    editBtnEl.innerText = "Edit";
-    editBtnEl.className = "settings__gray-btn settings__editUsername-btn";
-    editBtnEl.addEventListener("click", handleUsernameEditBtn);
-    parentElement?.append(editBtnEl);
-    editUsernameEl.input.disabled = true;
-    prevUsernameInputValue = updatedUsername;
+    if (status < 300) {
+      target?.removeEventListener("click", updateUsername);
+      target?.remove();
+      const cancelBtnEl = parentElement?.querySelector(
+        ".settings__cancelUsername-btn"
+      );
+      cancelBtnEl?.removeEventListener("click", handleUsernameEditCancelBtn);
+      cancelBtnEl?.remove();
+      const editBtnEl = document.createElement("button");
+      editBtnEl.innerText = "Edit";
+      editBtnEl.className = "settings__gray-btn settings__editUsername-btn";
+      editBtnEl.addEventListener("click", handleUsernameEditBtn);
+      parentElement?.append(editBtnEl);
+      editUsernameEl.input.disabled = true;
+      prevUsernameInputValue = updatedUsername;
+    }
+  } catch {
+    alert("Faile to update username. Please try again.");
   }
 };
 

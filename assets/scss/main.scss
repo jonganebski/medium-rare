@@ -3,6 +3,10 @@ body * {
   position: relative;
 }
 
+body {
+  font-size: 20px;
+}
+
 #filter {
   position: absolute;
   width: 100vw;
@@ -36,8 +40,8 @@ button {
   padding: 0.7rem 0.8rem;
   border: 1px solid black;
   border-radius: 5px;
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: $fontSizeSM;
 }
 
 input[type="submit"] {
@@ -46,8 +50,8 @@ input[type="submit"] {
   padding: 0.7rem 0.8rem;
   border: 1px solid black;
   border-radius: 5px;
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: $fontSizeSM;
 }
 
 input:-webkit-autofill,

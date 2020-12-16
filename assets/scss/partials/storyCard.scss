@@ -1,10 +1,12 @@
 .storyCard {
   width: 100%;
   margin-bottom: 3rem;
+  * {
+    font-size: $fontSizeXS;
+  }
   .storyCard__content {
     width: 80%;
     padding-right: 2rem;
-    font-size: 0.9rem;
     color: $fontBlack6;
     .storyCard__reference {
       margin-bottom: 0.4rem;

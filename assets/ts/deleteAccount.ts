@@ -1,9 +1,10 @@
 import Axios, { AxiosError } from "axios";
 import { delAccountEl } from "./elements.settings";
 
-const deleteAccount = async () => {
+const deleteAccount = async (e: Event) => {
+  const target = e.target as HTMLButtonElement | null;
   const password = delAccountEl.input?.value;
-  if (!password) {
+  if (!target || !password) {
     return;
   }
   const confirmed = confirm(`Your account and every information related with your account will be removed permanently.
@@ -12,6 +13,8 @@ Do you want to proceed?`);
     return;
   }
   try {
+    target.disabled = true;
+    target.innerText = "Loading...";
     const { status } = await Axios.delete("/api/user", {
       data: { password },
     });

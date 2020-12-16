@@ -21,6 +21,7 @@
   header {
     padding: 2rem;
     border-bottom: 1px solid lightgray;
+    font-size: $fontSizeMD;
     .usermenu__avatar-frame {
       width: 2.5rem;
       height: 2.5rem;
@@ -29,6 +30,10 @@
     .usermenu__username {
       font-weight: 700;
       margin-bottom: 0.5rem;
+      font-size: $fontSizeMD;
+    }
+    .usermenu__email {
+      font-size: $fontSizeMD;
     }
   }
   ul {
@@ -36,22 +41,22 @@
     border-bottom: 1px solid lightgray;
     li {
       height: 2rem;
-      font-size: 0.9rem;
       a {
         display: flex;
         align-items: center;
         width: 100%;
         height: 100%;
         color: rgba(0, 0, 0, 0.8);
+        font-size: $fontSizeSM;
       }
     }
   }
   footer {
     padding: 1.5rem;
-    font-size: 0.9rem;
     color: rgba(0, 0, 0, 0.8);
     .usermenu__signout {
       cursor: pointer;
+      font-size: $fontSizeSM;
     }
   }
 }

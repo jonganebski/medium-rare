@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { editPasswordEl, settingsSecurity } from "./elements.settings";
 
 const handlePassEditCancelBtn = (e: Event) => {
@@ -70,6 +69,8 @@ const handlePassEditBtn = (e: Event) => {
 };
 
 const updatePassword = async (e: Event) => {
+  const target = e.target as HTMLButtonElement | null;
+  const parentElement = target?.parentElement as HTMLElement | null;
   const firstInputEl = settingsSecurity?.querySelector(
     ".settings__passInput-1"
   ) as HTMLInputElement | null;
@@ -79,6 +80,9 @@ const updatePassword = async (e: Event) => {
   const originalPass = editPasswordEl.input?.value;
   const firstPass = firstInputEl?.value;
   const secondPass = secondInputEl?.value;
+  if (!target) {
+    return;
+  }
   if (!originalPass || !firstPass || !secondPass) {
     editPasswordEl.desc &&
       (editPasswordEl.desc.innerHTML = "Please enter passwords");
@@ -102,7 +106,9 @@ const updatePassword = async (e: Event) => {
     return;
   }
   try {
-    const { status } = await Axios.patch(BASE_URL + "/api/user/password", {
+    target.disabled = true;
+    target.innerText = "Loading...";
+    const { status } = await Axios.patch("/api/user/password", {
       originalPass,
       firstPass,
       secondPass,
@@ -111,8 +117,6 @@ const updatePassword = async (e: Event) => {
       if (!editPasswordEl.input) {
         return;
       }
-      const target = e.target as HTMLButtonElement | null;
-      const parentElement = target?.parentElement as HTMLElement | null;
       target?.removeEventListener("click", updatePassword);
       target?.remove();
       const cancelBtnEl = parentElement?.querySelector(
@@ -137,7 +141,7 @@ const updatePassword = async (e: Event) => {
     }
   } catch {
     editPasswordEl.desc &&
-      (editPasswordEl.desc.innerHTML = "Something's wrong.");
+      (editPasswordEl.desc.innerHTML = "Something's wrong. Please try again.");
   }
 };
 

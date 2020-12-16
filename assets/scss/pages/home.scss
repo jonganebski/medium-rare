@@ -4,6 +4,9 @@
   grid-template-columns: 1fr 0.8fr 0.7fr;
   gap: 1.5rem;
   width: 100%;
+  * {
+    font-size: $fontSizeXS;
+  }
   .home__picks-c-l {
     width: 100%;
     .home__picks-c-l__cover-frame {
@@ -29,7 +32,6 @@
         margin-bottom: 0.5rem;
       }
       .home__picks-c-l__body {
-        font-size: 0.9rem;
         line-height: 1.1rem;
         color: $fontBlack6;
       }
@@ -38,10 +40,8 @@
       width: 80%;
       .home__picks-c-l__author-name {
         margin-bottom: 0.5rem;
-        font-size: 0.9rem;
       }
       .home__picks-c-l__detail {
-        font-size: 0.9rem;
         color: $fontBlack6;
       }
     }
@@ -81,15 +81,12 @@
         .home__picks-c-c__body {
           margin-bottom: auto;
           line-height: 1.1rem;
-          font-size: 0.8rem;
           color: $fontBlack6;
         }
         .home__picks-c-c__author-name {
           margin-bottom: 0.4rem;
-          font-size: 0.8rem;
         }
         .home__picks-c-c__detail {
-          font-size: 0.8rem;
           color: $fontBlack6;
         }
       }
@@ -123,15 +120,12 @@
         display: block;
         margin-bottom: 1.1rem;
         line-height: 1.1rem;
-        font-size: 0.8rem;
         color: $fontBlack6;
       }
       .home__picks-c-r__author-name {
         margin-bottom: 0.4rem;
-        font-size: 0.8rem;
       }
       .home__picks-c-r__detail {
-        font-size: 0.8rem;
         color: $fontBlack6;
       }
     }
@@ -155,6 +149,9 @@
   }
   .home__popularList {
     width: 100%;
+    * {
+      font-size: $fontSizeXS;
+    }
     h2 {
       width: 70%;
       height: 4rem;
@@ -178,15 +175,14 @@
           display: block;
           font-weight: 700;
           color: $fontBlack9;
+          font-size: $fontSizeMD;
         }
         .home__popularList-item__author-name {
           margin-bottom: 0.5rem;
           display: block;
           color: $fontBlack9;
-          font-size: 0.9rem;
         }
         .home__popularList-item__info {
-          font-size: 0.8rem;
           color: $fontBlack6;
         }
       }

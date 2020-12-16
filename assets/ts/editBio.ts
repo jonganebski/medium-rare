@@ -1,37 +1,39 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { editBioEl } from "./elements.settings";
 
 let prevBioInputValue = "";
 
 const updateBio = async (e: Event) => {
-  if (!editBioEl.input) {
+  const target = e.target as HTMLButtonElement | null;
+  const parentElement = target?.parentElement as HTMLElement | null;
+  if (!editBioEl.input || !target) {
     return;
   }
   const newBio = editBioEl.input?.value;
-  const { status, data: updatedBio } = await Axios.patch(
-    BASE_URL + `/api/user/bio`,
-    {
+  try {
+    target.disabled = true;
+    target.innerText = "Loading...";
+    const { status, data: updatedBio } = await Axios.patch(`/api/user/bio`, {
       bio: newBio,
+    });
+    if (status === 200) {
+      target?.removeEventListener("click", updateBio);
+      target?.remove();
+      const cancelBtnEl = parentElement?.querySelector(
+        ".settings__cancelBio-btn"
+      );
+      cancelBtnEl?.removeEventListener("click", handleBioEditCancelBtn);
+      cancelBtnEl?.remove();
+      const editBtnEl = document.createElement("button");
+      editBtnEl.innerText = "Edit";
+      editBtnEl.className = "settings__gray-btn settings__editBio-btn";
+      editBtnEl.addEventListener("click", handleBioEditBtn);
+      parentElement?.append(editBtnEl);
+      editBioEl.input.disabled = true;
+      prevBioInputValue = updatedBio;
     }
-  );
-  if (status === 200) {
-    const target = e.target as HTMLButtonElement | null;
-    const parentElement = target?.parentElement as HTMLElement | null;
-    target?.removeEventListener("click", updateBio);
-    target?.remove();
-    const cancelBtnEl = parentElement?.querySelector(
-      ".settings__cancelBio-btn"
-    );
-    cancelBtnEl?.removeEventListener("click", handleBioEditCancelBtn);
-    cancelBtnEl?.remove();
-    const editBtnEl = document.createElement("button");
-    editBtnEl.innerText = "Edit";
-    editBtnEl.className = "settings__gray-btn settings__editBio-btn";
-    editBtnEl.addEventListener("click", handleBioEditBtn);
-    parentElement?.append(editBtnEl);
-    editBioEl.input.disabled = true;
-    prevBioInputValue = updatedBio;
+  } catch {
+    alert("Failed to update bio. Please try again.");
   }
 };
 

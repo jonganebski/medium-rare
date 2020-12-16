@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"home/jonganebski/github/medium-rare/model"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -73,7 +74,7 @@ func (r *repository) RemoveManyLikedStoryIDs(storyID primitive.ObjectID) error {
 
 func (r *repository) UpdateUserDetails(userID primitive.ObjectID, field, value string) error {
 	f := bson.D{{Key: "_id", Value: userID}}
-	u := bson.D{{Key: "$set", Value: bson.D{{Key: field, Value: value}}}}
+	u := bson.D{{Key: "$set", Value: bson.D{{Key: field, Value: value}, {Key: "updatedAt", Value: time.Now().Unix()}}}}
 	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
 		return err

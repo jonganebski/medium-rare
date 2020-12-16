@@ -31,9 +31,9 @@ const addComment = async () => {
         }
       );
       if (status < 300) {
-        const prevCount = +commentDrawerCommentCount.innerText;
-        if (prevCount && !isNaN(prevCount)) {
-          commentDrawerCommentCount.innerText = prevCount + 1 + "";
+        const prevCount = commentDrawerCommentCount.innerText;
+        if (prevCount && !isNaN(+prevCount)) {
+          commentDrawerCommentCount.innerText = +prevCount + 1 + "";
         }
         preparedCommentBox.innerText = "";
         commentCountDisplay.innerText = (commentCount + 1).toLocaleString();

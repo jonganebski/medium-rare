@@ -2,7 +2,7 @@ header.userHome__header
   include views/partials/userBio.pug
 .userHome__details
     if (eq "0" (getSliceLen .targetUser.FollowerIDs))
-        a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") no followers yet
+        a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") No followers yet
     else if (eq "1" (getSliceLen .targetUser.FollowerIDs))
         a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") 1 follower
     else

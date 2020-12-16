@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { BASE_URL } from "./constants";
 import { avatarFrame } from "./elements.header";
 import { editAvatarEl, settingsProfile } from "./elements.settings";
 
@@ -38,42 +37,50 @@ const handleAvatarClick = () => {
 const updateAvatar = async (e: Event) => {
   e.preventDefault();
   const form = e.currentTarget as HTMLFormElement | null;
-  if (!form) {
+  const saveBtn = form?.querySelector(
+    ".settings__saveAvatar-btn"
+  ) as HTMLButtonElement | null;
+  if (!form || !saveBtn) {
     return;
   }
   if (editAvatarEl.avatar?.src == prevAvatarInputValue) {
     return;
   }
-  const formData = new FormData(form);
-  formData.append("oldAvatarUrl", prevAvatarInputValue);
-  const { status, data: newUrl } = await Axios.patch(
-    BASE_URL + "/api/user/avatar",
-    formData
-  );
-  if (status === 200) {
-    const guideEl = settingsProfile?.querySelector(
-      ".settings__uploadAvatar-guide"
+  try {
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Loading...";
+    const formData = new FormData(form);
+    formData.append("oldAvatarUrl", prevAvatarInputValue);
+    const { status, data: newUrl } = await Axios.patch(
+      "/api/user/avatar",
+      formData
     );
-    guideEl && (guideEl.className = "settings__uploadAvatar-guide _flex-cc");
-    guideEl?.removeEventListener("click", handleAvatarClick);
-    guideEl?.remove();
-    const cancelBtnEl = form?.querySelector(".settings__cancelAvatar-btn");
-    cancelBtnEl?.removeEventListener("click", handleAvatarEditCancelBtn);
-    cancelBtnEl?.remove();
-    const saveBtn = form?.querySelector(".settings__saveAvatar-btn");
-    saveBtn?.remove();
-    const editBtnEl = document.createElement("button");
-    editBtnEl.innerText = "Edit";
-    editBtnEl.className = "settings__gray-btn settings__editAvatar-btn";
-    editBtnEl.addEventListener("click", handleAvatarEditBtn);
-    const controlBox = form.querySelector(".settings__stack-control");
-    controlBox?.append(editBtnEl);
-    editAvatarEl.input!.disabled = true;
-    editAvatarEl.input!.value = "";
+    if (status < 300) {
+      const guideEl = settingsProfile?.querySelector(
+        ".settings__uploadAvatar-guide"
+      );
+      guideEl && (guideEl.className = "settings__uploadAvatar-guide _flex-cc");
+      guideEl?.removeEventListener("click", handleAvatarClick);
+      guideEl?.remove();
+      const cancelBtnEl = form?.querySelector(".settings__cancelAvatar-btn");
+      cancelBtnEl?.removeEventListener("click", handleAvatarEditCancelBtn);
+      cancelBtnEl?.remove();
+      saveBtn?.remove();
+      const editBtnEl = document.createElement("button");
+      editBtnEl.innerText = "Edit";
+      editBtnEl.className = "settings__gray-btn settings__editAvatar-btn";
+      editBtnEl.addEventListener("click", handleAvatarEditBtn);
+      const controlBox = form.querySelector(".settings__stack-control");
+      controlBox?.append(editBtnEl);
+      editAvatarEl.input!.disabled = true;
+      editAvatarEl.input!.value = "";
 
-    avatarFrame!.querySelector("img")!.src = newUrl;
-    editAvatarEl.avatar!.src = newUrl;
-    prevAvatarInputValue = newUrl;
+      avatarFrame!.querySelector("img")!.src = newUrl;
+      editAvatarEl.avatar!.src = newUrl;
+      prevAvatarInputValue = newUrl;
+    }
+  } catch {
+    alert("Failed to update avatar. Please try again.");
   }
 };
 

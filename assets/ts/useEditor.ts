@@ -42,7 +42,13 @@ const requestUnusedPhotosDelete = async (
   }
 };
 
-const handlePublishBtnClick = async (editor: EditorJS) => {
+const handlePublishBtnClick = async (e: Event, editor: EditorJS) => {
+  const publishBtn = e.target as HTMLButtonElement | null;
+  if (!publishBtn) {
+    return;
+  }
+  publishBtn.disabled = true;
+  publishBtn.innerText = "Loading...";
   const savedData = await editor.save();
   if (document.location.pathname.includes("new-story")) {
     try {
@@ -59,7 +65,10 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
       }
     } catch {
       alert("Failed to publish. Please try again.");
+      publishBtn.disabled = false;
+      publishBtn.innerText = "Publish";
     }
+
     return;
   }
   if (document.location.pathname.includes("edit-story")) {
@@ -76,6 +85,8 @@ const handlePublishBtnClick = async (editor: EditorJS) => {
       }
     } catch {
       alert("Failed to update. Please try again.");
+      publishBtn.disabled = false;
+      publishBtn.innerText = "Save and Publish";
     }
     return;
   }
@@ -134,7 +145,9 @@ export const useEditor = (
     logLevel: LogLevels?.ERROR ?? "ERROR",
   });
   editor.isReady.then(() => {
-    publishBtn?.addEventListener("click", () => handlePublishBtnClick(editor));
+    publishBtn?.addEventListener("click", (e) =>
+      handlePublishBtnClick(e, editor)
+    );
     document.body.addEventListener("click", () => imageCollector(holder));
     overrideEditorJsStyleBody();
   });
