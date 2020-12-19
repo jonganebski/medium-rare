@@ -11,7 +11,7 @@ type Service interface {
 	CreateStory(story *model.Story) (*primitive.ObjectID, error)
 	FindStoryByID(storyID primitive.ObjectID) (*model.Story, error)
 	FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error)
-	FindRecentStories() (*[]model.Story, error)
+	FindRecentStories(timestamp int64) (*[]model.Story, error)
 	FindPickedStories() (*[]model.Story, error)
 	FindPopularStories() (*[]model.Story, error)
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
@@ -80,8 +80,8 @@ func (s *service) FindStoryByID(storyID primitive.ObjectID) (*model.Story, error
 	return s.repository.FindStoryByID(storyID)
 }
 
-func (s *service) FindRecentStories() (*[]model.Story, error) {
-	return s.repository.FindRecentStories()
+func (s *service) FindRecentStories(timestamp int64) (*[]model.Story, error) {
+	return s.repository.FindRecentStories(timestamp)
 }
 
 func (s *service) FindPickedStories() (*[]model.Story, error) {

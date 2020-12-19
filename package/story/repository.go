@@ -17,7 +17,7 @@ type Repository interface {
 	InsertStory(story *model.Story) (*primitive.ObjectID, error)
 	FindStoryByID(storyID primitive.ObjectID) (*model.Story, error)
 	FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error)
-	FindRecentStories() (*[]model.Story, error)
+	FindRecentStories(timestamp int64) (*[]model.Story, error)
 	FindPickedStories() (*[]model.Story, error)
 	FindPopularStories() (*[]model.Story, error)
 	UpdateViewCount(storyID primitive.ObjectID) (*model.Story, error)
@@ -114,7 +114,8 @@ func (r *repository) UpdateCommentID(storyID, commentID primitive.ObjectID, key 
 func (r *repository) FindStories(storyIDs *[]primitive.ObjectID) (*[]model.Story, error) {
 	stories := make([]model.Story, 0)
 	f := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: storyIDs}}}}
-	c, err := r.Collection.Find(context.Background(), f)
+	o := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}})
+	c, err := r.Collection.Find(context.Background(), f, o)
 	if err != nil {
 		return nil, err
 	}
@@ -147,10 +148,10 @@ func (r *repository) UpdateViewCount(storyID primitive.ObjectID) (*model.Story, 
 	return story, nil
 }
 
-func (r *repository) FindRecentStories() (*[]model.Story, error) {
+func (r *repository) FindRecentStories(timestamp int64) (*[]model.Story, error) {
 	stories := make([]model.Story, 0)
-	o := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(30)
-	f := bson.D{{Key: "isPublished", Value: true}, {Key: "editorsPick", Value: false}}
+	o := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(10)
+	f := bson.D{{Key: "isPublished", Value: true}, {Key: "editorsPick", Value: false}, {Key: "createdAt", Value: bson.D{{Key: "$lt", Value: timestamp}}}}
 	c, err := r.Collection.Find(context.Background(), f, o)
 	if err != nil {
 		fmt.Println("Error at FindRecentStories")

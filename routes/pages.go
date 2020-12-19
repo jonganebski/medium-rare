@@ -7,24 +7,11 @@ import (
 	"home/jonganebski/github/medium-rare/model"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-type storyCardOutput struct {
-	StoryID        string `json:"storyId"`
-	AuthorID       string `json:"authorId"`
-	AuthorUsername string `json:"authorUsername"`
-	CreatedAt      int64  `json:"createdAt"`
-	UpdatedAt      int64  `json:"updatedAt"`
-	Header         string `json:"header"`
-	Body           string `json:"body"`
-	CoverImgURL    string `json:"coverImgUrl"`
-	ReadTime       string `json:"readTime"`
-	Ranking        int    `json:"ranking,omitempty"`
-	IsPublished    bool   `json:"isPublished"`
-}
 
 type followerOutput struct {
 	ID           string `json:"id"`
@@ -56,16 +43,19 @@ func myStories(userService user.Service, storyService story.Service) fiber.Handl
 		if err != nil {
 			return c.SendStatus(500)
 		}
+
 		// --- find current user ---
 		user, err := userService.FindUserByID(userOID)
 		if err != nil {
 			return c.Status(404).SendString("User not found")
 		}
+
 		// --- find current user's stories ---
 		stories, err := storyService.FindStories(user.StoryIDs)
 		if err != nil {
 			return c.Status(404).SendString("Stories not found")
 		}
+
 		// --- make output for pug partial storyCard ---
 		storyCards, err := composeStoryCardOutput(*stories, userService)
 		if err != nil {
@@ -182,7 +172,7 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 			return c.Status(404).SendString("Author not found")
 		}
 
-		var publishedStoryCards []storyCardOutput
+		var publishedStoryCards []model.StoryCardOutput
 		for _, storyCard := range *storyCards {
 			if storyCard.IsPublished {
 				publishedStoryCards = append(publishedStoryCards, storyCard)
@@ -441,7 +431,7 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 			}
 		}
 		// --- find stories by time ---
-		stories, err := storyService.FindRecentStories()
+		stories, err := storyService.FindRecentStories(time.Now().Unix())
 		if err != nil {
 			return c.SendStatus(404)
 		}
@@ -470,11 +460,12 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 		if err != nil {
 			return c.SendStatus(404)
 		}
+
 		// --- split stories picked by editor ---
 		// this can be unnecessary if I fix structure of grid in pug file
-		editorsPickR := new(storyCardOutput)
-		editorsPickC := make([]storyCardOutput, 0)
-		editorsPickL := new(storyCardOutput)
+		editorsPickR := new(model.StoryCardOutput)
+		editorsPickC := make([]model.StoryCardOutput, 0)
+		editorsPickL := new(model.StoryCardOutput)
 
 		for i, output := range *pickedStories {
 			if i == 0 {
@@ -501,10 +492,10 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 	}
 }
 
-func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[]storyCardOutput, error) {
-	storyCard := new(storyCardOutput)
-	storyCards := make([]storyCardOutput, 0)
-	for _, story := range stories {
+func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[]model.StoryCardOutput, error) {
+	storyCard := new(model.StoryCardOutput)
+	storyCards := make([]model.StoryCardOutput, 0)
+	for i, story := range stories {
 		// --- find body & coverImgUrl & compute readTime ---
 		body := ""
 		coverImgURL := ""
@@ -540,6 +531,7 @@ func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[
 		storyCard.CoverImgURL = coverImgURL
 		storyCard.ReadTime = readTimeText
 		storyCard.IsPublished = story.IsPublished
+		storyCard.Ranking = i + 1
 		storyCards = append(storyCards, *storyCard)
 	}
 	return &storyCards, nil

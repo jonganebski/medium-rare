@@ -1,4 +1,5 @@
 import "../scss/styles.scss";
+import "./page.home";
 import "./page.ReadStory";
 import "./page.followers";
 import "./page.followings";

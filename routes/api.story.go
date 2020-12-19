@@ -21,12 +21,35 @@ import (
 // StoryRouter has api routes for stories
 func StoryRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) {
 	api.Get("/blocks/:storyId", provideStoryBlocks(storyService))
+	api.Get("/recent-stories/:timestamp", provideRecentStories(userService, storyService))
 	api.Post("/story", middleware.APIGuard, addStory(userService, storyService))
 	api.Patch("/toggle-publish/:storyId/:toggle", middleware.APIGuard, togglePublish(userService, storyService))
 	api.Patch("/toggle-like/:storyId", middleware.APIGuard, handleLikeCount(userService, storyService))
 	api.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
 	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService, photoService))
+}
 
+func provideRecentStories(userService user.Service, storyService story.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		t := c.Params("timestamp")
+		timestamp, err := strconv.ParseInt(t, 10, 64)
+		if err != nil {
+			return c.SendStatus(400)
+		}
+
+		stories, err := storyService.FindRecentStories(timestamp)
+		if err != nil {
+			return c.Status(404).SendString("Stories not found")
+		}
+
+		storyCards, err := composeStoryCardOutput(*stories, userService)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+		fmt.Println(storyCards)
+
+		return c.Status(200).JSON(storyCards)
+	}
 }
 
 func togglePublish(userService user.Service, storyService story.Service) fiber.Handler {

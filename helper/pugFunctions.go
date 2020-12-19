@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"home/jonganebski/github/medium-rare/model"
+	"sort"
 	"strings"
 	"time"
 
@@ -59,4 +61,12 @@ func GetSliceLen(slice []primitive.ObjectID) string {
 	p := message.NewPrinter(language.English)
 	formatted := p.Sprintf("%v", len)
 	return formatted
+}
+
+// SortByUpdatedAt sorts storyCards by updateAt. Recent one comes first.
+func SortByUpdatedAt(stories []model.StoryCardOutput) []model.StoryCardOutput {
+	sort.SliceStable(stories, func(i, j int) bool {
+		return stories[i].UpdatedAt > stories[j].UpdatedAt
+	})
+	return stories
 }

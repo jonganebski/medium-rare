@@ -42,3 +42,18 @@ type data struct {
 type file struct {
 	URL string `json:"url,omitempty" bson:"url,omitempty"`
 }
+
+// StoryCardOutput describes storyCard.pug partial
+type StoryCardOutput struct {
+	StoryID        string `json:"storyId"`
+	AuthorID       string `json:"authorId"`
+	AuthorUsername string `json:"authorUsername"`
+	CreatedAt      int64  `json:"createdAt"`
+	UpdatedAt      int64  `json:"updatedAt"`
+	Header         string `json:"header"`
+	Body           string `json:"body"`
+	CoverImgURL    string `json:"coverImgUrl"`
+	ReadTime       string `json:"readTime"`
+	Ranking        int    `json:"ranking,omitempty"`
+	IsPublished    bool   `json:"isPublished"`
+}

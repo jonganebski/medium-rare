@@ -1,4 +1,4 @@
-li.storyCard._flex
+li.storyCard._flex(id="{{ .CreatedAt }}")
     .storyCard__content._flex-c-sb
         a(href="/read-story/{{ .StoryID }}")
           if (eq $.path "/")

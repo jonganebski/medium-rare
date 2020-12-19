@@ -53,3 +53,18 @@ export const EDITORJS_CONFIG: EditorConfig = {
   },
   logLevel: LogLevels?.ERROR ?? "ERROR",
 };
+
+export const MONTHS = [
+  "January",
+  "Febuary",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];

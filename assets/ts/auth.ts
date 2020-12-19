@@ -49,7 +49,7 @@ const signinUser = async (e: Event) => {
       }
     } catch (err) {
       const { status } = err.response;
-      if (status === 400 && signinError) {
+      if (400 <= status && status < 500 && signinError) {
         signinError.innerText = "Wrong email or password";
       } else if (status === 500 && signinError) {
         signinError.innerText = "Sorry.. server has a problem";

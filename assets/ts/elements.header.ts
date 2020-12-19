@@ -10,10 +10,10 @@ export const saveStatusEl = mainHeaderEl?.querySelector(
 ) as HTMLElement | null;
 export const publishBtn = mainHeaderEl?.querySelector(
   ".main-header__publish-btn"
-);
+) as HTMLButtonElement | null;
 export const unpublishBtn = mainHeaderEl?.querySelector(
   ".main-header__unpublish-btn"
-);
+) as HTMLButtonElement | null;
 export const avatarFrame = mainHeaderEl?.querySelector(
   ".main-header__avatar-frame"
 );

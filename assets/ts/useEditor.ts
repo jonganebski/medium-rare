@@ -5,7 +5,7 @@ import { publishBtn, saveStatusEl, unpublishBtn } from "./elements.header";
 import { overrideEditorJsStyleBody } from "./page.ReadStory";
 
 let timeoutId: NodeJS.Timeout;
-let isCreated = Boolean(document.location.pathname.includes("edit-story"));
+let isCreated = false;
 let isSaved = false;
 let storyId = "";
 
@@ -15,31 +15,39 @@ export const handlePublishBtnClick = async (
   toggle: 1 | -1
 ) => {
   const publishBtn = e.target as HTMLButtonElement | null;
-  if (!publishBtn || !storyId) {
+  if (!publishBtn) {
     return;
   }
   publishBtn.disabled = true;
   publishBtn.innerText = "Loading...";
   try {
     clearTimeout(timeoutId);
-    !isSaved && (await saveAsDraft(editor));
-    const { status } = await Axios.patch(
-      `/api/toggle-publish/${storyId}/${toggle}`
-    );
+    let status;
+    if (!isCreated && !storyId) {
+      const createdStoryId = await createNewStory(editor);
+      ({ status } = await Axios.patch(
+        `/api/toggle-publish/${createdStoryId}/${toggle}`
+      ));
+    } else if (!isSaved) {
+      await saveAsDraft(editor);
+      ({ status } = await Axios.patch(
+        `/api/toggle-publish/${storyId}/${toggle}`
+      ));
+    }
     if (status < 300) {
       document.location.href = `/read-story/${storyId}`;
     }
   } catch {
     alert("Failed to publish. Please try again.");
     publishBtn.disabled = false;
-    publishBtn.innerText = "Save and Publish";
+    publishBtn.innerText = "Publish";
   }
   return;
 };
 
 const saveAsDraft = async (editor: EditorJS) => {
   if (!storyId) {
-    return;
+    throw new Error();
   }
   try {
     saveStatusEl && (saveStatusEl.innerText = "Saving...");
@@ -48,10 +56,13 @@ const saveAsDraft = async (editor: EditorJS) => {
     if (status < 300) {
       isSaved = true;
       saveStatusEl && (saveStatusEl.innerText = "Saved");
+      return;
     }
+    throw new Error();
   } catch {
     isSaved = false;
-    saveStatusEl && (saveStatusEl.innerText = "Not Saved");
+    saveStatusEl && (saveStatusEl.innerText = "Save error");
+    throw new Error();
   }
 };
 
@@ -68,11 +79,14 @@ const createNewStory = async (editor: EditorJS) => {
       isCreated = true;
       isSaved = true;
       saveStatusEl && (saveStatusEl.innerText = "Saved");
+      return createdStoryId;
     }
+    throw new Error();
   } catch {
     isCreated = false;
     isSaved = false;
     saveStatusEl && (saveStatusEl.innerText = "Not saved");
+    throw new Error();
   }
 };
 
@@ -84,16 +98,18 @@ const saveStoryTimeout = (editor: EditorJS) => {
   saveStatusEl.innerText = "Not saved";
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
-    if (
-      document.location.pathname.includes("new-story") &&
-      !isCreated &&
-      !storyId
-    ) {
-      createNewStory(editor);
-      return;
-    } else {
-      saveAsDraft(editor);
-    }
+    try {
+      if (
+        document.location.pathname.includes("new-story") &&
+        !isCreated &&
+        !storyId
+      ) {
+        createNewStory(editor);
+        return;
+      } else {
+        saveAsDraft(editor);
+      }
+    } catch {}
   }, 5000);
 };
 
@@ -114,6 +130,7 @@ export const useEditor = (
     if (document.location.pathname.includes("edit-story")) {
       const splitedPath = document.location.pathname.split("edit-story");
       storyId = splitedPath[1].replace(/[/]/g, "");
+      isCreated = true;
     }
     const editorEl = document.getElementById(holder);
     const observer = new MutationObserver(() => saveStoryTimeout(editor));
@@ -129,10 +146,10 @@ export const useEditor = (
     unpublishBtn?.addEventListener("click", (e) => {
       handlePublishBtnClick(e, editor, -1);
     });
-    window.addEventListener("beforeunload", () => {
-      clearTimeout(timeoutId);
-      !isSaved && saveAsDraft(editor);
-    });
+    // window.addEventListener("beforeunload", () => {
+    //   clearTimeout(timeoutId);
+    //   !isSaved && saveAsDraft(editor);
+    // });
     overrideEditorJsStyleBody();
   });
 };

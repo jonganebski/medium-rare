@@ -6,7 +6,7 @@
         .myStories-tab__published._flex-cc Published
     .myStories__wrapper.myStories-drafts._block
         ul.myStories__container
-            for _, _ in .storyCards
+            for _, _ in (SortByUpdatedAt .storyCards)
                 unless .IsPublished
                     include views/partials/draftCard.pug
     .myStories__wrapper.myStories-published._none
