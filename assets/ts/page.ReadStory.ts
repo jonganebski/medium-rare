@@ -209,44 +209,40 @@ const getComments = async () => {
   }
 };
 
-const likeOrUnlike = async () => {
+const toggleLike = async () => {
   const storyId = getIdParam("read-story");
   const childIcon = likedContainer?.querySelector("i");
   const childSpan = likedContainer?.querySelector("span");
-  if (childIcon && childSpan) {
-    const likedCount = parseInt(childSpan.innerText.replace(/\,/, ""));
-    if (isNaN(likedCount)) {
-      console.error("wrong like count format");
-      return;
-    }
-    let plusMinus;
-    if (childIcon.className.includes("false")) {
-      plusMinus = 1;
-    } else if (childIcon.className.includes("true")) {
-      plusMinus = -1;
-    } else {
-      return;
-    }
-    try {
-      const { status } = await Axios.patch(`/api/like/${storyId}/${plusMinus}`);
-      if (status < 300) {
-        if (childIcon.className.includes("false")) {
-          childSpan.innerText = (likedCount + 1).toLocaleString();
-          childIcon.className = childIcon.className
-            .replace("false", "true")
-            .replace("far", "fas");
-        } else if (childIcon.className.includes("true")) {
-          childSpan.innerText = (likedCount - 1).toLocaleString();
-          childIcon.className = childIcon.className
-            .replace("true", "false")
-            .replace("fas", "far");
-        } else {
-          return;
-        }
+  if (!likedContainer || !childIcon || !childSpan) {
+    return;
+  }
+  const likedCount = parseInt(childSpan.innerText.replace(/\,/, ""));
+  if (isNaN(likedCount)) {
+    console.error("wrong like count format");
+    return;
+  }
+  try {
+    likedContainer.style.pointerEvents = "none";
+    const { status, data } = await Axios.patch(`/api/toggle-like/${storyId}`);
+    if (status < 300) {
+      const result = +data;
+      if (isNaN(result)) {
+        return;
       }
-    } catch {
-      alert("Failed to like/unlike the story. Please try again.");
+      if (result > 0) {
+        childSpan.innerText = (likedCount + 1).toLocaleString();
+        childIcon.className = childIcon.className.replace("far", "fas");
+      } else if (result < 0) {
+        childSpan.innerText = (likedCount - 1).toLocaleString();
+        childIcon.className = childIcon.className.replace("fas", "far");
+      } else {
+        return;
+      }
     }
+  } catch {
+    alert("Failed to like/unlike the story. Please try again.");
+  } finally {
+    likedContainer.style.pointerEvents = "auto";
   }
 };
 
@@ -288,7 +284,7 @@ const init = async () => {
   seeCommentDiv?.addEventListener("click", openCommentDrawer);
   seeCommentDiv?.addEventListener("click", getComments);
   commentDrawerCloseIcon?.addEventListener("click", closeCommentDrawer);
-  likedContainer?.addEventListener("click", likeOrUnlike);
+  likedContainer?.addEventListener("click", toggleLike);
   bookmarkContainer?.addEventListener("click", handleBookmark);
   followBtn?.addEventListener("click", readPageFollowBtnClick);
   followingBtn?.addEventListener("click", readPageFollowingBtnClick);

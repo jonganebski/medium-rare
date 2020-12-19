@@ -8,7 +8,6 @@ import (
 	"home/jonganebski/github/medium-rare/package/photo"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
-	"strconv"
 	"strings"
 	"time"
 
@@ -22,7 +21,8 @@ import (
 func StoryRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) {
 	api.Get("/blocks/:storyId", provideStoryBlocks(storyService))
 	api.Post("/story", middleware.APIGuard, addStory(userService, storyService))
-	api.Patch("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
+	// api.Patch("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
+	api.Patch("/toggle-like/:storyId", middleware.APIGuard, handleLikeCount(userService, storyService))
 	api.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
 	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService, photoService))
 
@@ -192,11 +192,6 @@ func addStory(userService user.Service, storyService story.Service) fiber.Handle
 func handleLikeCount(userService user.Service, storyService story.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		storyID := c.Params("storyId")
-		p := c.Params("plusMinus") // bigger than zero -> increase like / smaller than zero -> decrease like
-		plusMinus, err := strconv.Atoi(p)
-		if err != nil || plusMinus == 0 {
-			return c.SendStatus(400)
-		}
 		storyOID, err := primitive.ObjectIDFromHex(storyID)
 		if err != nil {
 			return c.SendStatus(500)
@@ -212,34 +207,20 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 			return c.Status(404).SendString("User not found")
 		}
 
-		// --- check the user is allowed to like or unlike the story ---
-		var isAllowed bool
-		if plusMinus > 0 {
-			isAllowed = true
-			for _, likedStoryID := range *currentUser.LikedStoryIDs {
-				if likedStoryID == storyOID {
-					isAllowed = false
-				}
+		var isLikeExists bool = false
+		for _, likedStoryID := range *currentUser.LikedStoryIDs {
+			if likedStoryID == storyOID {
+				isLikeExists = true
+				break
 			}
-		}
-		if plusMinus < 0 {
-			isAllowed = false
-			for _, likedStoryID := range *currentUser.LikedStoryIDs {
-				if likedStoryID == storyOID {
-					isAllowed = true
-				}
-			}
-		}
-		if !isAllowed {
-			return c.Status(400).SendString("You can't like or unlike twice.")
 		}
 
 		// --- determine update operator of mongodb ---
 		var key string
-		if plusMinus > 0 {
+		if !isLikeExists {
 			key = "$push"
 		}
-		if plusMinus < 0 {
+		if isLikeExists {
 			key = "$pull"
 		}
 
@@ -255,7 +236,10 @@ func handleLikeCount(userService user.Service, storyService story.Service) fiber
 			return c.Status(500).SendString("Failed to update")
 		}
 
-		return c.SendStatus(200)
+		if !isLikeExists {
+			return c.Status(200).SendString("1")
+		}
+		return c.Status(200).SendString("-1")
 	}
 }
 

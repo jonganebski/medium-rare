@@ -27,7 +27,7 @@ export const editorReadOnlyBody = document.getElementById(
 export const fixedAuthorInfo = document.getElementById("fixed-authorInfo");
 export const likedContainer = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__liked-container"
-);
+) as HTMLElement | null;
 export const seeCommentDiv = fixedAuthorInfo?.querySelector(
   ".fixed-authorInfo__comment-container"
 );

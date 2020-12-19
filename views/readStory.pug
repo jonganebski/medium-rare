@@ -41,9 +41,9 @@
     .fixed-authorInfo__liked-container._flex-cs
       if .userId
         if .didLiked
-          i.fas.fa-heart.fixed-authorInfo__liked-icon-true
+          i.fas.fa-heart.fixed-authorInfo__liked-icon
         else
-          i.far.fa-heart.fixed-authorInfo__liked-icon-false
+          i.far.fa-heart.fixed-authorInfo__liked-icon
       else
         i.far.fa-heart.fixed-authorInfo__liked-icon-deactivated
       span #{ getSliceLen .story.LikedUserIDs }
