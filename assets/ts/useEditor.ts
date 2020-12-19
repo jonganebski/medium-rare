@@ -1,35 +1,25 @@
-import CodeTool from "@editorjs/code";
-import EditorJS, {
-  LogLevels,
-  OutputBlockData,
-  OutputData,
-} from "@editorjs/editorjs";
-import Header from "@editorjs/header";
-import ImageTool from "@editorjs/image";
-import InlineCode from "@editorjs/inline-code";
-import List from "@editorjs/list";
-import Quote from "@editorjs/quote";
+import EditorJS, { OutputBlockData, OutputData } from "@editorjs/editorjs";
 import Axios from "axios";
-import { BASE_URL } from "./constants";
+import { EDITORJS_CONFIG } from "./constants";
 import { publishBtn } from "./elements.header";
 import { overrideEditorJsStyleBody } from "./page.ReadStory";
 
 let imgHistory: string[] = [];
-
-// All these imgHistory and requestUnusedPhotosDelete are because editorJS's image plugin does not trigger any event on delete photos!!!!!
-// So this app will store all photos list and will request removal of unused photos at the point of publish.
+let isPublishBtn = false;
+// All these imgHistory and requestUnusedPhotosDelete etc are because editorJS's image plugin does not trigger any event on delete photos!!!!!
+// So this app will store all photos list and will request removal of unused photos at the point of publish or beforeunload event.
 const requestUnusedPhotosDelete = async (
   savedData: OutputData
 ): Promise<boolean> => {
   const imgBlocks = savedData.blocks.filter((block) => block.type === "image");
-  if (imgBlocks.length === 0) {
-    return true;
-  }
   try {
     imgBlocks.forEach((imgBlock) => {
       const usedImg = imgBlock.data.file.url;
       imgHistory = imgHistory.filter((url) => url !== usedImg);
     });
+    if (imgHistory.length === 0) {
+      return true;
+    }
     const { status: removalStatus } = await Axios.delete("/api/photos", {
       data: { images: Array.from(imgHistory) },
     });
@@ -42,7 +32,18 @@ const requestUnusedPhotosDelete = async (
   }
 };
 
+const requestAllPhotosDelete = (e: Event) => {
+  // this happens beforeunload. so I cannot do anything even if it fails :(
+  e.preventDefault();
+  if (!isPublishBtn) {
+    Axios.delete("/api/photos", {
+      data: { images: Array.from(imgHistory) },
+    });
+  }
+};
+
 const handlePublishBtnClick = async (e: Event, editor: EditorJS) => {
+  isPublishBtn = true;
   const publishBtn = e.target as HTMLButtonElement | null;
   if (!publishBtn) {
     return;
@@ -65,6 +66,7 @@ const handlePublishBtnClick = async (e: Event, editor: EditorJS) => {
       }
     } catch {
       alert("Failed to publish. Please try again.");
+      isPublishBtn = false;
       publishBtn.disabled = false;
       publishBtn.innerText = "Publish";
     }
@@ -111,44 +113,19 @@ export const useEditor = (
   blocks: OutputBlockData[]
 ) => {
   const editor = new EditorJS({
+    ...EDITORJS_CONFIG,
     holder,
     placeholder,
-    tools: {
-      header: {
-        class: Header,
-        inlineToolbar: true,
-        config: {
-          levels: [2, 4, 6],
-        },
-      },
-      image: {
-        class: ImageTool,
-        config: {
-          endpoints: {
-            byFile: BASE_URL + "/api/photo/byfile",
-          },
-        },
-      },
-      code: CodeTool,
-      inlineCode: {
-        class: InlineCode,
-      },
-      quote: Quote,
-      list: {
-        class: List,
-        inlineToolbar: true,
-      },
-    },
     data: {
       blocks,
     },
-    logLevel: LogLevels?.ERROR ?? "ERROR",
   });
   editor.isReady.then(() => {
     publishBtn?.addEventListener("click", (e) =>
       handlePublishBtnClick(e, editor)
     );
     document.body.addEventListener("click", () => imageCollector(holder));
+    window.addEventListener("beforeunload", requestAllPhotosDelete, false);
     overrideEditorJsStyleBody();
   });
 };

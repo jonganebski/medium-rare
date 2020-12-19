@@ -1,11 +1,6 @@
-import CodeTool from "@editorjs/code";
-import EditorJS, { LogLevels, OutputBlockData } from "@editorjs/editorjs";
-import Header from "@editorjs/header";
-import ImageTool from "@editorjs/image";
-import InlineCode from "@editorjs/inline-code";
-import List from "@editorjs/list";
-import Quote from "@editorjs/quote";
+import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
 import Axios from "axios";
+import { EDITORJS_CONFIG } from "./constants";
 import { deleteComment } from "./deleteComment";
 import { deleteStory } from "./deleteStory";
 import {
@@ -162,50 +157,15 @@ const initEditorReadOnly = async (storyId: string) => {
     const header = blocks.shift();
     const headerEditor = new EditorJS({
       //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
+      ...EDITORJS_CONFIG,
       holder: "editor-readOnly__header",
-      tools: {
-        header: {
-          class: Header,
-          config: {
-            levels: [2, 4, 6],
-          },
-        },
-        code: CodeTool,
-        image: {
-          class: ImageTool,
-        },
-        inlineCode: {
-          class: InlineCode,
-        },
-      },
       data: { blocks: [header] },
     });
     const bodyEditor = new EditorJS({
       //   readOnly: true, // This occurs error on 2.19.0 version. It's on github issue https://github.com/codex-team/editor.js/issues/1400
+      ...EDITORJS_CONFIG,
       holder: "editor-readOnly__body",
-      tools: {
-        header: {
-          class: Header,
-          config: {
-            levels: [2, 4, 6],
-          },
-        },
-        code: CodeTool,
-        image: {
-          class: ImageTool,
-        },
-        inlineCode: {
-          class: InlineCode,
-        },
-        quote: Quote,
-        list: {
-          class: List,
-          inlineToolbar: true,
-        },
-      },
       data: { blocks },
-      logLevel: LogLevels?.ERROR ?? "ERROR",
-      sanitizer: { a: { href: true, target: "_blank" } },
     });
     headerEditor.isReady.then(async () => {
       await headerEditor.readOnly.toggle(true);
