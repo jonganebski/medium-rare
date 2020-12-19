@@ -150,7 +150,7 @@ func (r *repository) UpdateViewCount(storyID primitive.ObjectID) (*model.Story, 
 
 func (r *repository) FindRecentStories(timestamp int64) (*[]model.Story, error) {
 	stories := make([]model.Story, 0)
-	o := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(10)
+	o := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetLimit(2)
 	f := bson.D{{Key: "isPublished", Value: true}, {Key: "editorsPick", Value: false}, {Key: "createdAt", Value: bson.D{{Key: "$lt", Value: timestamp}}}}
 	c, err := r.Collection.Find(context.Background(), f, o)
 	if err != nil {

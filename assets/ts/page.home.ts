@@ -74,7 +74,7 @@ const drawStoryCard = (story: any) => {
   readTimeEl.innerText = story.readTime;
   dotEl.className = "_devider-dot";
   createdAtEl.innerText = formatPostDate(story.createdAt);
-  infoEl.className = "storyCard__info";
+  infoEl.className = "storyCard__info _flex-cs";
   authorNameEl.className = "storyCard__author-name _block";
   authorNameEl.href = `/user-home/${story.authorId}`;
   authorNameEl.innerText = story.authorUsername;
@@ -105,10 +105,9 @@ const drawStoryCard = (story: any) => {
 };
 
 const init = () => {
-  console.log("Home");
   window.addEventListener("scroll", requestMoreStoryCards);
 };
 
-if (BASE_URL && !document.location.pathname.split(BASE_URL)[1]) {
+if (BASE_URL && document.location.pathname.split(BASE_URL)[0] === "/") {
   init();
 }

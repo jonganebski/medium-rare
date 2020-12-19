@@ -142,12 +142,14 @@
 .home__articles {
   width: 90%;
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template: "main popular" /2fr 1fr;
   gap: 5rem;
   .home__mainList {
+    grid-area: main;
     width: 100%;
   }
   .home__popularList {
+    grid-area: popular;
     width: 100%;
     * {
       font-size: $fontSizeXS;
@@ -190,7 +192,12 @@
   }
 }
 @media screen and (max-width: 900px) {
-  .home__articles {
+  .home__picks {
     grid-template-columns: 1fr;
+  }
+  .home__articles {
+    grid-template:
+      "popular"
+      "main";
   }
 }

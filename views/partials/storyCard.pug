@@ -7,7 +7,7 @@ li.storyCard._flex(id="{{ .CreatedAt }}")
           p.storyCard__body #{grindBody .Body 120}
         div
           a(href="/user-home/{{ .AuthorID }}").storyCard__author-name._block {{ .AuthorUsername }} 
-          .storyCard__info 
+          .storyCard__info._flex-cs
             span #{getStoryDate .CreatedAt}
             ._devider-dot
             span #{.ReadTime}
