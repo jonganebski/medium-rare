@@ -1,110 +1,100 @@
-import EditorJS, { OutputBlockData, OutputData } from "@editorjs/editorjs";
+import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
 import Axios from "axios";
 import { EDITORJS_CONFIG } from "./constants";
-import { publishBtn } from "./elements.header";
+import { publishBtn, saveStatusEl, unpublishBtn } from "./elements.header";
 import { overrideEditorJsStyleBody } from "./page.ReadStory";
 
-let imgHistory: string[] = [];
-let isPublishBtn = false;
-// All these imgHistory and requestUnusedPhotosDelete etc are because editorJS's image plugin does not trigger any event on delete photos!!!!!
-// So this app will store all photos list and will request removal of unused photos at the point of publish or beforeunload event.
-const requestUnusedPhotosDelete = async (
-  savedData: OutputData
-): Promise<boolean> => {
-  const imgBlocks = savedData.blocks.filter((block) => block.type === "image");
-  try {
-    imgBlocks.forEach((imgBlock) => {
-      const usedImg = imgBlock.data.file.url;
-      imgHistory = imgHistory.filter((url) => url !== usedImg);
-    });
-    if (imgHistory.length === 0) {
-      return true;
-    }
-    const { status: removalStatus } = await Axios.delete("/api/photos", {
-      data: { images: Array.from(imgHistory) },
-    });
-    if (removalStatus < 300) {
-      return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-};
+let timeoutId: NodeJS.Timeout;
+let isCreated = Boolean(document.location.pathname.includes("edit-story"));
+let isSaved = false;
+let storyId = "";
 
-const requestAllPhotosDelete = (e: Event) => {
-  // this happens beforeunload. so I cannot do anything even if it fails :(
-  e.preventDefault();
-  if (!isPublishBtn) {
-    Axios.delete("/api/photos", {
-      data: { images: Array.from(imgHistory) },
-    });
-  }
-};
-
-const handlePublishBtnClick = async (e: Event, editor: EditorJS) => {
-  isPublishBtn = true;
+export const handlePublishBtnClick = async (
+  e: Event,
+  editor: EditorJS,
+  toggle: 1 | -1
+) => {
   const publishBtn = e.target as HTMLButtonElement | null;
-  if (!publishBtn) {
+  if (!publishBtn || !storyId) {
     return;
   }
   publishBtn.disabled = true;
   publishBtn.innerText = "Loading...";
-  const savedData = await editor.save();
-  if (document.location.pathname.includes("new-story")) {
-    try {
-      const { status, data: storyId } = await Axios.post(
-        "/api/story",
-        savedData
-      );
-      if (status < 300) {
-        // request delete images in imgHistory
-        if (await !requestUnusedPhotosDelete(savedData)) {
-          console.error("There are images failed to remove.");
-        }
-        document.location.href = `/read-story/${storyId}`;
-      }
-    } catch {
-      alert("Failed to publish. Please try again.");
-      isPublishBtn = false;
-      publishBtn.disabled = false;
-      publishBtn.innerText = "Publish";
+  try {
+    clearTimeout(timeoutId);
+    !isSaved && (await saveAsDraft(editor));
+    const { status } = await Axios.patch(
+      `/api/toggle-publish/${storyId}/${toggle}`
+    );
+    if (status < 300) {
+      document.location.href = `/read-story/${storyId}`;
     }
+  } catch {
+    alert("Failed to publish. Please try again.");
+    publishBtn.disabled = false;
+    publishBtn.innerText = "Save and Publish";
+  }
+  return;
+};
 
+const saveAsDraft = async (editor: EditorJS) => {
+  if (!storyId) {
     return;
   }
-  if (document.location.pathname.includes("edit-story")) {
-    const splitedPath = document.location.pathname.split("edit-story");
-    const storyId = splitedPath[1].replace(/[/]/g, "");
-    try {
-      const { status } = await Axios.patch(`/api/story/${storyId}`, savedData);
-      if (status < 300) {
-        // request delete images in imgHistory
-        if (await !requestUnusedPhotosDelete(savedData)) {
-          console.error("There are images failed to remove.");
-        }
-        document.location.href = `/read-story/${storyId}`;
-      }
-    } catch {
-      alert("Failed to update. Please try again.");
-      publishBtn.disabled = false;
-      publishBtn.innerText = "Save and Publish";
+  try {
+    saveStatusEl && (saveStatusEl.innerText = "Saving...");
+    const savedData = await editor.save();
+    const { status } = await Axios.patch(`/api/story/${storyId}`, savedData);
+    if (status < 300) {
+      isSaved = true;
+      saveStatusEl && (saveStatusEl.innerText = "Saved");
     }
-    return;
+  } catch {
+    isSaved = false;
+    saveStatusEl && (saveStatusEl.innerText = "Not Saved");
   }
 };
 
-const imageCollector = (holder: string) => {
-  const imgElements = document
-    .getElementById(holder)
-    ?.querySelectorAll(
-      ".image-tool__image-picture"
-    ) as NodeListOf<HTMLImageElement>;
-  imgElements?.forEach((imgEl) => {
-    if (!imgHistory.some((url) => url === imgEl.src)) {
-      imgHistory.push(imgEl.src);
+const createNewStory = async (editor: EditorJS) => {
+  try {
+    saveStatusEl && (saveStatusEl.innerText = "Saving...");
+    const savedData = await editor.save();
+    const { status, data: createdStoryId } = await Axios.post(
+      "/api/story",
+      savedData
+    );
+    if (status < 300) {
+      storyId = createdStoryId;
+      isCreated = true;
+      isSaved = true;
+      saveStatusEl && (saveStatusEl.innerText = "Saved");
     }
-  });
+  } catch {
+    isCreated = false;
+    isSaved = false;
+    saveStatusEl && (saveStatusEl.innerText = "Not saved");
+  }
+};
+
+const saveStoryTimeout = (editor: EditorJS) => {
+  if (!saveStatusEl) {
+    return;
+  }
+  isSaved = false;
+  saveStatusEl.innerText = "Not saved";
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
+    if (
+      document.location.pathname.includes("new-story") &&
+      !isCreated &&
+      !storyId
+    ) {
+      createNewStory(editor);
+      return;
+    } else {
+      saveAsDraft(editor);
+    }
+  }, 5000);
 };
 
 export const useEditor = (
@@ -121,11 +111,28 @@ export const useEditor = (
     },
   });
   editor.isReady.then(() => {
+    if (document.location.pathname.includes("edit-story")) {
+      const splitedPath = document.location.pathname.split("edit-story");
+      storyId = splitedPath[1].replace(/[/]/g, "");
+    }
+    const editorEl = document.getElementById(holder);
+    const observer = new MutationObserver(() => saveStoryTimeout(editor));
+    editorEl &&
+      observer.observe(editorEl, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
     publishBtn?.addEventListener("click", (e) =>
-      handlePublishBtnClick(e, editor)
+      handlePublishBtnClick(e, editor, 1)
     );
-    document.body.addEventListener("click", () => imageCollector(holder));
-    window.addEventListener("beforeunload", requestAllPhotosDelete, false);
+    unpublishBtn?.addEventListener("click", (e) => {
+      handlePublishBtnClick(e, editor, -1);
+    });
+    window.addEventListener("beforeunload", () => {
+      clearTimeout(timeoutId);
+      !isSaved && saveAsDraft(editor);
+    });
     overrideEditorJsStyleBody();
   });
 };

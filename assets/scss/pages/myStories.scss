@@ -1,3 +1,6 @@
+#myStories {
+  width: 100%;
+}
 .myStories__title {
   width: 100%;
   margin-top: 3rem;
@@ -6,9 +9,28 @@
   font-weight: 700;
   color: $fontBlack9;
 }
-.myStories__storyCards-wrapper {
+.myStories-tab {
   width: 100%;
-  .myStories__storyCards-container {
+  display: grid;
+  grid-template-columns: 7rem 1rem 7rem;
+  .myStories-tab__drafts,
+  .myStories-tab__published {
+    padding: 1rem 0px;
+    border: 1px solid $fontBlack9;
+    font-size: $fontSizeMD;
+    color: $fontBlack8;
+    cursor: pointer;
+  }
+  .myStories-tab__drafts {
+    border-bottom-color: transparent;
+  }
+  .myStories-tab__space {
+    border-bottom: 1px solid $fontBlack9;
+  }
+}
+.myStories__wrapper {
+  width: 100%;
+  .myStories__container {
     width: 50%;
     display: grid;
     grid-template-columns: 1fr;

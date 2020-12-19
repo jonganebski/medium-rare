@@ -17,6 +17,7 @@ type Service interface {
 	IncreaseViewCount(storyID primitive.ObjectID) (*model.Story, error)
 	AddCommentID(storyID, commentID primitive.ObjectID) error
 	PickStory(storyID primitive.ObjectID) error
+	PublishUnpublish(storyID primitive.ObjectID, isPublished bool) error
 	UnpickStory(storyID primitive.ObjectID) error
 	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error
 	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error
@@ -33,6 +34,10 @@ func NewService(r Repository) Service {
 	return &service{
 		repository: r,
 	}
+}
+
+func (s *service) PublishUnpublish(storyID primitive.ObjectID, isPublished bool) error {
+	return s.repository.UpdatePublishStatus(storyID, isPublished)
 }
 
 func (s *service) PickStory(storyID primitive.ObjectID) error {

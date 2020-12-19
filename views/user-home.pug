@@ -8,12 +8,12 @@ header.userHome__header
     else
         a.userHome__followerCount(href="/followers/{{ .targetUser.ID }}") #{ getSliceLen .targetUser.FollowerIDs } followers
     ._devider-dot
-    if (eq "0" (getSliceLen .targetUser.StoryIDs))
+    if (eq 0 .storyCardsCount)
         span.userHome__storiesCount No stories published
-    else if (eq "1" (getSliceLen .targetUser.StoryIDs))
+    else if (eq 1 .storyCardsCount)
         span.userHome__storiesCount 1 story
     else 
-        span.userHome__storiesCount #{ getSliceLen .targetUser.StoryIDs } stories
+        span.userHome__storiesCount #{ .storyCardsCount } stories
 ul.userHome__stories
     for _,_ in .storyCards
         include views/partials/storyCard.pug

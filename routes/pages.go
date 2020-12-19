@@ -17,11 +17,13 @@ type storyCardOutput struct {
 	AuthorID       string `json:"authorId"`
 	AuthorUsername string `json:"authorUsername"`
 	CreatedAt      int64  `json:"createdAt"`
+	UpdatedAt      int64  `json:"updatedAt"`
 	Header         string `json:"header"`
 	Body           string `json:"body"`
 	CoverImgURL    string `json:"coverImgUrl"`
 	ReadTime       string `json:"readTime"`
 	Ranking        int    `json:"ranking,omitempty"`
+	IsPublished    bool   `json:"isPublished"`
 }
 
 type followerOutput struct {
@@ -179,6 +181,14 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 		if err != nil {
 			return c.Status(404).SendString("Author not found")
 		}
+
+		var publishedStoryCards []storyCardOutput
+		for _, storyCard := range *storyCards {
+			if storyCard.IsPublished {
+				publishedStoryCards = append(publishedStoryCards, storyCard)
+			}
+		}
+
 		currentUser := new(model.User)
 		isFollowingTargetUser := false
 		if c.Locals("userId") != nil {
@@ -202,7 +212,8 @@ func userHome(userService user.Service, storyService story.Service) fiber.Handle
 			"userId":                c.Locals("userId"),
 			"currentUser":           currentUser,
 			"targetUser":            targetUser,
-			"storyCards":            storyCards,
+			"storyCards":            publishedStoryCards,
+			"storyCardsCount":       len(publishedStoryCards),
 			"isFollowingTargetUser": isFollowingTargetUser,
 		}, "layout/main")
 	}
@@ -525,8 +536,10 @@ func composeStoryCardOutput(stories []model.Story, userService user.Service) (*[
 		storyCard.Header = story.Blocks[0].Data.Text
 		storyCard.Body = body
 		storyCard.CreatedAt = story.CreatedAt
+		storyCard.UpdatedAt = story.UpdatedAt
 		storyCard.CoverImgURL = coverImgURL
 		storyCard.ReadTime = readTimeText
+		storyCard.IsPublished = story.IsPublished
 		storyCards = append(storyCards, *storyCard)
 	}
 	return &storyCards, nil

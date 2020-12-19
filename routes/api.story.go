@@ -8,6 +8,7 @@ import (
 	"home/jonganebski/github/medium-rare/package/photo"
 	"home/jonganebski/github/medium-rare/package/story"
 	"home/jonganebski/github/medium-rare/package/user"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,11 +22,46 @@ import (
 func StoryRouter(api fiber.Router, userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) {
 	api.Get("/blocks/:storyId", provideStoryBlocks(storyService))
 	api.Post("/story", middleware.APIGuard, addStory(userService, storyService))
-	// api.Patch("/like/:storyId/:plusMinus", middleware.APIGuard, handleLikeCount(userService, storyService))
+	api.Patch("/toggle-publish/:storyId/:toggle", middleware.APIGuard, togglePublish(userService, storyService))
 	api.Patch("/toggle-like/:storyId", middleware.APIGuard, handleLikeCount(userService, storyService))
 	api.Patch("/story/:storyId", middleware.APIGuard, editStory(storyService))
 	api.Delete("/story/:storyId", middleware.APIGuard, removeStory(userService, storyService, commentService, photoService))
 
+}
+
+func togglePublish(userService user.Service, storyService story.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		storyID := c.Params("storyId")
+		toggleParam := c.Params("toggle")
+		toggle, err := strconv.Atoi(toggleParam)
+		if err != nil {
+			return c.SendStatus(400)
+		}
+		storyOID, err := primitive.ObjectIDFromHex(storyID)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+		userOID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", c.Locals("userId")))
+		if err != nil {
+			return c.SendStatus(500)
+		}
+		story, err := storyService.FindStoryByID(storyOID)
+		if err != nil {
+			return c.Status(404).SendString("Story not found")
+		}
+		if story.CreatorID != userOID {
+			return c.Status(403).SendString("You are not authorized.")
+		}
+		var makePublish bool = true
+		if toggle < 0 {
+			makePublish = false
+		}
+		err = storyService.PublishUnpublish(storyOID, makePublish)
+		if err != nil {
+			return c.Status(500).SendString("Failed to publish/unpublish")
+		}
+		return c.Status(200).JSON(fiber.Map{"isPublished": makePublish})
+	}
 }
 
 func removeStory(userService user.Service, storyService story.Service, commentService comment.Service, photoService photo.Service) fiber.Handler {
@@ -171,7 +207,8 @@ func addStory(userService user.Service, storyService story.Service) fiber.Handle
 		story.CommentIDs = &[]primitive.ObjectID{}
 		story.ViewCount = 0
 		story.EditorsPick = false
-		story.IsPublished = true
+		// story.IsPublished = true
+		story.IsPublished = false
 
 		// --- insert story document ---
 		storyOID, err := storyService.CreateStory(story)

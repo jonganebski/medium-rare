@@ -1,5 +1,16 @@
-.myStories__title My stories
-.myStories__storyCards-wrapper
-    ul.myStories__storyCards-container
-        for _, _ in .storyCards
-            include views/partials/storyCard.pug
+#myStories
+    .myStories__title My stories
+    .myStories-tab
+        .myStories-tab__drafts._flex-cc Drafts
+        .myStories-tab__space
+        .myStories-tab__published._flex-cc Published
+    .myStories__wrapper.myStories-drafts._block
+        ul.myStories__container
+            for _, _ in .storyCards
+                unless .IsPublished
+                    include views/partials/draftCard.pug
+    .myStories__wrapper.myStories-published._none
+        ul.myStories__container
+            for _, _ in .storyCards
+                if .IsPublished
+                    include views/partials/storyCard.pug

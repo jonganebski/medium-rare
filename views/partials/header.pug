@@ -6,7 +6,14 @@ header#main-header.main-header._flex-cc
       h1 Medium
       h2 - rare
     if publishBtn .path
-      button.main-header__publish-btn #{publishBtnText .path}
+      h6.main-header__save-status Not saved
+      if .story
+        if .story.IsPublished
+          button.main-header__unpublish-btn Unpublish
+        else
+          button.main-header__publish-btn Save and publish
+      else
+        button.main-header__publish-btn Save and publish
     if .userId
       a(href="/me/bookmarks")
         img(src="/image/bookmark.far.svg").main-header__bookmark-icon

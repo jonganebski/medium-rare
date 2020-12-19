@@ -1,0 +1,7 @@
+li.draftCard._flex
+    .draftCard__content._flex-c-sb
+        a(href="/read-story/{{ .StoryID }}")
+            h3.draftCard__header {{ .Header }}
+            p.draftCard__body #{grindBody .Body 120}
+        .draftCard__info 
+            span Updated #{getStoryDate .UpdatedAt}

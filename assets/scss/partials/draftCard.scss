@@ -1,0 +1,22 @@
+.draftCard {
+  width: 100%;
+  margin-bottom: 3rem;
+  * {
+    font-size: $fontSizeXS;
+  }
+  .draftCard__content {
+    .draftCard__header {
+      margin-bottom: 1rem;
+      font-size: $fontSizeMD;
+      font-weight: 700;
+      color: $fontBlack9;
+    }
+    .draftCard__body {
+      margin-bottom: 1rem;
+      color: $fontBlack7;
+    }
+    .draftCard__info {
+      color: $fontBlack7;
+    }
+  }
+}

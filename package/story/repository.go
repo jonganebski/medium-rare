@@ -24,6 +24,7 @@ type Repository interface {
 	UpdateCommentID(storyID, commentID primitive.ObjectID, key string) error
 	UpdateLikedUserIDs(storyID, userID primitive.ObjectID, key string) error
 	UpdatePickUnpick(storyID primitive.ObjectID, isPicked bool) error
+	UpdatePublishStatus(storyID primitive.ObjectID, isPublished bool) error
 	UpdateStoryBlock(storyID primitive.ObjectID, blocks *[]model.Block) error
 	DeleteStory(storyID primitive.ObjectID) error
 }
@@ -42,6 +43,16 @@ func NewRepo(collection *mongo.Collection) Repository {
 func (r *repository) UpdatePickUnpick(storyID primitive.ObjectID, isPicked bool) error {
 	f := bson.D{{Key: "_id", Value: storyID}}
 	u := bson.D{{Key: "$set", Value: bson.D{{Key: "editorsPick", Value: isPicked}}}}
+	_, err := r.Collection.UpdateOne(context.Background(), f, u)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) UpdatePublishStatus(storyID primitive.ObjectID, isPublished bool) error {
+	f := bson.D{{Key: "_id", Value: storyID}}
+	u := bson.D{{Key: "$set", Value: bson.D{{Key: "isPublished", Value: isPublished}}}}
 	_, err := r.Collection.UpdateOne(context.Background(), f, u)
 	if err != nil {
 		return err
