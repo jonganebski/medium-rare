@@ -46,7 +46,6 @@ func provideRecentStories(userService user.Service, storyService story.Service) 
 		if err != nil {
 			return c.SendStatus(500)
 		}
-		fmt.Println(storyCards)
 
 		return c.Status(200).JSON(storyCards)
 	}
