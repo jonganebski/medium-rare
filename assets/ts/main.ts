@@ -1,8 +1,8 @@
 import "../scss/styles.scss";
-import "./page.home";
-import "./page.ReadStory";
+import "./pages/home";
+import "./pages/read-story";
 import "./pages/followers";
-import "./page.followings";
+import "./pages/followings";
 import "./pages/stories";
 import "./useHeader";
 import "./userBio";
