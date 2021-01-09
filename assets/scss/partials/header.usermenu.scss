@@ -52,11 +52,13 @@
     }
   }
   footer {
-    padding: 1.5rem;
-    color: rgba(0, 0, 0, 0.8);
-    .usermenu__signout {
-      cursor: pointer;
-      font-size: $fontSizeSM;
+    ul {
+      li {
+        color: rgba(0, 0, 0, 0.8);
+        font-size: $fontSizeSM;
+        height: 2rem;
+        cursor: pointer;
+      }
     }
   }
 }

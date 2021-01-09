@@ -70,3 +70,8 @@ func SortByUpdatedAt(stories []model.StoryCardOutput) []model.StoryCardOutput {
 	})
 	return stories
 }
+
+// GetYear returns the year of current date
+func GetYear() int {
+	return time.Now().Year()
+}

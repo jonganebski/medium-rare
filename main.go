@@ -29,6 +29,7 @@ func main() {
 	engine.AddFunc("grindBody", helper.GrindBody)
 	engine.AddFunc("getSliceLen", helper.GetSliceLen)
 	engine.AddFunc("SortByUpdatedAt", helper.SortByUpdatedAt)
+	engine.AddFunc("getYear", helper.GetYear)
 
 	app := fiber.New(fiber.Config{Views: engine})
 	app.Static("/static", "./static")
