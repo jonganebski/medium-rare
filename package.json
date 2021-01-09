@@ -1,6 +1,9 @@
 {
   "name": "medium-rare",
   "version": "1.0.0",
+  "engines": {
+    "node": "12.20.0"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,7 +28,7 @@
     "@editorjs/list": "^1.6.1",
     "@types/marked": "^1.2.1",
     "autoprefixer": "^10.0.2",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "dotenv": "^8.2.0",
     "marked": "^1.2.5",
     "path-browserify": "^1.0.1"
