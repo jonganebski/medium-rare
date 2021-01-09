@@ -148,8 +148,10 @@ func removeStory(userService user.Service, storyService story.Service, commentSe
 		objects := make([]*s3.ObjectIdentifier, 0)
 		for _, block := range story.Blocks {
 			if block.Type == "image" {
-				fileName := strings.Split(block.Data.File.URL, "amazonaws.com/")[1]
-				objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(fileName)})
+				if strings.Contains(block.Data.File.URL, "amazonaws.com/") {
+					fileName := strings.Split(block.Data.File.URL, "amazonaws.com/")[1]
+					objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(fileName)})
+				}
 			}
 		}
 		if len(objects) != 0 {

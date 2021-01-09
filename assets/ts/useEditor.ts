@@ -72,7 +72,10 @@ export const handlePublishBtnClick = async (
       ({ status } = await Axios.patch(
         `/api/toggle-publish/${storyId}/${toggle}`
       ));
+    } else {
+      status = 200;
     }
+    console.log(status);
     if (status < 300) {
       document.location.href = `/read-story/${storyId}`;
     }
