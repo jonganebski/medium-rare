@@ -1,6 +1,6 @@
 import Axios from "axios";
-import { avatarFrame } from "./elements.header";
-import { editAvatarEl, settingsProfile } from "./elements.settings";
+import { avatarFrame } from "./elements/header";
+import { editAvatarEl, settingsProfile } from "./elements/settings";
 
 let prevAvatarInputValue = "";
 

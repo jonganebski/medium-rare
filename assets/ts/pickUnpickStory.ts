@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { pickStoryBtn, unpickStoryBtn } from "./elements.readStory";
+import { pickStoryBtn, unpickStoryBtn } from "./elements/read-story";
 import { getIdParam } from "./helper";
 
 const pickStory = async (e: Event) => {

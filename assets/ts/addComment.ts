@@ -5,9 +5,9 @@ import {
   commentCountDisplay,
   commentDrawerCommentCount,
   preparedCommentBox,
-} from "./elements.readStory";
+} from "./elements/read-story";
 import { getIdParam } from "./helper";
-import { clearCommentBox, drawNewComment } from "./page.ReadStory";
+import { clearCommentBox, drawNewComment } from "./pages/read-story";
 
 const addComment = async () => {
   if (preparedCommentBox && commentCountDisplay && commentDrawerCommentCount) {

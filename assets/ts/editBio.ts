@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { editBioEl } from "./elements.settings";
+import { editBioEl } from "./elements/settings";
 
 let prevBioInputValue = "";
 

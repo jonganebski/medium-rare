@@ -1,5 +1,5 @@
 import Axios, { AxiosError } from "axios";
-import { delAccountEl } from "./elements.settings";
+import { delAccountEl } from "./elements/settings";
 
 const deleteAccount = async (e: Event) => {
   const target = e.target as HTMLButtonElement | null;

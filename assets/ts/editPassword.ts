@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { editPasswordEl, settingsSecurity } from "./elements.settings";
+import { editPasswordEl, settingsSecurity } from "./elements/settings";
 
 const handlePassEditCancelBtn = (e: Event) => {
   if (!editPasswordEl.input) {

@@ -1,8 +1,8 @@
 import EditorJS, { OutputBlockData } from "@editorjs/editorjs";
 import Axios from "axios";
-import { EDITORJS_CONFIG } from "./constants";
-import { deleteComment } from "./deleteComment";
-import { deleteStory } from "./deleteStory";
+import { EDITORJS_CONFIG } from "../constants";
+import { deleteComment } from "../deleteComment";
+import { deleteStory } from "../deleteStory";
 import {
   bookmarkContainer,
   commentDrawer,
@@ -18,9 +18,9 @@ import {
   preparedCommentBox,
   readTimeSpan,
   seeCommentDiv,
-} from "./elements.readStory";
-import { readPageFollowBtnClick, readPageFollowingBtnClick } from "./follow";
-import { getIdParam } from "./helper";
+} from "../elements/read-story";
+import { readPageFollowBtnClick, readPageFollowingBtnClick } from "../follow";
+import { getIdParam } from "../helper";
 
 const getFomattedCommentDate = (createdAt: any): string => {
   const createdAtNum = +createdAt;

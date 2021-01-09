@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { BASE_URL, MONTHS } from "./constants";
+import { BASE_URL, MONTHS } from "../constants";
 
 const homeMainList = document.getElementById(
   "home__mainList"

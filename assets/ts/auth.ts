@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { openSigninModalEl, openSignupModalEl } from "./elements.header";
+import { openSigninModalEl, openSignupModalEl } from "./elements/header";
 
 const filter = document.getElementById("filter");
 

@@ -1,5 +1,5 @@
-import { followingsPagefollowBtns } from "./elements.followings";
-import { followingsPageUnfollowBtnClick } from "./follow";
+import { followingsPagefollowBtns } from "../elements/followings";
+import { followingsPageUnfollowBtnClick } from "../follow";
 
 const init = () => {
   followingsPagefollowBtns?.forEach((btn) => {

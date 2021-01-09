@@ -2,7 +2,7 @@ import Axios from "axios";
 import {
   commentCountDisplay,
   commentDrawerCommentCount,
-} from "./elements.readStory";
+} from "./elements/read-story";
 
 export const deleteComment = async (
   commentContainer: HTMLLIElement,

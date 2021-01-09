@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { editUsernameEl } from "./elements.settings";
+import { editUsernameEl } from "./elements/settings";
 
 let prevUsernameInputValue = "";
 

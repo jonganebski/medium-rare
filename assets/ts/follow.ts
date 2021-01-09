@@ -1,6 +1,6 @@
 import Axios from "axios";
-import { followingPageHeader } from "./elements.followings";
-import { followersCountDisplay } from "./elements.readStory";
+import { followingPageHeader } from "./elements/followings";
+import { followersCountDisplay } from "./elements/read-story";
 
 export const readPageFollowBtnClick = async (e: Event) => {
   const followBtn = e.currentTarget as HTMLButtonElement;

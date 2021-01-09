@@ -1,8 +1,8 @@
 import EditorJS, { OutputBlockData, OutputData } from "@editorjs/editorjs";
 import Axios from "axios";
 import { EDITORJS_CONFIG } from "./constants";
-import { publishBtn, saveStatusEl, unpublishBtn } from "./elements.header";
-import { overrideEditorJsStyleBody } from "./page.ReadStory";
+import { publishBtn, saveStatusEl, unpublishBtn } from "./elements/header";
+import { overrideEditorJsStyleBody } from "./pages/read-story";
 
 let timeoutId: any;
 let isCreated = false;

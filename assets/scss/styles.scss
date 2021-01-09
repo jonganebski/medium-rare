@@ -1,7 +1,7 @@
-@import "./config/reset.scss";
-@import "./config/variables.scss";
-@import "./config/globalClasses.scss";
-@import "./config/override.scss";
+@import "./config/_reset.scss";
+@import "./config/_variables.scss";
+@import "./config/_globalClasses.scss";
+@import "./config/_override.scss";
 
 @import "./main.scss";
 @import "./pages/home.scss";

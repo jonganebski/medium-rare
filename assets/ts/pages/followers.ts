@@ -1,11 +1,11 @@
 import {
   followersPagefollowBtns,
   followersPagefollowingBtns,
-} from "./elements.followers";
+} from "../elements/followers";
 import {
   followersPageFollowBtnClick,
   followersPageFollowingBtnClick,
-} from "./follow";
+} from "../follow";
 
 const init = () => {
   followersPagefollowBtns?.forEach((btn) => {
