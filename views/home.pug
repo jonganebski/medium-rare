@@ -1,18 +1,19 @@
 section.home__picks
   .home__picks-c-l._flex-c-es
-    a(href="/read-story/{{ .editorsPickR.StoryID }}").home__picks-c-l__cover-frame
-      img.home__picks-c-l__cover-img(
-        src="{{ .editorsPickR.CoverImgURL }}"
+    for _,_ in .editorsPickL
+      a(href="/read-story/{{ .StoryID }}").home__picks-c-l__cover-frame
+        img.home__picks-c-l__cover-img(
+        src="{{ .CoverImgURL }}"
       )
-    a(href="/read-story/{{ .editorsPickR.StoryID }}").home__picks-c-l__content
-      .home__picks-c-l__header #{ .editorsPickR.Header }
-      .home__picks-c-l__body #{ grindBody (.editorsPickR.Body) 200 }
-    .home__picks-c-l__info
-      a(href="/user-home/{{ .editorsPickR.AuthorID }}").home__picks-c-l__author-name._block #{ .editorsPickR.AuthorUsername }
-      .home__picks-c-l__detail
-        span #{ getStoryDate .editorsPickR.CreatedAt }
-        ._devider-dot
-        span #{ .editorsPickR.ReadTime }
+      a(href="/read-story/{{ .StoryID }}").home__picks-c-l__content
+        .home__picks-c-l__header #{ .Header }
+        .home__picks-c-l__body #{ grindBody (.Body) 200 }
+      .home__picks-c-l__info
+        a(href="/user-home/{{ .AuthorID }}").home__picks-c-l__author-name._block #{ .AuthorUsername }
+        .home__picks-c-l__detail
+          span #{ getStoryDate .CreatedAt }
+          ._devider-dot
+          span #{ .ReadTime }
   .home__picks-c-c._flex-c-sb
     for _,_ in .editorsPickC
        .home__picks-c-c__stack._flex-cs
@@ -29,18 +30,19 @@ section.home__picks
             ._devider-dot
             span #{ .ReadTime }
   .home__picks-c-r
-    a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__cover-frame
-      img.home__picks-c-r__cover-img(
-        src="{{ .editorsPickL.CoverImgURL }}"
+    for _,_ in .editorsPickR
+      a(href="/read-story/{{ .StoryID }}").home__picks-c-r__cover-frame
+        img.home__picks-c-r__cover-img(
+        src="{{ .CoverImgURL }}"
       )
-    .home__picks-c-r__content
-      a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__header #{ .editorsPickL.Header }
-      a(href="/read-story/{{ .editorsPickL.StoryID }}").home__picks-c-r__body #{ grindBody .editorsPickL.Body 100 }
-      a(href="/user-home/{{ .editorsPickL.AuthorID }}").home__picks-c-r__author-name._block #{ .editorsPickL.AuthorUsername }
-      .home__picks-c-r__detail 
-        span #{ getStoryDate .editorsPickL.CreatedAt }
-        ._devider-dot
-        span #{ .editorsPickL.ReadTime }
+      .home__picks-c-r__content
+        a(href="/read-story/{{ .StoryID }}").home__picks-c-r__header #{ .Header }
+        a(href="/read-story/{{ .StoryID }}").home__picks-c-r__body #{ grindBody .Body 100 }
+        a(href="/user-home/{{ .AuthorID }}").home__picks-c-r__author-name._block #{ .AuthorUsername }
+        .home__picks-c-r__detail 
+          span #{ getStoryDate .CreatedAt }
+          ._devider-dot
+          span #{ .ReadTime }
 .home__divider
 section.home__articles
   ul#home__mainList.home__mainList

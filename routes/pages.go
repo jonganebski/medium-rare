@@ -463,29 +463,31 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 
 		// --- split stories picked by editor ---
 		// this can be unnecessary if I fix structure of grid in pug file
-		editorsPickR := new(model.StoryCardOutput)
+		editorsPickL := make([]model.StoryCardOutput, 0)
 		editorsPickC := make([]model.StoryCardOutput, 0)
-		editorsPickL := new(model.StoryCardOutput)
+		editorsPickR := make([]model.StoryCardOutput, 0)
 
+		// fmt.Println(pickedStories)
 		for i, output := range *pickedStories {
 			if i == 0 {
-				editorsPickR = &output
+				editorsPickL = append(editorsPickL, output)
 			}
 			if 0 < i && i < 4 {
 				editorsPickC = append(editorsPickC, output)
 			}
 			if i == 4 {
-				editorsPickL = &output
+				editorsPickR = append(editorsPickR, output)
 			}
 		}
+		fmt.Println(editorsPickL, editorsPickC)
 
 		return c.Render("home", fiber.Map{
 			"path":           c.Path(),
 			"userId":         c.Locals("userId"),
 			"currentUser":    currentUser,
-			"editorsPickR":   editorsPickR,
-			"editorsPickC":   editorsPickC,
 			"editorsPickL":   editorsPickL,
+			"editorsPickC":   editorsPickC,
+			"editorsPickR":   editorsPickR,
 			"recentStories":  recentStories,
 			"popularStories": popularStories,
 		}, "layout/main")
