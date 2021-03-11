@@ -479,7 +479,6 @@ func homepage(userService user.Service, storyService story.Service) fiber.Handle
 				editorsPickR = append(editorsPickR, output)
 			}
 		}
-		fmt.Println(editorsPickL, editorsPickC)
 
 		return c.Render("home", fiber.Map{
 			"path":           c.Path(),

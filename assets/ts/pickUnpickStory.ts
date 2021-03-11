@@ -23,7 +23,7 @@ const pickStory = async (e: Event) => {
 const unpickStory = async (e: Event) => {
   const storyId = getIdParam("read-story");
   try {
-    const { status } = await Axios.post(`/api/admin/unpick/${storyId}`);
+    const { status } = await Axios.patch(`/api/admin/unpick/${storyId}`);
     if (status < 300) {
       const target = e.target as HTMLButtonElement | null;
       if (target) {
